@@ -1,0 +1,307 @@
+제공해주신 `최종 DB.txt` 파일의 내용을 바탕으로, \*\*NeuroNova 프로젝트(뇌종양 진단 CDSS)\*\*의 성격에 맞게 비어있는 **Django** 및 **커스텀(Custom)** 섹션을 구체화하고, 오타를 수정한 **완성본**입니다.
+
+이 내용은 바로 개발자가 보고 `models.py`를 작성할 수 있도록 필드명과 관계(FK)를 명확히 정의했습니다.
+
+````markdown
+# 최종 DB 설계 문서 (수정완료)
+
+## 1. 권한 및 접근 제어 (RBAC)
+[cite_start]각 테이블의 내용을 CRUD 할 수 있는 권한 정의 [cite: 9]
+
+| Role | 권한 범위 | 비고 |
+|:---:|:---|:---|
+| **Admin** | All | 시스템 전체 관리, 계정 생성 및 삭제 |
+| **Doctor** | All (Django, Custom, EMR) | 환자 진료, 처방, AI 결과 검증 및 확정 |
+| **Nurse** | R (EMR, Custom), C/U (Vitals, Notes) | 기초 바이탈 체크, 간호 기록 (처방/진단 불가) |
+| **Patient** | R (Self), C/U (Self Profile) | 본인 정보 조회, 예약, 문진표 작성 |
+
+Role,권한 범위,비고
+Patient,C/R/U (Appointment),"본인의 예약 생성(신청), 조회, 취소(Update status) 가능"
+Doctor,C/R/U (Appointment),"본인 스케줄 관리, 환자 예약 확정 및 변경"
+
+---
+
+## 2. EMR (OpenEMR 연동 영역)
+기존 병원 시스템과 호환되는 표준 의료 데이터
+
+### 1. Patient (환자)
+[cite_start]환자의 인적 사항 및 기본 정보를 관리합니다. [cite: 10, 11]
+```python
+{
+    "id": 1,
+    "pid": "PT-2025-1001",    # 병원 고유 환자 번호 (식별자)
+    "user_id": 5,             # Django Auth User FK (앱 로그인용)
+    "first_name": "길동",
+    "last_name": "홍",
+    "date_of_birth": "1990-01-01",
+    "gender": "M",            # M: 남성, F: 여성
+    "phone": "010-1234-5678",
+    "email": "hong@example.com",
+    "address": "서울시 강남구...",
+    "insurance_id": "123-45-67890", # 건강보험 번호
+    "created_at": "2025-01-01T10:00:00Z"
+}
+````
+
+### 2\. Encounter (진료/내원 기록)
+
+[cite\_start]환자의 개별 방문 또는 진료 세션입니다. [cite: 12]
+
+```python
+{
+    "id": 1,
+    "patient_id": 1,          # Patient FK
+    "doctor_id": 2,           # Doctor FK
+    "encounter_date": "2025-01-15T09:00:00Z",
+    "reason": "지속적인 두통 및 시야 흐림", # 내원 사유
+    "facility": "신경외과 외래",
+    "status": "COMPLETED",    # SCHEDULED, IN_PROGRESS, COMPLETED
+    "activity": true
+}
+```
+
+### 3\. FormSOAP (SOAP 진료 기록)
+
+[cite\_start]의료진이 작성하는 주관적/객관적 진료 차트입니다. [cite: 13]
+
+```python
+{
+    "id": 1,
+    "encounter_id": 1,        # Encounter FK
+    "date": "2025-01-15T09:30:00Z",
+    "subjective": "일주일 전부터 시작된 두통, 아침에 심해짐.", # 환자 호소 증상
+    "objective": "MRI 촬영 필요, 동공 반응 정상", # 의사 관찰 소견
+    "assessment": "뇌 종양 의심 (Meningioma?)", # 1차 진단
+    "plan": "MRI 오더 및 AI 분석 의뢰" # 향후 계획
+}
+```
+
+### 4\. FormVitals (활력징후)
+
+[cite\_start]간호사 또는 기기가 측정한 환자의 생체 신호입니다. [cite: 14]
+
+```python
+{
+    "id": 1,
+    "encounter_id": 1,
+    "date": "2025-01-15T09:15:00Z",
+    "bps": 120,   # 수축기 혈압
+    "bpd": 80,    # 이완기 혈압
+    "weight": 70.5,
+    "height": 175.0,
+    "temperature": 36.5,
+    "pulse": 72,
+    "respiration": 18,
+    "oxygen_saturation": 98,
+    "bmi": 23.0,
+    "bmi_status": "Normal"
+}
+```
+
+5. MergedDocument (통합 문서 & 참조)
+진료 기록, AI 결과, 처방 등을 통합하여 보여주는 문서입니다. EMR 및 Custom 테이블의 ID를 참조하여 필요시 원본 데이터를 동적으로 가져옵니다.
+
+{
+    "id": 1,
+    "patient_id": 1,
+    "encounter_id": 1,
+    "title": "2025-01-15 정밀 진단 보고서",
+    "document_type": "FINAL_REPORT", # FINAL_REPORT, REFERRAL, DISCHARGE_SUMMARY
+    "status": "APPROVED",
+    
+    # [핵심] 원본 데이터 연결 (Data Lineage)
+    # 이 ID들을 통해 프론트엔드에서 원본 클릭 시 이동하거나 상세 데이터를 조회함
+    "references": {
+        "emr": {
+            "form_soap_id": 1,      # SOAP 차트 연결
+            "form_vitals_id": 1     # 바이탈 기록 연결
+        },
+        "custom": {
+            "prediction_id": 100,   # AI 진단 결과 연결 (NeuroNova Core)
+            "prescription_id": 1    # 처방전 연결
+        }
+    },
+
+    # 스냅샷 데이터 (원본이 삭제/수정되어도 기록 당시는 유지)
+    "snapshot_data": {
+        "diagnosis_summary": "Meningioma (94%)",
+        "doctor_opinion": "수술 권장"
+    },
+    
+    "signed_by": 2,
+    "created_at": "2025-01-15T14:00:00Z"
+}
+-----
+
+## 3\. Django (Authentication)
+
+시스템 접근 권한 및 사용자 관리
+
+### 1\. Auth\_User (기본 유저 테이블)
+
+Django 기본 인증 테이블 확장 또는 사용
+
+```python
+{
+    "id": 1,
+    "username": "dr_kim",
+    "password": "hashed_password_...",
+    "email": "dr_kim@neuronova.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2024-12-01T09:00:00Z"
+}
+```
+
+### 2\. UserProfile (유저 프로필 확장)
+
+사용자의 역할(Role)과 추가 정보를 관리합니다.
+
+```python
+{
+    "id": 1,
+    "user_id": 1,       # Auth_User FK (OneToOne)
+    "role": "DOCTOR",   # DOCTOR, NURSE, PATIENT, ADMIN
+    "phone_number": "010-9999-8888",
+    "profile_image": "/media/profiles/dr_kim.jpg",
+    "fcm_token": "f43...a1" # 앱 푸시 알림용 토큰
+}
+```
+
+-----
+
+## 4\. 커스텀 (NeuroNova Core)
+
+뇌종양 진단 보조 및 서비스 특화 기능
+
+### 1\. Doctor (의사 정보)
+
+의료진 상세 정보 관리
+
+```python
+{
+    "id": 1,
+    "user_id": 1,           # Auth_User FK
+    "license_number": "123456",
+    "specialty": "Neurology", # 신경과, 신경외과 등
+    "department": "뇌종양 센터",
+    "bio": "뇌종양 전문의 10년 경력"
+}
+```
+
+### 2\. Patient\_Doctor (담당의 매핑)
+
+환자와 주치의 간의 N:M 관계 관리
+
+```python
+{
+    "id": 1,
+    "patient_id": 1,
+    "doctor_id": 1,
+    "is_primary": true,     # 주치의 여부
+    "assigned_date": "2025-01-01"
+}
+```
+
+### 3\. Patient\_Prediction\_Result (AI 진단 결과)
+
+Flask/ML 모델이 예측한 결과와 의사의 피드백 저장 (핵심)
+
+```python
+{
+    "id": 100,
+    "encounter_id": 1,      # Encounter FK
+    "patient_id": 1,
+    "doctor_id": 1,         # 검토한 의사
+    
+    # 1. 모델 정보
+    "model_name": "NeuroNova_Brain_v2.1",
+    "model_version": "2.1.0",
+    
+    # 2. 입력 데이터 (Orthanc PACS 연동)
+    "orthanc_study_uid": "1.2.840.113...", 
+    "orthanc_series_uid": "1.2.840.113.1...",
+    
+    # 3. 예측 결과
+    "prediction_class": "Meningioma", # 예측된 병명
+    "confidence_score": 0.94,         # 확률 (0~1)
+    "probabilities": {                # 클래스별 확률
+        "Glioma": 0.02,
+        "Meningioma": 0.94,
+        "Pituitary": 0.04
+    },
+    
+    # 4. 설명가능한 AI (XAI)
+    "xai_image_path": "/media/xai/shap_result_100.png", # 히트맵 경로
+    "feature_importance": {"size": 0.4, "location": 0.3},
+    
+    # 5. 의사 피드백 (Human-in-the-loop)
+    "doctor_feedback": "CORRECT",     # CORRECT, INCORRECT, AMBIGUOUS
+    "doctor_note": "전형적인 수막종 소견과 일치함",
+    "confirmed_at": "2025-01-15T10:05:00Z"
+}
+```
+
+### 4\. Prescription (처방전)
+
+진단 후 발급된 처방 내역
+
+```python
+{
+    "id": 1,
+    "encounter_id": 1,
+    "medication_code": "TYLENOL_500",
+    "medication_name": "Tylenol 500mg",
+    "dosage": "1 tablet",       # 1회 투여량
+    "frequency": "3 times/day", # 1일 투여 횟수
+    "duration": "7 days",       # 투여 기간
+    "route": "Oral",            # 투여 경로 (경구 등)
+    "instructions": "식후 30분 복용",
+    "prescribed_at": "2025-01-15T10:10:00Z"
+}
+```
+
+### 5\. Notification\_Log (알림 기록)
+
+앱 푸시 알림 발송 이력 (90일 자동 삭제 대상 아님, 서버 로그용)
+
+```python
+{
+    "id": 1,
+    "recipient_user_id": 5, # 환자 ID
+    "title": "진료 예약 알림",
+    "message": "내일 오전 9시 예약이 있습니다.",
+    "is_read": false,
+    "sent_at": "2025-01-14T09:00:00Z"
+}
+```
+
+
+6. Appointment (병원 예약) [NEW]
+환자의 앱(Flutter) 또는 병원 웹(React)에서 생성되는 예약 정보입니다.
+
+Python
+
+{
+    "id": 1,
+    "patient_id": 1,          # Patient FK (누가)
+    "doctor_id": 1,           # Doctor FK (누구에게)
+    
+    # 예약 시간 정보
+    "scheduled_at": "2025-02-20T14:30:00Z", # 예약된 날짜 및 시간
+    "duration_minutes": 30,   # 예상 진료 시간
+    
+    # 예약 상태 관리
+    "status": "CONFIRMED",    # PENDING(대기), CONFIRMED(확정), CANCELLED(취소), NO_SHOW(미방문), COMPLETED(진료완료)
+    
+    # 예약 내용
+    "visit_type": "FIRST_VISIT", # FIRST_VISIT(초진), FOLLOW_UP(재진), CHECK_UP(검진)
+    "reason": "MRI 촬영 결과 상담", # 환자가 입력한 사유
+    
+    # 메타 데이터
+    "created_by": "PATIENT_APP", # PATIENT_APP, DOCTOR_WEB, NURSE_STATION
+    "created_at": "2025-01-15T20:00:00Z"
+}
+
+```
+```

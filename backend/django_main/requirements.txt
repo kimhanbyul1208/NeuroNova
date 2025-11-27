@@ -1,0 +1,39 @@
+# Django Core
+Django==5.0
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+
+# Database
+psycopg2-binary==2.9.9
+redis==5.0.1
+django-redis==5.4.0
+
+# Authentication & Security
+djangorestframework-simplejwt==5.3.1
+python-decouple==3.8
+cryptography==41.0.7
+
+# API & Serialization
+drf-spectacular==0.27.0
+django-filter==23.5
+
+# Task Queue
+celery==5.3.4
+django-celery-beat==2.5.0
+
+# File Upload & Storage
+Pillow==10.1.0
+django-storages==1.14.2
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# HTTP Client
+requests==2.31.0
+
+# Production Server
+gunicorn==21.2.0
+
+# Development
+django-extensions==3.2.3

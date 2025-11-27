@@ -1,0 +1,13 @@
+구조 : [flutter,react] - [nginx - Gunicorn - [django <-> [flask(ONNX), DB, othanc]]
+
+[Orthanc Server]
+[De-identification Module] [익명화/전처리]
+[ML Training (GPU Server)] [GPU 학습 서버] = 코랩으로 대체 + 결과만 가져옴
+[Model Registry + Flask Inference] [추론 서버]
+[Django/React CDSS UI] [CDSS UI]
+-----
+Client (React) 요청 -> Django (Auth/Validation)
+Django -> DB (데이터 조회)
+Django -> Flask (익명화된 데이터 전송)
+Flask -> Model -> 결과 반환
+Django -> DB (결과 저장) -> Client 응답
