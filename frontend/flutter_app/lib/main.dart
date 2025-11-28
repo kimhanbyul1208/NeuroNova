@@ -1,5 +1,3 @@
-/// NeuroNova Patient App
-/// Brain Tumor Diagnosis CDSS - Patient Mobile Application
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/config/app_config.dart';
@@ -8,10 +6,12 @@ import 'core/services/notification_service.dart';
 import 'core/services/auth_service.dart';
 import 'data/local/local_database.dart';
 import 'features/auth/login_screen.dart';
-import 'features/home/home_screen.dart';
+import 'features/patient/patient_main_page.dart';
+import 'features/doctor/doctor_main_page.dart';
+import 'features/admin/admin_main_page.dart';
+import 'features/staff/staff_main_page.dart';
 import 'features/appointment/appointment_list_screen.dart';
 import 'features/appointment/appointment_create_screen.dart';
-import 'features/profile/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,7 +60,7 @@ Future<String> _getInitialRoute() async {
       case 'staff':
         return '/staffMain';
       default:
-        return '/home';
+        return '/patientMain'; // Default to patient
     }
   }
   return '/login';
@@ -98,11 +98,10 @@ class MyApp extends StatelessWidget {
       // 라우트 정의
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/home': (context) => const MainNavigationScreen(),
-        '/patientMain': (context) => const MainNavigationScreen(),
-        '/doctorMain': (context) => const MainNavigationScreen(),
-        '/adminMain': (context) => const MainNavigationScreen(),
-        '/staffMain': (context) => const MainNavigationScreen(),
+        '/patientMain': (context) => const PatientHomePage(),
+        '/doctorMain': (context) => const DoctorMainPage(),
+        '/adminMain': (context) => const AdminMainPage(),
+        '/staffMain': (context) => const StaffMainPage(),
         '/appointments': (context) => const AppointmentListScreen(),
         '/appointment-create': (context) => const AppointmentCreateScreen(),
       },

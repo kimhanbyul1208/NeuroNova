@@ -6,14 +6,14 @@ import '../../core/utils/logger.dart';
 
 /// 홈 화면
 /// 사용자 정보 및 다음 예약 표시
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class PatientHomePage extends StatefulWidget {
+  const PatientHomePage({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<PatientHomePage> createState() => _PatientHomePageState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _PatientHomePageState extends State<PatientHomePage> {
   final AuthRepository _authRepo = AuthRepository();
   final AppointmentRepository _appointmentRepo = AppointmentRepository();
 

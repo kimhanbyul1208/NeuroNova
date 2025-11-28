@@ -101,7 +101,8 @@ class AuthService {
         return null;
       }
 
-      return userProfile['role'];
+      // Return role from profile, default to 'patient' if not found
+      return userProfile['role'] ?? 'patient';
     } catch (e, stackTrace) {
       AppLogger.error('Auto-login failed', e, stackTrace);
       return null;
