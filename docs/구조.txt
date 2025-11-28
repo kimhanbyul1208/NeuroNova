@@ -1,4 +1,9 @@
-구조 : [flutter,react] - [nginx - Gunicorn - [django <-> [flask(ONNX), DB, othanc]]
+구조 : [flutter,react] - [nginx - Gunicorn - [django <-> [추론서버, DB, othanc]]
+
+추론 서버 : 
+flask = 기본 서버 
+MOSEC = Model Serving(모델 서빙) 프레임워크, gpu사용가능
+ONNX : 신경망 모델의 공통 확장자
 
 [Orthanc Server]
 [De-identification Module] [익명화/전처리]
