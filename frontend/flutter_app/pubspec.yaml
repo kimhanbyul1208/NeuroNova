@@ -41,7 +41,7 @@ dependencies:
   flutter_local_notifications: ^16.3.0
 
   # Utils
-  intl: ^0.18.1  # Date formatting
+  intl: ^0.20.2  # Date formatting
   logger: ^2.0.2  # Logging
 
 dev_dependencies:

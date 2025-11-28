@@ -7,7 +7,8 @@
       "Bash(dir:*)",
       "Bash(python manage.py:*)",
       "Bash(touch:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(flutter create:*)"
     ],
     "deny": [],
     "ask": []

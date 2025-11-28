@@ -1,0 +1,19 @@
+# Docker Compose에서 Certbot 사용
+# docker-compose.prod.yml과 함께 사용
+
+version: '3.8'
+
+services:
+  certbot:
+    image: certbot/certbot:latest
+    container_name: neuronova_certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - neuronova_network
+
+networks:
+  neuronova_network:
+    external: true

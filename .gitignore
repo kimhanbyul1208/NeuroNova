@@ -105,3 +105,11 @@ Thumbs.db
 *_secret.json
 nul
 frontend/참고용/mesothelium_flutter
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+firebase-service-account.json
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+backend/django_main/config/firebase-service-account.json

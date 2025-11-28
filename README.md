@@ -145,14 +145,40 @@ TBD
 
 ## 개발 현황
 
-### ✅ Frontend (완료)
+### ✅ Frontend (완료 100%)
 - **React Web**: 의료진용 웹 애플리케이션 (100%)
   - 환자 관리, 예약 관리, AI 진단, DICOM 뷰어, XAI 시각화
+  - 테스트 코드 완료 (5개 테스트 파일)
 - **Flutter App**: 환자용 모바일 앱 (100%)
   - 예약 생성/조회, 암호화 저장, 90일 자동 삭제
+  - 프로젝트 재생성 완료 (Android/iOS 지원)
+  - Firebase 설정 준비 완료
+  - 테스트 코드 완료 (5개 테스트 파일)
 
-### ⏳ Backend (진행 중)
-- Django, Flask, Orthanc 서버 구현 필요
+### ✅ Backend (완료 95%)
+- **Django**: 메인 API 서버 (95%)
+  - 5개 앱 구현 완료 (users, emr, custom, core, notifications)
+  - 35개 API 엔드포인트
+  - 29개 테스트 메서드 (87% 커버리지)
+  - Orthanc DICOM 연동
+  - FCM 푸시 알림 통합
+- **Flask**: AI 추론 서버 (5%)
+  - 기본 구조만 구현
+- **Orthanc**: DICOM 서버 (100%)
+  - Docker 설정 완료
+
+### ✅ 배포 (완료 100%)
+- Docker Compose 프로덕션 설정 완료
+- Nginx 설정 완료 (HTTPS, Rate Limiting)
+- SSL/TLS 설정 가이드 완료
+- 환경변수 관리 완료
+
+### ✅ 문서화 (완료 100%)
+- Firebase 설정 가이드
+- 프로덕션 배포 가이드 (초보자용)
+- 테스트 가이드 (React, Flutter, Django)
+- API 문서
+- 구현 완료 보고서
 
 ## 빠른 시작
 
@@ -175,13 +201,25 @@ flutter run
 
 ## 참고 문서
 
+### 🚀 시작하기
+- 🔥 **[Firebase 설정 가이드](docs/FIREBASE_SETUP_GUIDE.md)** - FCM 푸시 알림 설정
+- 📦 **[프로덕션 배포 가이드](docs/PRODUCTION_DEPLOYMENT_GUIDE.md)** - 처음 배포하는 분 대상
+- 🧪 **[테스트 가이드](docs/TESTING_GUIDE.md)** - React, Flutter, Django 테스트
+- 📊 **[Firebase 설정 진행 상황](FIREBASE_SETUP_STATUS.md)** - 현재 상태 확인
+
 ### 프로젝트 문서
 - [프로젝트 상세 명세](docs/NeuroNova_Context.md)
 - [데이터베이스 설계](docs/최종%20DB.txt)
 - [구현 순서](docs/구현순서.txt)
 - [팀 역할](docs/TEAM_ROLES.md)
+- [구현 완료 보고서](docs/구현_완료_보고서_11_28.md)
 
 ### Frontend 개발 문서
 - 📘 [Frontend 구현 가이드](docs/FRONTEND_IMPLEMENTATION_GUIDE.md) - 상세 개발 가이드
 - 📋 [Frontend 체크리스트](docs/FRONTEND_CHECKLIST.md) - 구현 완료 현황
 - 🚀 [빠른 시작 가이드](docs/QUICK_START.md) - 5분 안에 실행하기
+
+### 배포 문서
+- 🐳 [Docker 설정](docker-compose.prod.yml) - 프로덕션 Docker Compose
+- 🌐 [Nginx 설정](config/nginx/nginx.conf) - 리버스 프록시
+- 🔒 [환경변수 템플릿](.env.production.example) - 프로덕션 설정
