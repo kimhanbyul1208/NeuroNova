@@ -79,12 +79,30 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/login';
   };
 
+  // Helper function to check if user has a specific role
+  const hasRole = (role) => {
+    return user?.role === role;
+  };
+
+  // Helper function to check if user belongs to a specific group
+  const hasGroup = (groupName) => {
+    return user?.groups?.includes(groupName) || false;
+  };
+
+  // Helper function to check if user has any of the specified roles
+  const hasAnyRole = (roles) => {
+    return roles.includes(user?.role);
+  };
+
   const value = {
     user,
     loading,
     login,
     logout,
     isAuthenticated: !!user,
+    hasRole,
+    hasGroup,
+    hasAnyRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

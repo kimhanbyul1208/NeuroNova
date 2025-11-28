@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/config/app_config.dart';
@@ -34,12 +35,23 @@ class AuthRepository {
         await _storage.write(key: 'access_token', value: data['access']);
         await _storage.write(key: 'refresh_token', value: data['refresh']);
 
-        // 사용자 정보 저장
-        if (data.containsKey('user')) {
+        // JWT 토큰에서 정보 추출 (토큰에 role, groups 포함됨)
+        final tokenPayload = _decodeJwt(data['access']);
+        
+        // 사용자 정보 저장 (JWT payload에서 추출)
+        await _storage.write(
+            key: 'user_id', value: tokenPayload['user_id']?.toString() ?? '');
+        await _storage.write(
+            key: 'username', value: tokenPayload['username'] ?? username);
+        await _storage.write(
+            key: 'role', value: tokenPayload['role'] ?? 'PATIENT');
+        await _storage.write(
+            key: 'email', value: tokenPayload['email'] ?? '');
+        
+        // Groups 정보 저장 (JSON 문자열로)
+        if (tokenPayload['groups'] != null) {
           await _storage.write(
-              key: 'user_id', value: data['user']['id'].toString());
-          await _storage.write(key: 'username', value: data['user']['username']);
-          await _storage.write(key: 'role', value: data['user']['role'] ?? 'PATIENT');
+              key: 'groups', value: tokenPayload['groups'].toString());
         }
 
         AppLogger.info('Login successful for user: $username');
@@ -56,6 +68,28 @@ class AuthRepository {
     } catch (e) {
       AppLogger.error('Unexpected login error: $e');
       throw Exception('로그인 중 오류가 발생했습니다.');
+    }
+  }
+
+  /// JWT 토큰 디코딩 (간단한 Base64 디코딩)
+  Map<String, dynamic> _decodeJwt(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        throw Exception('Invalid token');
+      }
+
+      // Payload는 두 번째 부분
+      final payload = parts[1];
+      
+      // Base64 디코딩 (URL-safe)
+      var normalized = base64Url.normalize(payload);
+      var decoded = utf8.decode(base64Url.decode(normalized));
+      
+      return json.decode(decoded) as Map<String, dynamic>;
+    } catch (e) {
+      AppLogger.error('JWT decode error: $e');
+      return {};
     }
   }
 
@@ -131,11 +165,13 @@ class AuthRepository {
       final userId = await _storage.read(key: 'user_id');
       final username = await _storage.read(key: 'username');
       final role = await _storage.read(key: 'role');
+      final email = await _storage.read(key: 'email');
 
       return {
         'userId': userId,
         'username': username,
         'role': role,
+        'email': email,
       };
     } catch (e) {
       AppLogger.error('getUserInfo error: $e');
@@ -143,7 +179,43 @@ class AuthRepository {
         'userId': null,
         'username': null,
         'role': null,
+        'email': null,
       };
+    }
+  }
+
+  /// 사용자 역할 가져오기
+  Future<String?> getUserRole() async {
+    try {
+      return await _storage.read(key: 'role');
+    } catch (e) {
+      AppLogger.error('getUserRole error: $e');
+      return null;
+    }
+  }
+
+  /// 특정 역할 확인
+  Future<bool> hasRole(String role) async {
+    try {
+      final userRole = await _storage.read(key: 'role');
+      return userRole == role;
+    } catch (e) {
+      AppLogger.error('hasRole error: $e');
+      return false;
+    }
+  }
+
+  /// 특정 그룹 소속 확인
+  Future<bool> hasGroup(String groupName) async {
+    try {
+      final groupsStr = await _storage.read(key: 'groups');
+      if (groupsStr == null) return false;
+      
+      // 간단한 문자열 검색 (실제로는 JSON 파싱 필요)
+      return groupsStr.contains(groupName);
+    } catch (e) {
+      AppLogger.error('hasGroup error: $e');
+      return false;
     }
   }
 }

@@ -12,28 +12,38 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
 echo "[1/2] Setting up Backend Django .env file..."
-if [ -f "backend/django_main/.env.example" ]; then
-    if [ -f "backend/django_main/.env" ]; then
-        echo "    - .env already exists, skipping..."
-    else
-        cp "backend/django_main/.env.example" "backend/django_main/.env"
-        echo "    - Created backend/django_main/.env"
-    fi
+if [ -f "docs/backend.env" ]; then
+    cp "docs/backend.env" "backend/django_main/.env"
+    echo "    - Copied docs/backend.env to backend/django_main/.env"
 else
-    echo "    - WARNING: .env.example not found!"
+    if [ -f "backend/django_main/.env.example" ]; then
+        if [ -f "backend/django_main/.env" ]; then
+            echo "    - .env already exists, skipping..."
+        else
+            cp "backend/django_main/.env.example" "backend/django_main/.env"
+            echo "    - Created backend/django_main/.env from example"
+        fi
+    else
+        echo "    - WARNING: .env.example not found!"
+    fi
 fi
 
 echo ""
 echo "[2/2] Setting up Frontend React .env file..."
-if [ -f "frontend/react_web/.env.example" ]; then
-    if [ -f "frontend/react_web/.env" ]; then
-        echo "    - .env already exists, skipping..."
-    else
-        cp "frontend/react_web/.env.example" "frontend/react_web/.env"
-        echo "    - Created frontend/react_web/.env"
-    fi
+if [ -f "docs/frontend.env" ]; then
+    cp "docs/frontend.env" "frontend/react_web/.env"
+    echo "    - Copied docs/frontend.env to frontend/react_web/.env"
 else
-    echo "    - WARNING: .env.example not found!"
+    if [ -f "frontend/react_web/.env.example" ]; then
+        if [ -f "frontend/react_web/.env" ]; then
+            echo "    - .env already exists, skipping..."
+        else
+            cp "frontend/react_web/.env.example" "frontend/react_web/.env"
+            echo "    - Created frontend/react_web/.env from example"
+        fi
+    else
+        echo "    - WARNING: .env.example not found!"
+    fi
 fi
 
 echo ""

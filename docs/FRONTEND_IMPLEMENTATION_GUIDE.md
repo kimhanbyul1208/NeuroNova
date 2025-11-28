@@ -43,16 +43,19 @@
 | `DiagnosisResultCard.jsx` | AI 진단 결과 카드 | ✅ 완료 |
 | `XAIVisualization.jsx` | XAI 시각화 (Grad-CAM, SHAP) | ✅ 완료 |
 
-#### 페이지 (7개)
+#### 페이지 (10개)
 | 파일 | 기능 | 주요 기능 | 상태 |
 |------|------|-----------|------|
-| `LoginPage.jsx` | 로그인 | JWT 인증 | ✅ 완료 |
+| `LoginPage.jsx` | 로그인 | JWT 인증 (role/groups 포함) | ✅ 완료 |
 | `DashboardPage.jsx` | 대시보드 | 통계 요약 | ✅ 완료 |
 | `PatientListPage.jsx` | 환자 목록 | 검색, 페이지네이션 | ✅ 완료 |
 | `PatientDetailPage.jsx` | 환자 상세 | 탭: 예약/진료/AI진단 | ✅ 완료 |
 | `AppointmentManagementPage.jsx` | 예약 관리 | 승인/거부, 상태별 필터 | ✅ 완료 |
 | `DicomViewerPage.jsx` | DICOM 뷰어 | Orthanc 통합 | ✅ 완료 |
 | `DiagnosisDetailPage.jsx` | AI 진단 상세 | XAI + 의사 피드백 | ✅ 완료 |
+| `SOAPChartPage.jsx` | SOAP 차트 | SOAP 작성/수정 | ✅ 완료 (2025-11-28) |
+| `PrescriptionManagementPage.jsx` | 처방전 관리 | 처방전 CRUD | ✅ 완료 (2025-11-28) |
+| `NotificationCenterPage.jsx` | 알림 센터 | 알림 조회/관리 | ✅ 완료 (2025-11-28) |
 
 #### 라우팅
 ```javascript
@@ -63,6 +66,9 @@
 /appointments           → AppointmentManagementPage
 /dicom/:studyId         → DicomViewerPage
 /diagnosis/:id          → DiagnosisDetailPage
+/soap/:encounterId      → SOAPChartPage (NEW)
+/prescriptions          → PrescriptionManagementPage (NEW)
+/notifications          → NotificationCenterPage (NEW)
 /about                  → AboutPage
 ```
 
@@ -73,8 +79,9 @@
 #### Data Layer
 | 파일 | 기능 | 상태 |
 |------|------|------|
-| `auth_repository.dart` | JWT 인증 (로그인, 로그아웃, 토큰 갱신) | ✅ 완료 |
+| `auth_repository.dart` | JWT 인증 (로그인, 로그아웃, 토큰 갱신, JWT 디코딩) | ✅ 완료 |
 | `appointment_repository.dart` | 예약 CRUD, 오프라인 동기화 | ✅ 완료 |
+| `notification_repository.dart` | 알림 조회/관리 | ✅ 완료 (2025-11-28) |
 | `local_database.dart` | SQLCipher 암호화 DB, 90일 자동 삭제 | ✅ 완료 |
 | `appointment_model.dart` | 예약 데이터 모델 | ✅ 완료 |
 
@@ -85,6 +92,8 @@
 | `home_screen.dart` | 홈 (다음 예약 표시) | ✅ 완료 |
 | `appointment_list_screen.dart` | 예약 목록 (필터, 취소) | ✅ 완료 |
 | `appointment_create_screen.dart` | 예약 생성 (캘린더) | ✅ 완료 |
+| `notifications_screen.dart` | 알림 목록 및 관리 | ✅ 완료 (2025-11-28) |
+| `profile_screen.dart` | 사용자 프로필 및 설정 | ✅ 완료 (2025-11-28) |
 | `main.dart` | 앱 진입점, 네비게이션 | ✅ 완료 |
 
 #### 라우팅
@@ -98,8 +107,8 @@
 #### 하단 네비게이션 탭
 1. **홈** - HomeScreen
 2. **예약** - AppointmentListScreen
-3. **알림** - NotificationsScreen (Placeholder)
-4. **프로필** - ProfileScreen (Placeholder)
+3. **알림** - NotificationsScreen (NEW)
+4. **프로필** - ProfileScreen (NEW)
 
 ---
 
@@ -176,18 +185,34 @@ const newAppointment = await axiosClient.post(
 );
 ```
 
-#### 2. 인증 사용
+#### 2. 인증 사용 (JWT with Role/Groups)
 ```javascript
 import { useAuth } from '../auth/AuthContext';
 
 const MyComponent = () => {
-  const { user, login, logout, isAuthenticated } = useAuth();
+  const { user, login, logout, isAuthenticated, hasRole, hasGroup } = useAuth();
 
   const handleLogin = async () => {
     await login('username', 'password');
   };
 
-  return <div>{isAuthenticated ? 'Logged In' : 'Please Login'}</div>;
+  // 역할 확인
+  if (hasRole('DOCTOR')) {
+    // 의사 전용 기능
+  }
+
+  // 그룹 확인
+  if (hasGroup('신경외과')) {
+    // 신경외과 전용 기능
+  }
+
+  return (
+    <div>
+      {isAuthenticated ? 'Logged In' : 'Please Login'}
+      <p>Role: {user?.role}</p>
+      <p>Groups: {user?.groups?.join(', ')}</p>
+    </div>
+  );
 };
 ```
 
@@ -222,15 +247,20 @@ frontend/flutter_app/
 │   │   │   └── appointment_model.dart
 │   │   └── repositories/
 │   │       ├── auth_repository.dart
-│   │       └── appointment_repository.dart
+│   │       ├── appointment_repository.dart
+│   │       └── notification_repository.dart (NEW)
 │   ├── features/
 │   │   ├── auth/
 │   │   │   └── login_screen.dart
 │   │   ├── home/
 │   │   │   └── home_screen.dart
-│   │   └── appointment/
-│   │       ├── appointment_list_screen.dart
-│   │       └── appointment_create_screen.dart
+│   │   ├── appointment/
+│   │   │   ├── appointment_list_screen.dart
+│   │   │   └── appointment_create_screen.dart
+│   │   ├── notifications/
+│   │   │   └── notifications_screen.dart (NEW)
+│   │   └── profile/
+│   │       └── profile_screen.dart (NEW)
 │   └── main.dart
 ├── assets/
 ├── pubspec.yaml
@@ -246,7 +276,7 @@ flutter run
 
 ### 주요 기능 사용법
 
-#### 1. Repository 사용
+#### 1. Repository 사용 (JWT with Role/Groups)
 ```dart
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/appointment_repository.dart';
@@ -255,6 +285,18 @@ import '../../data/repositories/appointment_repository.dart';
 final authRepo = AuthRepository();
 await authRepo.login('username', 'password');
 final isLoggedIn = await authRepo.isLoggedIn();
+
+// 역할 확인
+final role = await authRepo.getUserRole();
+if (role == 'DOCTOR') {
+  // 의사 전용 기능
+}
+
+// 그룹 확인
+final isNeurosurgeon = await authRepo.hasGroup('신경외과');
+if (isNeurosurgeon) {
+  // 신경외과 전용 기능
+}
 
 // 예약
 final appointmentRepo = AppointmentRepository();

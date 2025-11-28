@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=neuronova
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  orthanc:
+    image: jodogne/orthanc
+    ports:
+      - "8042:8042"
+      - "4242:4242"
+    environment:
+      - ORTHANC_NAME=NeuroNovaOrthanc
+
+  django:
+    build: ./backend/django_main
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend/django_main:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_HOST=db
+      - DB_NAME=neuronova
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - REDIS_HOST=redis
+
+  flask:
+    build: ./backend/flask_inference
+    command: python app.py
+    volumes:
+      - ./backend/flask_inference:/app
+    ports:
+      - "5000:5000"
+    environment:
+      - DJANGO_API_URL=http://django:8000
+
+  react:
+    build:
+      context: ./frontend/react_web
+      dockerfile: Dockerfile
+    # For development, we might want to override the command to run dev server
+    # But the Dockerfile is set for production build. 
+    # Let's keep it as production build for now as per "Deploy" goal, 
+    # or we can add a dev target. 
+    # For "Gather in Docker for development", we usually mount volumes and run dev server.
+    # Let's adjust this service to be more dev-friendly if needed, but for now standard build.
+    ports:
+      - "3000:80"
+    depends_on:
+      - django
+
+volumes:
+  postgres_data:

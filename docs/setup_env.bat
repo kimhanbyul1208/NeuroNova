@@ -11,28 +11,38 @@ REM 프로젝트 루트로 이동 (docs 폴더에서 한 단계 위로)
 cd /d "%~dp0\.."
 
 echo [1/2] Setting up Backend Django .env file...
-if exist "backend\django_main\.env.example" (
-    if exist "backend\django_main\.env" (
-        echo     - .env already exists, skipping...
-    ) else (
-        copy "backend\django_main\.env.example" "backend\django_main\.env" >nul
-        echo     - Created backend/django_main/.env
-    )
+if exist "docs\backend.env" (
+    copy "docs\backend.env" "backend\django_main\.env" >nul
+    echo     - Copied docs\backend.env to backend/django_main/.env
 ) else (
-    echo     - WARNING: .env.example not found!
+    if exist "backend\django_main\.env.example" (
+        if exist "backend\django_main\.env" (
+            echo     - .env already exists, skipping...
+        ) else (
+            copy "backend\django_main\.env.example" "backend\django_main\.env" >nul
+            echo     - Created backend/django_main/.env from example
+        )
+    ) else (
+        echo     - WARNING: .env.example not found!
+    )
 )
 
 echo.
 echo [2/2] Setting up Frontend React .env file...
-if exist "frontend\react_web\.env.example" (
-    if exist "frontend\react_web\.env" (
-        echo     - .env already exists, skipping...
-    ) else (
-        copy "frontend\react_web\.env.example" "frontend\react_web\.env" >nul
-        echo     - Created frontend/react_web/.env
-    )
+if exist "docs\frontend.env" (
+    copy "docs\frontend.env" "frontend\react_web\.env" >nul
+    echo     - Copied docs\frontend.env to frontend/react_web/.env
 ) else (
-    echo     - WARNING: .env.example not found!
+    if exist "frontend\react_web\.env.example" (
+        if exist "frontend\react_web\.env" (
+            echo     - .env already exists, skipping...
+        ) else (
+            copy "frontend\react_web\.env.example" "frontend\react_web\.env" >nul
+            echo     - Created frontend/react_web/.env from example
+        )
+    ) else (
+        echo     - WARNING: .env.example not found!
+    )
 )
 
 echo.

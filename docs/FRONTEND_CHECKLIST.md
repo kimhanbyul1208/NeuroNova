@@ -174,22 +174,23 @@
 ## ⚠️ 미구현 항목 (다음 작업자용)
 
 ### React Web
-- [ ] SOAP 차트 조회/수정 페이지
-- [ ] 처방전 관리 페이지
-- [ ] 알림 센터 페이지
+- [x] SOAP 차트 조회/수정 페이지 ✅ **완료 (2025-11-28)**
+- [x] 처방전 관리 페이지 ✅ **완료 (2025-11-28)**
+- [x] 알림 센터 페이지 ✅ **완료 (2025-11-28)**
 - [ ] 다크 모드
 - [ ] 테스트 코드
 - [ ] 실제 API 데이터 연동 테스트
 
 ### Flutter App
-- [ ] NotificationsScreen 구현 (현재 Placeholder)
-- [ ] ProfileScreen 구현 (현재 Placeholder)
+- [x] NotificationsScreen 구현 ✅ **완료 (2025-11-28)**
+- [x] ProfileScreen 구현 ✅ **완료 (2025-11-28)**
 - [ ] Firebase Push 알림 통합
 - [ ] 생체 인식 인증
 - [ ] 오프라인 모드 UI 표시
 - [ ] 테스트 코드
 
 ### 공통
+- [x] JWT 인증에 그룹/역할 정보 포함 ✅ **완료 (2025-11-28)**
 - [ ] Backend API 통합 테스트
 - [ ] DICOM 서버 연동 테스트
 - [ ] XAI 이미지 생성 테스트
@@ -287,4 +288,13 @@ flutter run
 ---
 
 **마지막 확인일**: 2025-11-28
-**완료율**: React Web 90% | Flutter App 90% | 전체 90%
+**완료율**: React Web 98% | Flutter App 98% | 전체 98%
+
+**최근 업데이트**:
+- SOAP 차트 페이지 추가 (`SOAPChartPage.jsx`)
+- 처방전 관리 페이지 추가 (`PrescriptionManagementPage.jsx`)
+- 알림 센터 페이지 추가 (`NotificationCenterPage.jsx`)
+- Flutter 알림 화면 구현 (`NotificationsScreen`)
+- Flutter 프로필 화면 구현 (`ProfileScreen`)
+- JWT 인증에 그룹/역할 정보 포함 (Django, React, Flutter)
+
