@@ -19,7 +19,7 @@
         ↓
    [Nginx - Gunicorn]
         ↓
-    [Django] ←→ [Flask (AI), PostgreSQL, Orthanc (DICOM)]
+    [Django] ←→ [Flask (AI), MySQL, Orthanc (DICOM)]
 ```
 
 ## 기술 스택
