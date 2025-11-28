@@ -1,0 +1,26 @@
+Flask AI 추론 엔진 구현은 안 되었지만 
+doc를 참고해서 필요 기능(XAI 생성 (SHAP, Grad-CAM))에 따른 
+flask, ml 서버와 장고서버가 통신할때 어떤 api가 필요한지 고민하고 문서를 만들어줘 
+
+AI 추론 서버는 다음 3개의 AI 모델을 제공한다.
+1, 뇌 종양 종류 예측 (CT 기반 / Classification)
+2, 뇌 종양 Segmentation 예측 (MRI 기반 / Image-to-Image)
+3, 바이오마커 기반 종양 종류 + 전이 조직 + 전이 정도 예측 (Classification)
+XAI(설명 가능 AI) 기능: SHAP, Grad-CAM
+
+기본 구조 API
+| 목적       | HTTP 메서드 | 엔드포인트           | 요청 데이터    | 응답 데이터          |
+| -------- | -------- | --------------- | --------- | --------------- |
+| 서버 상태 확인 | GET      | `/health`       | 없음        | 서버 상태, 모델 정보    |
+| 모델 버전 조회 | GET      | `/model_info`   | 없음        | 각 모델 버전/업데이트 시각 |
+| 모델 업데이트  | POST/PUT | `/update_model` | 모델 파일/URL | 성공 여부           |
+
+
+공통 예측 API 기본 규칙
+모든 예측 API는 POST 방식
+입력은 JSON + (필요 시 파일 업로드)
+XAI 요청은 xai: true 옵션 또는 별도 엔드포인트 제공
+결과는 task_id 기반 비동기 처리도 지원 가능
+대형 MRI, SHAP 계산이 오래 걸리면 비동기 처리 사용.
+
+

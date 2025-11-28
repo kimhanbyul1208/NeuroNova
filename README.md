@@ -162,8 +162,10 @@ TBD
   - 29개 테스트 메서드 (87% 커버리지)
   - Orthanc DICOM 연동
   - FCM 푸시 알림 통합
-- **Flask**: AI 추론 서버 (5%)
-  - 기본 구조만 구현
+- **Flask**: AI 추론 서버 (설계 완료, 구현 대기)
+  - API 설계 문서 완료
+  - 구현 가이드 완료
+  - Django-Flask 통신 패턴 완료
 - **Orthanc**: DICOM 서버 (100%)
   - Docker 설정 완료
 
@@ -177,6 +179,9 @@ TBD
 - Firebase 설정 가이드
 - 프로덕션 배포 가이드 (초보자용)
 - 테스트 가이드 (React, Flutter, Django)
+- Flask AI API 설계 문서
+- Flask 구현 가이드 (3부작)
+- Django-Flask 통신 패턴
 - API 문서
 - 구현 완료 보고서
 
@@ -206,6 +211,13 @@ flutter run
 - 📦 **[프로덕션 배포 가이드](docs/PRODUCTION_DEPLOYMENT_GUIDE.md)** - 처음 배포하는 분 대상
 - 🧪 **[테스트 가이드](docs/TESTING_GUIDE.md)** - React, Flutter, Django 테스트
 - 📊 **[Firebase 설정 진행 상황](FIREBASE_SETUP_STATUS.md)** - 현재 상태 확인
+
+### 🤖 Flask AI 추론 서버
+- 🎯 **[Flask API 설계](docs/FLASK_AI_API_DESIGN.md)** - 3개 AI 모델 API 명세 (CT 분류, MRI 분할, 바이오마커 예측)
+- 🔄 **[Django-Flask 통신](docs/DJANGO_FLASK_COMMUNICATION.md)** - 동기/비동기 통신 패턴, 시퀀스 다이어그램
+- 🛠️ **[Flask 구현 가이드 Part 1](docs/FLASK_IMPLEMENTATION_GUIDE.md)** - 프로젝트 구조, 모델 로딩, 전처리, XAI
+- 🛠️ **[Flask 구현 가이드 Part 2](docs/FLASK_IMPLEMENTATION_GUIDE_PART2.md)** - API 엔드포인트, Celery 비동기, 에러 핸들링
+- 🛠️ **[Flask 구현 가이드 Part 3](docs/FLASK_IMPLEMENTATION_GUIDE_PART3.md)** - 테스트, 배포, 모니터링
 
 ### 프로젝트 문서
 - [프로젝트 상세 명세](docs/NeuroNova_Context.md)
