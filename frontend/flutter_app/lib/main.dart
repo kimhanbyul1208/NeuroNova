@@ -1,15 +1,17 @@
 /// NeuroNova Patient App
 /// Brain Tumor Diagnosis CDSS - Patient Mobile Application
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/config/app_config.dart';
 import 'core/utils/logger.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/auth_service.dart';
 import 'data/local/local_database.dart';
-import 'data/repositories/auth_repository.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/appointment/appointment_list_screen.dart';
 import 'features/appointment/appointment_create_screen.dart';
+import 'features/profile/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,11 +39,37 @@ void main() async {
     AppLogger.error('Failed to initialize notification service', e, stackTrace);
   }
 
-  runApp(const MyApp());
+  // Check for auto-login
+  final initialRoute = await _getInitialRoute();
+  runApp(MyApp(initialRoute: initialRoute));
+}
+
+Future<String> _getInitialRoute() async {
+  final auth = AuthService();
+  final role = await auth.tryAutoLogin();
+
+  if (role != null) {
+    // User is already logged in, route based on role
+    switch (role) {
+      case 'admin':
+        return '/adminMain';
+      case 'doctor':
+        return '/doctorMain';
+      case 'patient':
+        return '/patientMain';
+      case 'staff':
+        return '/staffMain';
+      default:
+        return '/home';
+    }
+  }
+  return '/login';
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +87,22 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const SplashScreen(),
+      locale: const Locale('ko', 'KR'),
+      supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      initialRoute: initialRoute,
       // 라우트 정의
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const MainNavigationScreen(),
+        '/patientMain': (context) => const MainNavigationScreen(),
+        '/doctorMain': (context) => const MainNavigationScreen(),
+        '/adminMain': (context) => const MainNavigationScreen(),
+        '/staffMain': (context) => const MainNavigationScreen(),
         '/appointments': (context) => const AppointmentListScreen(),
         '/appointment-create': (context) => const AppointmentCreateScreen(),
       },
@@ -236,40 +275,3 @@ class NotificationsScreen extends StatelessWidget {
   }
 }
 
-/// Profile Screen (Placeholder)
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('프로필'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircleAvatar(
-              radius: 50,
-              child: Icon(Icons.person, size: 50),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '환자',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                // 설정 화면 등으로 이동
-              },
-              icon: const Icon(Icons.settings),
-              label: const Text('설정'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

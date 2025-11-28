@@ -23,8 +23,8 @@ export const AuthProvider = ({ children }) => {
 
   // Check if user is authenticated on mount
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('access_token');
+    const checkAuth = async () => {
+      const token = localStorage.getItem('access');
       if (token) {
         try {
           const decoded = jwtDecode(token);
@@ -32,7 +32,14 @@ export const AuthProvider = ({ children }) => {
           if (decoded.exp * 1000 < Date.now()) {
             logout();
           } else {
-            setUser(decoded);
+            // Fetch user details
+            try {
+              const response = await axiosClient.get('/api/auth/me');
+              setUser({ ...decoded, ...response.data });
+            } catch (error) {
+              console.error('Failed to fetch user:', error);
+              logout();
+            }
           }
         } catch (error) {
           console.error('Invalid token:', error);
@@ -52,13 +59,17 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
-      const { access, refresh, user: userData } = response.data;
+      const { access, refresh } = response.data;
 
       // Store tokens
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
+      localStorage.setItem('access', access);
+      localStorage.setItem('refresh', refresh);
 
-      // Decode and set user
+      // Fetch user details after login
+      const userResponse = await axiosClient.get('/api/auth/me');
+      const userData = userResponse.data;
+
+      // Decode token and set user
       const decoded = jwtDecode(access);
       setUser({ ...decoded, ...userData });
 
@@ -73,8 +84,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
     setUser(null);
     window.location.href = '/login';
   };

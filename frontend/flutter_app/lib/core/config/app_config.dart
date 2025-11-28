@@ -10,14 +10,27 @@ class AppConfig {
     'API_BASE_URL',
     defaultValue: 'http://10.0.2.2:8000', // Android emulator localhost
   );
-  static const String apiVersion = 'v1';
 
-  // API Endpoints
-  static const String loginEndpoint = '/api/$apiVersion/users/login/';
-  static const String refreshTokenEndpoint = '/api/$apiVersion/users/refresh/';
-  static const String appointmentsEndpoint = '/api/$apiVersion/custom/appointments/';
-  static const String notificationsEndpoint = '/api/$apiVersion/notifications/';
-  static const String profileEndpoint = '/api/$apiVersion/users/profile/';
+  // API Endpoints (aligned with Django backend)
+  static const String loginEndpoint = '/api/auth/token/';
+  static const String refreshTokenEndpoint = '/api/auth/token/refresh/';
+  static const String registerEndpoint = '/api/auth/register/';
+  static const String meEndpoint = '/api/auth/me/';
+  static const String updateProfileEndpoint = '/api/auth/update-profile/';
+  static const String appointmentsEndpoint = '/api/appointments/';
+  static const String notificationsEndpoint = '/api/notifications/';
+  static const String profileEndpoint = '/api/auth/me/';
+
+  // Patient endpoints
+  static const String patientsEndpoint = '/api/patients/';
+  static const String patientsMineEndpoint = '/api/patients/mine/';
+
+  // Medical records
+  static const String medicalRecordsEndpoint = '/api/patients/records/';
+
+  // ML endpoints (via Django proxy)
+  static const String mlPredictEndpoint = '/api/ml/predict/';
+  static const String mlSchemaEndpoint = '/api/ml/schema/';
 
   // Local Database
   static const String dbName = 'neuronova.db';

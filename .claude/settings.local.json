@@ -6,7 +6,8 @@
       "Bash(findstr:*)",
       "Bash(dir:*)",
       "Bash(python manage.py:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

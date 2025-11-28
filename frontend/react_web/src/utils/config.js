@@ -13,10 +13,12 @@ export const API_CONFIG = {
 
 // API Endpoints
 export const API_ENDPOINTS = {
-  // Authentication
-  LOGIN: `/api/${API_CONFIG.API_VERSION}/users/login/`,
-  LOGOUT: `/api/${API_CONFIG.API_VERSION}/users/logout/`,
-  REFRESH_TOKEN: `/api/${API_CONFIG.API_VERSION}/users/refresh/`,
+  // Authentication (aligned with Django backend)
+  LOGIN: '/api/auth/token/',
+  LOGOUT: '/api/auth/logout/',
+  REFRESH_TOKEN: '/api/auth/token/refresh/',
+  ME: '/api/auth/me/',
+  REGISTER: '/api/auth/register/',
 
   // Users
   USERS: `/api/${API_CONFIG.API_VERSION}/users/`,

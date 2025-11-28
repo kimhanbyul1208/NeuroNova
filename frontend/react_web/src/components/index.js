@@ -5,3 +5,4 @@ export { default as PatientCard } from './PatientCard';
 export { default as AppointmentCard } from './AppointmentCard';
 export { default as DiagnosisResultCard } from './DiagnosisResultCard';
 export { default as XAIVisualization } from './XAIVisualization';
+export { default as NavBar } from './NavBar';
