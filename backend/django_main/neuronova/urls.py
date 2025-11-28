@@ -26,6 +26,7 @@ urlpatterns: List = [
     path(f'api/{settings.API_VERSION}/emr/', include('apps.emr.urls')),
     path(f'api/{settings.API_VERSION}/custom/', include('apps.custom.urls')),
     path(f'api/{settings.API_VERSION}/notifications/', include('apps.notifications.urls')),
+    path(f'api/{settings.API_VERSION}/', include('apps.core.urls')),  # Orthanc integration
 ]
 
 # Serve media files in development

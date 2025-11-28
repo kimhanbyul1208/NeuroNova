@@ -1,0 +1,682 @@
+openapi: 3.0.3
+info:
+  title: NeuroNova API
+  version: 1.0.0
+  description: 뇌종양 진단 CDSS API Documentation
+paths:
+  /api/v1/users/login/:
+    post:
+      operationId: api_v1_users_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomTokenObtainPair'
+          description: ''
+  /api/v1/users/profiles/:
+    get:
+      operationId: api_v1_users_profiles_list
+      description: ViewSet for UserProfile management.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: string
+          title: 역할
+          enum:
+          - ADMIN
+          - DOCTOR
+          - NURSE
+          - PATIENT
+        description: |-
+          시스템 내 사용자 역할 (RBAC)
+
+          * `ADMIN` - Administrator
+          * `DOCTOR` - Doctor
+          * `NURSE` - Nurse
+          * `PATIENT` - Patient
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserProfileList'
+          description: ''
+    post:
+      operationId: api_v1_users_profiles_create
+      description: ViewSet for UserProfile management.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+  /api/v1/users/profiles/{id}/:
+    get:
+      operationId: api_v1_users_profiles_retrieve
+      description: ViewSet for UserProfile management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 사용자 프로필.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    put:
+      operationId: api_v1_users_profiles_update
+      description: ViewSet for UserProfile management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 사용자 프로필.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    patch:
+      operationId: api_v1_users_profiles_partial_update
+      description: ViewSet for UserProfile management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 사용자 프로필.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfile'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+          description: ''
+    delete:
+      operationId: api_v1_users_profiles_destroy
+      description: ViewSet for UserProfile management.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 사용자 프로필.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/users/refresh/:
+    post:
+      operationId: api_v1_users_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/users/users/:
+    get:
+      operationId: api_v1_users_users_list
+      description: ViewSet for User (read-only).
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+  /api/v1/users/users/{id}/:
+    get:
+      operationId: api_v1_users_users_retrieve
+      description: ViewSet for User (read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 사용자.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/users/users/change_password/:
+    post:
+      operationId: api_v1_users_users_change_password_create
+      description: Change user password.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/users/users/me/:
+    get:
+      operationId: api_v1_users_users_me_retrieve
+      description: Get current user information.
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/users/users/register/:
+    post:
+      operationId: api_v1_users_users_register_create
+      description: |-
+        Register a new user.
+        Public endpoint - no authentication required.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+components:
+  schemas:
+    CustomTokenObtainPair:
+      type: object
+      description: |-
+        Custom JWT serializer to include user role and group information in token.
+        This reduces the need for additional API calls to fetch user permissions.
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    PaginatedUserProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserProfile'
+    PatchedUserProfile:
+      type: object
+      description: User profile serializer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 생성일시
+          description: 레코드가 생성된 시간
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 수정일시
+          description: 레코드가 마지막으로 수정된 시간
+        is_active:
+          type: boolean
+          title: 활성 상태
+          description: False인 경우 소프트 삭제된 상태
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: 삭제일시
+          description: 소프트 삭제된 시간
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          title: 역할
+          description: |-
+            시스템 내 사용자 역할 (RBAC)
+
+            * `ADMIN` - Administrator
+            * `DOCTOR` - Doctor
+            * `NURSE` - Nurse
+            * `PATIENT` - Patient
+        phone_number:
+          type: string
+          title: 전화번호
+          description: 연락처
+          maxLength: 20
+        profile_image:
+          type: string
+          format: uri
+          nullable: true
+          title: 프로필 이미지
+          description: 사용자 프로필 사진
+        fcm_token:
+          type: string
+          title: FCM 토큰
+          description: Firebase Cloud Messaging 토큰 (Push 알림용)
+          maxLength: 255
+        bio:
+          type: string
+          title: 소개
+          description: 사용자 소개 또는 경력
+        user:
+          type: integer
+          readOnly: true
+          title: 사용자
+          description: Django User 모델과 1:1 관계
+    RoleEnum:
+      enum:
+      - ADMIN
+      - DOCTOR
+      - NURSE
+      - PATIENT
+      type: string
+      description: |-
+        * `ADMIN` - Administrator
+        * `DOCTOR` - Doctor
+        * `NURSE` - Nurse
+        * `PATIENT` - Patient
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      description: User serializer with profile.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: 사용자 이름
+          description: 150자 이하 문자, 숫자 그리고 @/./+/-/_만 가능합니다.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: 이메일 주소
+          maxLength: 254
+        first_name:
+          type: string
+          title: 이름
+          maxLength: 150
+        last_name:
+          type: string
+          title: 성
+          maxLength: 150
+        is_active:
+          type: boolean
+          title: 활성
+          description: 이 사용자가 활성화되어 있는지를 나타냅니다. 계정을 삭제하는 대신 이것을 선택 해제하세요.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 등록일
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+        role:
+          type: string
+          readOnly: true
+        groups:
+          type: string
+          readOnly: true
+      required:
+      - date_joined
+      - groups
+      - id
+      - profile
+      - role
+      - username
+    UserProfile:
+      type: object
+      description: User profile serializer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 생성일시
+          description: 레코드가 생성된 시간
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 수정일시
+          description: 레코드가 마지막으로 수정된 시간
+        is_active:
+          type: boolean
+          title: 활성 상태
+          description: False인 경우 소프트 삭제된 상태
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: 삭제일시
+          description: 소프트 삭제된 시간
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          title: 역할
+          description: |-
+            시스템 내 사용자 역할 (RBAC)
+
+            * `ADMIN` - Administrator
+            * `DOCTOR` - Doctor
+            * `NURSE` - Nurse
+            * `PATIENT` - Patient
+        phone_number:
+          type: string
+          title: 전화번호
+          description: 연락처
+          maxLength: 20
+        profile_image:
+          type: string
+          format: uri
+          nullable: true
+          title: 프로필 이미지
+          description: 사용자 프로필 사진
+        fcm_token:
+          type: string
+          title: FCM 토큰
+          description: Firebase Cloud Messaging 토큰 (Push 알림용)
+          maxLength: 255
+        bio:
+          type: string
+          title: 소개
+          description: 사용자 소개 또는 경력
+        user:
+          type: integer
+          readOnly: true
+          title: 사용자
+          description: Django User 모델과 1:1 관계
+      required:
+      - created_at
+      - email
+      - first_name
+      - full_name
+      - id
+      - last_name
+      - updated_at
+      - user
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

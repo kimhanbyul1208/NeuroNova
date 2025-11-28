@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'core/config/app_config.dart';
 import 'core/utils/logger.dart';
+import 'core/services/notification_service.dart';
 import 'data/local/local_database.dart';
 import 'data/repositories/auth_repository.dart';
 import 'features/auth/login_screen.dart';
@@ -28,8 +29,13 @@ void main() async {
     AppLogger.error('Failed to initialize database', e, stackTrace);
   }
 
-  // TODO: Initialize Firebase for push notifications
-  // await Firebase.initializeApp();
+  // Initialize Firebase push notifications
+  try {
+    await NotificationService().initialize();
+    AppLogger.info('Notification service initialized');
+  } catch (e, stackTrace) {
+    AppLogger.error('Failed to initialize notification service', e, stackTrace);
+  }
 
   runApp(const MyApp());
 }

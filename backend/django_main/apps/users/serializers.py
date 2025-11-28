@@ -85,3 +85,123 @@ class UserSerializer(serializers.ModelSerializer):
     def get_groups(self, obj):
         """Get user groups."""
         return list(obj.groups.values_list('name', flat=True))
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user registration.
+    Creates both User and UserProfile instances.
+    """
+    from django.contrib.auth.password_validation import validate_password
+    from config.constants import UserRole
+
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password],
+        style={'input_type': 'password'}
+    )
+    password_confirm = serializers.CharField(
+        write_only=True,
+        required=True,
+        style={'input_type': 'password'}
+    )
+    role = serializers.ChoiceField(
+        choices=[
+            ('ADMIN', 'Administrator'),
+            ('DOCTOR', 'Doctor'),
+            ('NURSE', 'Nurse'),
+            ('PATIENT', 'Patient'),
+        ],
+        default='PATIENT',
+        write_only=True
+    )
+    phone_number = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'email',
+            'password',
+            'password_confirm',
+            'first_name',
+            'last_name',
+            'role',
+            'phone_number',
+        ]
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate password confirmation."""
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError({
+                'password_confirm': 'Passwords do not match.'
+            })
+        return attrs
+
+    def create(self, validated_data: Dict[str, Any]) -> User:
+        """Create user and associated profile."""
+        # Extract profile fields
+        role = validated_data.pop('role', 'PATIENT')
+        phone_number = validated_data.pop('phone_number', '')
+        validated_data.pop('password_confirm')
+
+        # Create user
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+        )
+
+        # Create user profile
+        UserProfile.objects.create(
+            user=user,
+            role=role,
+            phone_number=phone_number,
+        )
+
+        logger.info(f"New user registered: {user.username} with role {role}")
+        return user
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Serializer for password change endpoint."""
+    from django.contrib.auth.password_validation import validate_password
+
+    old_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        style={'input_type': 'password'}
+    )
+    new_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        validators=[validate_password],
+        style={'input_type': 'password'}
+    )
+    new_password_confirm = serializers.CharField(
+        required=True,
+        write_only=True,
+        style={'input_type': 'password'}
+    )
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate new password confirmation."""
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise serializers.ValidationError({
+                'new_password_confirm': 'New passwords do not match.'
+            })
+        return attrs
+
+    def validate_old_password(self, value: str) -> str:
+        """Verify old password is correct."""
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError('Old password is incorrect.')
+        return value
