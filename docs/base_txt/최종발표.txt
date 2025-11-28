@@ -1,5 +1,5 @@
 팀명 : NeuroNova : Neurology + Nova : 뇌과학의 새로운 별
-구조 : [flutter,react] - [nginx - Gunicorn - [django <-> [flask, DB, othanc]]
+구조 : [flutter,react] - [nginx - Gunicorn - [django <-> [flask, DB, othanc]]]
 프젝 : 역활분담 > 개발 > 협업 > 결과 
 구현 : django, flask, flutter, react
 발표 : 목표 + 구현 + 알고리즘 + 개선 결과 {{대본 + 사전팀발표}}
@@ -33,7 +33,7 @@ ppt : {
 17 업무 분담
 
 
-
+}
 ======
 기존 EMR 워크플로우에 어떻게 자연스럽게 녹아드는가
 시나리오 기반 시연:
