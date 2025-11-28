@@ -19,7 +19,7 @@
         ↓
    [Nginx - Gunicorn]
         ↓
-    [Django] ←→ [Flask (AI), PostgreSQL, Orthanc (DICOM)]
+    [Django] ←→ [Flask (AI), MySQL, Orthanc (DICOM)]
 ```
 
 ## 기술 스택
@@ -34,7 +34,7 @@
 - **Nginx + Gunicorn**: 배포 서버
 
 ### Database & Storage
-- **PostgreSQL**: 메인 데이터베이스
+- **MySQL**: 메인 데이터베이스
 - **Redis**: 캐싱 및 큐
 - **Orthanc**: DICOM 의료 영상 서버
 
