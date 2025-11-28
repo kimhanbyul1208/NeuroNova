@@ -8,6 +8,7 @@ export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
   API_VERSION: 'v1',
   TIMEOUT: 30000, // 30 seconds
+  ORTHANC_URL: import.meta.env.VITE_ORTHANC_URL || 'http://localhost:8042', // Orthanc DICOM server
 };
 
 // API Endpoints

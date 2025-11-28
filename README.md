@@ -143,8 +143,45 @@ TBD
 
 TBD
 
+## 개발 현황
+
+### ✅ Frontend (완료)
+- **React Web**: 의료진용 웹 애플리케이션 (100%)
+  - 환자 관리, 예약 관리, AI 진단, DICOM 뷰어, XAI 시각화
+- **Flutter App**: 환자용 모바일 앱 (100%)
+  - 예약 생성/조회, 암호화 저장, 90일 자동 삭제
+
+### ⏳ Backend (진행 중)
+- Django, Flask, Orthanc 서버 구현 필요
+
+## 빠른 시작
+
+### React Web (의료진용)
+```bash
+cd frontend/react_web
+npm install
+npm run dev
+# http://localhost:3000
+```
+
+### Flutter App (환자용)
+```bash
+cd frontend/flutter_app
+flutter pub get
+flutter run
+```
+
+**자세한 가이드**: [QUICK_START.md](docs/QUICK_START.md)
+
 ## 참고 문서
 
+### 프로젝트 문서
 - [프로젝트 상세 명세](docs/NeuroNova_Context.md)
 - [데이터베이스 설계](docs/최종%20DB.txt)
 - [구현 순서](docs/구현순서.txt)
+- [팀 역할](docs/TEAM_ROLES.md)
+
+### Frontend 개발 문서
+- 📘 [Frontend 구현 가이드](docs/FRONTEND_IMPLEMENTATION_GUIDE.md) - 상세 개발 가이드
+- 📋 [Frontend 체크리스트](docs/FRONTEND_CHECKLIST.md) - 구현 완료 현황
+- 🚀 [빠른 시작 가이드](docs/QUICK_START.md) - 5분 안에 실행하기

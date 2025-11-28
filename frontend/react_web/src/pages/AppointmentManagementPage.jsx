@@ -1,0 +1,265 @@
+import { useState, useEffect } from 'react';
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Tabs,
+  Tab,
+  Grid,
+  Snackbar,
+  Alert
+} from '@mui/material';
+import { AppointmentCard, LoadingSpinner, ErrorAlert } from '../components';
+import axiosClient from '../api/axios';
+import { API_ENDPOINTS, APPOINTMENT_STATUS } from '../utils/config';
+
+/**
+ * 예약 관리 페이지
+ * 의사가 환자 예약을 승인/거부하고 관리
+ */
+const AppointmentManagementPage = () => {
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState(0);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  // 예약 목록 불러오기
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axiosClient.get(API_ENDPOINTS.APPOINTMENTS);
+      setAppointments(response.data || []);
+    } catch (err) {
+      setError(err.response?.data?.message || '예약 목록을 불러오는데 실패했습니다.');
+      console.error('Error fetching appointments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  // 예약 승인
+  const handleApprove = async (appointmentId) => {
+    try {
+      await axiosClient.patch(`${API_ENDPOINTS.APPOINTMENTS}${appointmentId}/`, {
+        status: APPOINTMENT_STATUS.CONFIRMED
+      });
+
+      setSnackbar({
+        open: true,
+        message: '예약이 승인되었습니다.',
+        severity: 'success'
+      });
+
+      // 목록 갱신
+      fetchAppointments();
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || '예약 승인에 실패했습니다.',
+        severity: 'error'
+      });
+      console.error('Error approving appointment:', err);
+    }
+  };
+
+  // 예약 거부
+  const handleReject = async (appointmentId) => {
+    try {
+      await axiosClient.patch(`${API_ENDPOINTS.APPOINTMENTS}${appointmentId}/`, {
+        status: APPOINTMENT_STATUS.CANCELLED
+      });
+
+      setSnackbar({
+        open: true,
+        message: '예약이 거부되었습니다.',
+        severity: 'info'
+      });
+
+      // 목록 갱신
+      fetchAppointments();
+    } catch (err) {
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || '예약 거부에 실패했습니다.',
+        severity: 'error'
+      });
+      console.error('Error rejecting appointment:', err);
+    }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // 상태별 필터링
+  const pendingAppointments = appointments.filter(
+    (apt) => apt.status === APPOINTMENT_STATUS.PENDING
+  );
+  const confirmedAppointments = appointments.filter(
+    (apt) => apt.status === APPOINTMENT_STATUS.CONFIRMED
+  );
+  const completedAppointments = appointments.filter(
+    (apt) => apt.status === APPOINTMENT_STATUS.COMPLETED
+  );
+  const cancelledAppointments = appointments.filter(
+    (apt) => apt.status === APPOINTMENT_STATUS.CANCELLED || apt.status === APPOINTMENT_STATUS.NO_SHOW
+  );
+
+  if (loading) {
+    return <LoadingSpinner fullScreen />;
+  }
+
+  return (
+    <Container maxWidth="lg" sx={{ marginTop: 4, marginBottom: 4 }}>
+      {/* 헤더 */}
+      <Box sx={{ marginBottom: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          예약 관리
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          환자 예약을 승인하고 관리합니다.
+        </Typography>
+      </Box>
+
+      {/* 에러 표시 */}
+      {error && (
+        <ErrorAlert
+          message={error}
+          title="오류 발생"
+          onRetry={fetchAppointments}
+        />
+      )}
+
+      {/* 탭 메뉴 */}
+      {!error && (
+        <>
+          <Paper sx={{ marginBottom: 2 }}>
+            <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth">
+              <Tab label={`대기 중 (${pendingAppointments.length})`} />
+              <Tab label={`확정 (${confirmedAppointments.length})`} />
+              <Tab label={`완료 (${completedAppointments.length})`} />
+              <Tab label={`취소/미방문 (${cancelledAppointments.length})`} />
+            </Tabs>
+          </Paper>
+
+          {/* 탭 컨텐츠 */}
+          <Box>
+            {/* 대기 중 탭 */}
+            {activeTab === 0 && (
+              <Box>
+                {pendingAppointments.length === 0 ? (
+                  <Paper sx={{ padding: 4, textAlign: 'center' }}>
+                    <Typography variant="body1" color="text.secondary">
+                      대기 중인 예약이 없습니다.
+                    </Typography>
+                  </Paper>
+                ) : (
+                  <Grid container spacing={2}>
+                    {pendingAppointments.map((appointment) => (
+                      <Grid item xs={12} md={6} key={appointment.id}>
+                        <AppointmentCard
+                          appointment={appointment}
+                          onApprove={handleApprove}
+                          onReject={handleReject}
+                          showActions={true}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Box>
+            )}
+
+            {/* 확정 탭 */}
+            {activeTab === 1 && (
+              <Box>
+                {confirmedAppointments.length === 0 ? (
+                  <Paper sx={{ padding: 4, textAlign: 'center' }}>
+                    <Typography variant="body1" color="text.secondary">
+                      확정된 예약이 없습니다.
+                    </Typography>
+                  </Paper>
+                ) : (
+                  <Grid container spacing={2}>
+                    {confirmedAppointments.map((appointment) => (
+                      <Grid item xs={12} md={6} key={appointment.id}>
+                        <AppointmentCard appointment={appointment} />
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Box>
+            )}
+
+            {/* 완료 탭 */}
+            {activeTab === 2 && (
+              <Box>
+                {completedAppointments.length === 0 ? (
+                  <Paper sx={{ padding: 4, textAlign: 'center' }}>
+                    <Typography variant="body1" color="text.secondary">
+                      완료된 예약이 없습니다.
+                    </Typography>
+                  </Paper>
+                ) : (
+                  <Grid container spacing={2}>
+                    {completedAppointments.map((appointment) => (
+                      <Grid item xs={12} md={6} key={appointment.id}>
+                        <AppointmentCard appointment={appointment} />
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Box>
+            )}
+
+            {/* 취소/미방문 탭 */}
+            {activeTab === 3 && (
+              <Box>
+                {cancelledAppointments.length === 0 ? (
+                  <Paper sx={{ padding: 4, textAlign: 'center' }}>
+                    <Typography variant="body1" color="text.secondary">
+                      취소 또는 미방문 예약이 없습니다.
+                    </Typography>
+                  </Paper>
+                ) : (
+                  <Grid container spacing={2}>
+                    {cancelledAppointments.map((appointment) => (
+                      <Grid item xs={12} md={6} key={appointment.id}>
+                        <AppointmentCard appointment={appointment} />
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </Box>
+            )}
+          </Box>
+        </>
+      )}
+
+      {/* 스낵바 알림 */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Container>
+  );
+};
+
+export default AppointmentManagementPage;

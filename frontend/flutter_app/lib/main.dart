@@ -1,10 +1,14 @@
 /// NeuroNova Patient App
 /// Brain Tumor Diagnosis CDSS - Patient Mobile Application
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'core/config/app_config.dart';
 import 'core/utils/logger.dart';
 import 'data/local/local_database.dart';
+import 'data/repositories/auth_repository.dart';
+import 'features/auth/login_screen.dart';
+import 'features/home/home_screen.dart';
+import 'features/appointment/appointment_list_screen.dart';
+import 'features/appointment/appointment_create_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +54,13 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const SplashScreen(),
+      // 라우트 정의
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const MainNavigationScreen(),
+        '/appointments': (context) => const AppointmentListScreen(),
+        '/appointment-create': (context) => const AppointmentCreateScreen(),
+      },
     );
   }
 }
@@ -72,22 +83,27 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _initialize() async {
     try {
-      // Check authentication status
       await Future.delayed(const Duration(seconds: 2));
 
-      // TODO: Check if user is logged in
-      // final isLoggedIn = await authService.isLoggedIn();
+      // Check if user is logged in
+      final authRepo = AuthRepository();
+      final isLoggedIn = await authRepo.isLoggedIn();
 
       if (mounted) {
-        // Navigate to appropriate screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const HomePage(),
-          ),
-        );
+        if (isLoggedIn) {
+          // Already logged in - go to home
+          Navigator.of(context).pushReplacementNamed('/home');
+        } else {
+          // Not logged in - go to login screen
+          Navigator.of(context).pushReplacementNamed('/login');
+        }
       }
     } catch (e, stackTrace) {
       AppLogger.error('Initialization failed', e, stackTrace);
+      if (mounted) {
+        // On error, go to login screen
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
     }
   }
 
@@ -99,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.health_and_safety,
+              Icons.psychology,
               size: 100,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -127,48 +143,28 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-/// Home Page (Placeholder)
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+/// Main Navigation Screen with Bottom Navigation Bar
+class MainNavigationScreen extends StatefulWidget {
+  const MainNavigationScreen({super.key});
+
+  @override
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const AppointmentListScreen(),
+    const NotificationsScreen(),
+    const ProfileScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('NeuroNova'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.calendar_today,
-              size: 64,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '환영합니다!',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '예약 및 진료 정보를 확인하세요',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                AppLogger.info('Navigate to appointments');
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('새 예약'),
-            ),
-          ],
-        ),
-      ),
+      body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
@@ -188,11 +184,85 @@ class HomePage extends StatelessWidget {
             label: '프로필',
           ),
         ],
-        currentIndex: 0,
+        currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
-          AppLogger.info('Bottom nav tapped: $index');
+          setState(() {
+            _currentIndex = index;
+          });
         },
+      ),
+    );
+  }
+}
+
+/// Notifications Screen (Placeholder)
+class NotificationsScreen extends StatelessWidget {
+  const NotificationsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('알림'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.notifications_none,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '알림이 없습니다',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Profile Screen (Placeholder)
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('프로필'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircleAvatar(
+              radius: 50,
+              child: Icon(Icons.person, size: 50),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '환자',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () {
+                // 설정 화면 등으로 이동
+              },
+              icon: const Icon(Icons.settings),
+              label: const Text('설정'),
+            ),
+          ],
+        ),
       ),
     );
   }

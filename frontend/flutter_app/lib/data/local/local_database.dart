@@ -192,4 +192,81 @@ class LocalDatabase {
       AppLogger.info('Database closed');
     }
   }
+
+  // ========== Appointment Methods ==========
+
+  /// Insert or update appointment
+  static Future<int> insertAppointment(Map<String, dynamic> appointment) async {
+    try {
+      final db = await database;
+      return await db.insert(
+        'appointments',
+        appointment,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to insert appointment', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Get all appointments
+  static Future<List<Map<String, dynamic>>> getAppointments() async {
+    try {
+      final db = await database;
+      return await db.query(
+        'appointments',
+        orderBy: 'scheduled_at DESC',
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to get appointments', e, stackTrace);
+      return [];
+    }
+  }
+
+  /// Get appointment by ID
+  static Future<Map<String, dynamic>?> getAppointmentById(int id) async {
+    try {
+      final db = await database;
+      final results = await db.query(
+        'appointments',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      return results.isNotEmpty ? results.first : null;
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to get appointment by ID', e, stackTrace);
+      return null;
+    }
+  }
+
+  /// Get pending (unsynced) appointments
+  static Future<List<Map<String, dynamic>>> getPendingAppointments() async {
+    try {
+      final db = await database;
+      return await db.query(
+        'appointments',
+        where: 'synced = ?',
+        whereArgs: [0],
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to get pending appointments', e, stackTrace);
+      return [];
+    }
+  }
+
+  /// Delete appointment
+  static Future<int> deleteAppointment(int id) async {
+    try {
+      final db = await database;
+      return await db.delete(
+        'appointments',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error('Failed to delete appointment', e, stackTrace);
+      return 0;
+    }
+  }
 }
