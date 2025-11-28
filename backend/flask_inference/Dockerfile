@@ -10,14 +10,14 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
-# COPY requirements.txt /app/
-# RUN pip install --upgrade pip
-# RUN pip install -r requirements.txt
+COPY requirements.txt /app/
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
 # Copy project
 COPY . /app/

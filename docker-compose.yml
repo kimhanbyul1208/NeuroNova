@@ -2,15 +2,16 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15
+    image: mysql:8.0
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     environment:
-      - POSTGRES_DB=neuronova
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - MYSQL_DATABASE=neuronova
+      - MYSQL_USER=neuronova
+      - MYSQL_PASSWORD=neuronova
+      - MYSQL_ROOT_PASSWORD=root
     ports:
-      - "5432:5432"
+      - "3306:3306"
 
   redis:
     image: redis:7-alpine
@@ -38,8 +39,10 @@ services:
     environment:
       - DB_HOST=db
       - DB_NAME=neuronova
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
+      - DB_USER=neuronova
+      - DB_PASSWORD=neuronova
+      - DB_ENGINE=django.db.backends.mysql
+      - DB_PORT=3306
       - REDIS_HOST=redis
 
   flask:
@@ -68,4 +71,4 @@ services:
       - django
 
 volumes:
-  postgres_data:
+  mysql_data:
