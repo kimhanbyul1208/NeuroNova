@@ -92,6 +92,51 @@ class PatientPredictionResultViewSet(viewsets.ModelViewSet):
     filterset_fields = ['patient', 'encounter', 'prediction_class', 'doctor_feedback']
     ordering_fields = ['created_at', 'confidence_score']
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsDoctorOrAdmin])
+    def confirm_prediction(self, request, pk=None):
+        """
+        Doctor confirms AI prediction with feedback.
+        Human-in-the-loop pattern implementation.
+        """
+        prediction = self.get_object()
+        feedback = request.data.get('doctor_feedback')
+        note = request.data.get('doctor_note', '')
+
+        if not feedback:
+            return Response(
+                {'error': 'doctor_feedback is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get doctor profile
+        try:
+            doctor = request.user.doctor
+        except Doctor.DoesNotExist:
+            return Response(
+                {'error': 'User is not a doctor'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Confirm prediction
+        prediction.confirm_by_doctor(doctor, feedback, note)
+        serializer = self.get_serializer(prediction)
+
+        logger.info(
+            f"Prediction {prediction.id} confirmed by Dr. {request.user.get_full_name()}: {feedback}"
+        )
+
+        return Response({
+            'message': 'Prediction confirmed successfully',
+            'prediction': serializer.data
+        })
+
+    @action(detail=False, methods=['get'])
+    def pending_review(self, request):
+        """Get predictions pending doctor review."""
+        pending = self.queryset.filter(doctor_feedback='').order_by('-created_at')
+        serializer = self.get_serializer(pending, many=True)
+        return Response(serializer.data)
+
 
 class PrescriptionViewSet(viewsets.ModelViewSet):
     """

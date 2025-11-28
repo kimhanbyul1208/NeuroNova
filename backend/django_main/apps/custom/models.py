@@ -195,17 +195,18 @@ class Appointment(BaseModel):
         logger.info(f"Appointment confirmed: {self.id}")
 
         # Send notification to patient
-        if hasattr(self.patient.user, 'profile'):
-            self.patient.user.profile.send_notification(
-                title="예약 확정",
-                message=f"{self.scheduled_at.strftime('%Y년 %m월 %d일 %H:%M')} 예약이 확정되었습니다."
-            )
+        from apps.core.services.notification_service import notification_service
+        notification_service.notify_appointment_confirmed(self)
 
     def cancel(self) -> None:
         """Cancel the appointment."""
         self.status = AppointmentStatus.CANCELLED
         self.save()
         logger.info(f"Appointment cancelled: {self.id}")
+
+        # Send notification to patient
+        from apps.core.services.notification_service import notification_service
+        notification_service.notify_appointment_cancelled(self)
 
 
 class PatientPredictionResult(BaseModel):

@@ -23,11 +23,40 @@ class PatientSerializer(serializers.ModelSerializer):
 
 class EncounterSerializer(serializers.ModelSerializer):
     """Encounter serializer."""
-    
+    patient_name = serializers.CharField(source='patient.full_name', read_only=True)
+    doctor_name = serializers.CharField(source='doctor.get_full_name', read_only=True)
+
     class Meta:
         model = Encounter
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class EncounterDetailSerializer(serializers.ModelSerializer):
+    """Detailed encounter serializer with related data."""
+    patient = PatientSerializer(read_only=True)
+    soap = serializers.SerializerMethodField()
+    vitals = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Encounter
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_soap(self, obj):
+        """Get SOAP chart if exists."""
+        try:
+            soap = obj.soap
+            return FormSOAPSerializer(soap).data
+        except FormSOAP.DoesNotExist:
+            return None
+
+    def get_vitals(self, obj):
+        """Get latest vitals."""
+        vitals = obj.vitals.first()
+        if vitals:
+            return FormVitalsSerializer(vitals).data
+        return None
 
 
 class FormSOAPSerializer(serializers.ModelSerializer):

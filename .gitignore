@@ -103,3 +103,4 @@ Thumbs.db
 # Sensitive data
 *_credentials.json
 *_secret.json
+nul
