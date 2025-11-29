@@ -1,0 +1,84 @@
+프롬2 다음 스키마를 기반으로 모든 테이블에 기본 더미 데이터를 생성하라.
+(모든 테이블 최소 5개)
+===
+다음 스키마를 기반으로 전체 테이블에 기본 데이터(dummy data)를 생성하라.
+모든 테이블은 최소 5개 이상의 row가 유지되도록 만들고, FK 제약을 지키며 자연스럽게 구성하라.
+
+### 1. 사용자 관련 테이블(auth_user, user_profile, custom_doctor, emr_patient)
+
+- Role: ADMIN, DOCTOR, NURSE, PATIENT
+- 각 Role마다 5명씩 생성(총 20명)
+- PATIENT 5명은 emr_patient로 확장
+- DOCTOR 5명은 custom_doctor로 확장
+
+id, username, password, email, phone, bio 등 기본 필드는 자동 생성
+user_profile.user_id, custom_doctor.user_id, emr_patient.user_id FK는 반드시 연결
+
+### 2. 의사-환자 매핑(custom_patient_doctor)
+
+다음 규칙으로 정확하게 생성 (모든 테이블 최소 5개를 유지하기 위해 매핑 수 ≥5)
+- 의사 1 → 환자 1,2
+- 의사 2 → 환자 2,3
+- 의사 3 → 환자 1,2,3
+- 의사 4 → 환자 4
+- 의사 5 → 환자 5
+
+각 관계는 is_primary, assigned_date 포함
+
+### 3. Encounter(emr_encounter)
+
+각 환자별로 최소 1개 이상 encounter 생성하되,
+최종 생성 건수가 5개 이상이 되도록 총 5~10개 정도 생성.
+
+doctor_id는 custom_patient_doctor의 primary doctor 연결
+
+### 4. Encounter 기반 하위 테이블 (각 encounter당 최소 1개)
+
+각 encounter에 대해 다음 테이블에 row 1개씩 생성 → 이렇게 하면 각 테이블도 5개 이상이 됨:
+
+- emr_form_vitals  
+- emr_form_soap  
+- custom_prescription  
+- custom_prediction_result  
+- emr_merged_document  
+- custom_appointment  
+
+필드 값은 기본적으로 병원 EMR에서 사용될 법한 랜덤 정상 범위 값으로 생성.
+
+### 5. 독립적 관리 테이블도 최소 5개씩 생성
+
+아래 테이블들은 FK 제약이 약하므로 최소 5개 row를 넣는다:
+
+- auth_group  
+- auth_permission  
+- auth_group_permissions  
+- auth_user_groups  
+- auth_user_user_permissions  
+- notification_log  
+- django_content_type  
+- django_admin_log  
+- django_session  
+
+값은 일관성을 유지하되 단순한 placeholder 데이터 가능.
+
+### 6. 출력 형식
+
+전체 결과는 SQL INSERT 문으로 출력하라.  
+테이블 순서는 FK 오류가 없도록 다음 순서를 따른다:
+
+1) auth_user  
+2) user_profile  
+3) custom_doctor  
+4) emr_patient  
+5) auth_group, auth_permission 등 독립 테이블  
+6) auth_user_groups, auth_group_permissions, auth_user_user_permissions  
+7) custom_patient_doctor  
+8) emr_encounter  
+9) custom_appointment  
+10) emr_form_vitals  
+11) emr_form_soap  
+12) custom_prescription  
+13) custom_prediction_result  
+14) emr_merged_document  
+
+외래키 오류가 절대 발생하지 않도록 id 값을 조정하며 생성한다.

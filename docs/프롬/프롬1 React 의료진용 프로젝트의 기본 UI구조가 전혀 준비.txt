@@ -1,0 +1,39 @@
+프롬1 React 의료진용 프로젝트의 기본 UI/구조가 전혀 준비되어 있지 않다.
+
+다음 요구사항에 따라 React 코드를 생성하고 구조를 개선하라.
+
+1) 기본 화면(Home 화면)을 만들고 다음 요소를 포함한다:
+   - 회원가입(Sign Up) 버튼
+   - 로그인(Login) 버튼
+   - 의료진 전용 대시보드 버튼(로그인 전에는 disabled 또는 숨김)
+
+2) React Router를 구성한다:
+   - /signup
+   - /login
+   - /dashboard (의료진 전용 화면)
+
+3) 회원가입 페이지(/signup)
+   - username, password, email 입력
+   - 제출 시 Django API (POST /api/auth/register/) 호출
+
+4) 로그인 페이지(/login)
+   - username, password 입력
+   - 제출 시 Django API (POST /api/auth/login/) 호출
+   - 토큰을 localStorage에 저장
+
+5) 의료진 대시보드(/dashboard)
+   - Django API 문서에서 제공하는 endpoint 중
+     의료진이 사용할 수 있는 목록을 Fetch하여 리스트 형태로 보여준다.
+   - 토큰 인증을 사용해야 한다.
+
+6) 전체 설계는 docs/base_txt/React (의료진용).txt 의 구조와 설명을 기반으로 개선한다.
+   txt의 내용을 모르면 반드시 전체 내용을 먼저 출력한 뒤,
+   그 구조를 기반으로 React 프로젝트를 재정리한다.
+
+7) 출력 형식:
+   - React 폴더 구조(tree)
+   - 각 페이지의 JSX 코드
+   - API 호출을 위한 axios 또는 fetch 유틸 코드
+   - Router 설정 파일
+   - 필요한 공통 컴포넌트(Header, Layout 등)
+   - 메인 App.jsx

@@ -1,0 +1,9 @@
+docker 
+
+서비스	포트	상태	접속 URL
+React Web	3000	✅ 실행 중	http://localhost:3000
+Django API	8000	✅ 실행 중	http://localhost:8000
+MySQL	3306	✅ 실행 중	localhost:3306
+Redis	6379	✅ 실행 중	localhost:6379
+Flask	5000	✅ 실행 중	http://localhost:5000
+Orthanc	8042	✅ 실행 중	http://localhost:8042

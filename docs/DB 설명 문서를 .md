@@ -1,0 +1,347 @@
+DB 설명 문서를 Markdown 형식으로 완전 정리된 버전**으로 제공할게.
+그냥 복사해서 가져가면 된다.
+
+---
+
+# 📘 데이터베이스 전체 테이블 설명 문서 (Markdown 버전)
+
+## 1) 요약 표 (전체 테이블 한눈에 보기)
+
+### 🔹 인증/권한
+
+| 테이블                            | 무엇을 저장?          | 요약          |
+| ------------------------------ | ---------------- | ----------- |
+| **auth_user**                  | 기본 사용자 계정        | Django 사용자  |
+| **user_profile**               | 사용자 프로필/역할       | User 확장 정보  |
+| **auth_permission**            | 권한 정의 목록         | 권한 카탈로그     |
+| **auth_group**                 | 역할 그룹(Role)      | 역할 이름 목록    |
+| **auth_group_permissions**     | 그룹 ↔ 권한 매핑       | 역할 권한 부여    |
+| **auth_user_user_permissions** | 유저 개별 권한 추가      | 예외적 권한 부여   |
+| **auth_user_groups**           | 유저 ↔ 그룹 관계       | 역할 할당       |
+| **django_session**             | 세션 정보            | 로그인 유지      |
+| **django_migrations**          | 마이그레이션 기록        | DB 버전 관리    |
+| **django_content_type**        | Django 모델 메타 정보  | ContentType |
+| **django_admin_log**           | 관리자(admin) 변경 기록 | Admin 로그    |
+
+---
+
+### 🔹 EMR(병원) 관련
+
+| 테이블                          | 무엇을 저장?   | 요약           |
+| ---------------------------- | --------- | ------------ |
+| **emr_patient**              | 환자 정보     | 기본 환자 프로필    |
+| **custom_doctor**            | 의사 정보     | 의사 프로필       |
+| **custom_patient_doctor**    | 의사–환자 매핑  | 주치의 관계       |
+| **emr_encounter**            | Encounter | 진료 방문 기록     |
+| **emr_form_vitals**          | 활력징후      | Vitals       |
+| **emr_form_soap**            | SOAP 기록   | 의무기록 텍스트     |
+| **emr_merged_document**      | 병합 문서     | Encounter 문서 |
+| **custom_appointment**       | 예약        | 진료 예약        |
+| **custom_prescription**      | 처방전       | 약 처방 정보      |
+| **custom_prediction_result** | AI 예측 결과  | AI 진단 기록     |
+
+---
+
+### 🔹 기타
+
+| 테이블                  | 무엇을 저장? | 요약     |
+| -------------------- | ------- | ------ |
+| **notification_log** | 알림 기록   | 푸시/메시지 |
+| **django_session**   | 세션 데이터  | 로그인 유지 |
+
+---
+
+---
+
+# 2) 테이블별 상세 설명
+
+---
+
+## 🔻 auth_user
+
+**기본 사용자 계정 테이블.**
+Django 기본 인증 기반.
+
+**주요 필드**
+
+* username
+* password
+* email
+* first_name / last_name
+* is_staff / is_superuser
+* is_active
+* date_joined
+
+**요약**: 로그인 계정 정보.
+
+---
+
+## 🔻 user_profile
+
+auth_user 확장 테이블.
+
+**저장 내용**
+
+* 역할(role: ADMIN / DOCTOR / NURSE / PATIENT)
+* 전화번호
+* 프로필 이미지
+* FCM 토큰
+* user_id FK
+
+**요약**: 사용자 프로필 + 역할.
+
+---
+
+## 🔻 auth_permission
+
+**권한 목록 사전(카탈로그)**
+
+* 각 모델에 대해 add/change/delete/view 권한 자동 생성
+* 관리자가 역할에 권한을 부여할 때 사용됨
+
+---
+
+## 🔻 auth_group
+
+**역할 그룹(Role)**
+
+* Admin
+* Doctor
+* Nurse
+* Patient 등
+
+---
+
+## 🔻 auth_group_permissions
+
+**그룹 ↔ 권한 매핑**
+
+예:
+
+* Doctor → view_patient, change_patient
+* Nurse → view_patient
+
+그룹에 어떤 권한을 줄지 저장.
+
+---
+
+## 🔻 auth_user_user_permissions
+
+**특정 유저에게만 추가 권한을 주는 테이블.**
+
+그룹을 통하지 않고 "개별 사용자"에게만 권한 부여.
+
+예:
+
+* doctor3 → delete_patient 권한 부여
+
+---
+
+## 🔻 auth_user_groups
+
+한 유저가 어떤 그룹(Role)에 속하는지 저장.
+
+---
+
+## 🔻 django_session
+
+**로그인 세션 저장 테이블.**
+session_key + session_data(user_id 포함)
+
+웹 로그인 유지 기능 담당.
+
+---
+
+## 🔻 django_migrations
+
+**마이그레이션 적용 이력 테이블.**
+
+예:
+
+* 0001_initial 적용됨
+* 0002_add_field 적용됨
+
+DB 버전 관리 핵심.
+
+---
+
+## 🔻 django_content_type
+
+Django 내부 모델 등록 정보.
+Permission 시스템에서 사용됨.
+
+---
+
+## 🔻 django_admin_log
+
+관리자(admin site)에서 어떤 모델이 어떻게 수정/삭제되었는지 기록.
+
+---
+
+---
+
+# 🟦 EMR / 병원 기능 테이블 상세
+
+---
+
+## 🔻 emr_patient
+
+환자 정보 저장.
+
+**필드 예시**
+
+* 이름(first_name, last_name)
+* 성별(gender)
+* 생년월일(date_of_birth)
+* 전화번호/이메일
+* 주소
+* 보험 정보
+* user_id (Patient 계정 FK)
+
+---
+
+## 🔻 custom_doctor
+
+의사 정보 저장.
+
+**필드**
+
+* license_number
+* specialty
+* department
+* bio
+* user_id
+
+---
+
+## 🔻 custom_patient_doctor
+
+의사–환자 연결 관계.
+
+* is_primary (주치의 여부)
+* assigned_date
+* doctor_id
+* patient_id
+
+---
+
+## 🔻 emr_encounter
+
+진료 방문(Encounter) 단위 기록.
+
+**필드**
+
+* encounter_date
+* reason
+* facility
+* status
+* doctor_id
+* patient_id
+
+---
+
+## 🔻 emr_form_vitals
+
+진료 중 측정된 환자 활력징후 기록.
+
+* 혈압(bps, bpd)
+* 체온
+* 맥박(pulse)
+* 산소포화도
+* BMI + 상태
+* encounter_id
+
+---
+
+## 🔻 emr_form_soap
+
+의사의 SOAP 기록.
+
+* Subjective
+* Objective
+* Assessment
+* Plan
+* encounter_id
+
+---
+
+## 🔻 emr_merged_document
+
+Encounter 문서 통합본.
+
+* title
+* document_type
+* snapshot_data(JSON)
+* references(JSON)
+* signed_by_id
+* encounter_id
+* patient_id
+
+---
+
+## 🔻 custom_appointment
+
+진료 예약.
+
+* 예약 날짜/시간
+* duration
+* visit_type (대면/비대면)
+* reason
+* doctor_id
+* patient_id
+
+---
+
+## 🔻 custom_prescription
+
+처방 기록.
+
+* medication_code
+* medication_name
+* dosage
+* frequency
+* route
+* instructions
+* encounter_id
+
+---
+
+## 🔻 custom_prediction_result
+
+AI 예측/진단 결과.
+
+* model_name
+* model_version
+* prediction_class
+* confidence_score
+* probabilities(JSON)
+* XAI 이미지
+* doctor_feedback
+* encounter_id / doctor_id / patient_id
+
+---
+
+## 🔻 notification_log
+
+알림(push, 메시지) 저장.
+
+* type
+* title
+* message
+* is_read
+* sent_at
+* metadata(JSON)
+* recipient_id
+
+---
+
+# 끝.
+
+원하면
+
+* ERD를 진짜 ERD 툴 수준으로 다시 그려주거나
+* PPT용 버전
+* API 매핑 문서
+* Seed 데이터 자동 생성
+
+다 만들어줄 수 있어.
