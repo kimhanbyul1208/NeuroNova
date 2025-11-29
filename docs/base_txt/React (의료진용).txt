@@ -1,0 +1,173 @@
+React (의료진용):
+대시보드 형태. 많은 데이터를 한눈에 보고, CDSS 결과를 분석하는 화면.
+Orthanc 뷰어(DICOM) 통합 필요.
+웹-about us의 앱설명에 앱 설치 Qr을 놓는다. 
+업무 편하게 : emr 서버 open emr 연동 : 병원 문서양식 합치기 
+======
+상단/좌측 메뉴: 환자 선택, 검사 선택, 진단 단계
+메인 대시보드 영역: 검사 결과, XAI 시각화, 예측 결과
+세부 패널: 검사 내역, 환자 정보, 참고 문헌/알림
+반응형 카드/테이블/그래프: Chart.js, Recharts, ApexCharts 활용
+=======
+
+CDSS는 MRI 뷰어 + AI 결과 + XAI 시각화 + 임상정보 패널이 핵심이기 때문에
+“가장 직접적으로 도움되는 UI” 기준으로 줄이면 아래 3개만 보면 된다.
+
+
+🥇 1순위: OHIF Viewer
+👉 CDSS UI 참고용으로 사실상 정답
+https://ohif.org/
+React 기반
+MRI 3-plane, volume rendering
+AI overlay, segmentation 표시
+사이드 정보 패널 구조가 CDSS와 거의 동일
+Plugin 구조라 AI·XAI 기능도 확장 가능
+➡ 뇌종양 CDSS 화면의 **메인 UI(영상·toolbars·패널 구조)**는 여기에서 가져오면 됨.
+
+🥈 2순위: NCI IDC Viewer(OHIF 확장판)
+https://portal.imaging.datacommons.cancer.gov/
+OHIF 기반이지만
+임상 데이터, 병리, 영상 데이터를 통합 표시
+연구/임상 분석 레이아웃이 CDSS 구조와 거의 동일
+실제 암 환자 MRI 데이터 흐름도 참고 가능
+➡ CDSS의 대시보드 / 환자 검사 목록 / 검사별 결과 정리 UI 참고하기 최고.
+
+🥉 3순위: MD.ai
+https://md.ai/
+AI annotation 플랫폼
+Bounding box, segmentation, label 표시 UI 훌륭함
+“AI 예측 결과를 어떻게 사용자에게 보여줄 것인가” 참고할 수 있음
+➡ AI 영역 표시·label 표시·XAI 강조 표현 방식을 베이스로 참고.
+
+===== 라이브러리 참고1
+CornerstoneJS
+https://www.cornerstonejs.org/
+OHIF가 내부적으로 사용하는 핵심 라이브러리.
+MRI/CT 이미지 조작(UI/UX) 참고하기 좋음.
+===== 라이브러리 참고 2
+Radiant DICOM Viewer
+https://www.radiantviewer.com/
+전문 의료 영상 소프트웨어 UI 참고하기 좋음.
+React는 아니지만 의료 영상 전문가가 선호하는 UI/패널 구성 참고용으로 최고.
+
+
+
+
+
+
+
+
+
+
+
+
+===
+우선순위,사이트명,역할,CDSS 개발 적용점
+1 (구현),OHIF Viewer,메인 뼈대,"전체 레이아웃, React 컴포넌트 구조, Segmentation 오버레이 기능"
+2 (기획),IDC Viewer,구조 설계,임상 데이터 + 영상 데이터 통합 대시보드 UI 구성
+3 (UX),MD.ai,AI 표현,"종양 위치 표시 방식, AI 확신도 그래프 디자인, 라벨링 UI"
+참고,Radiant,UX 디테일,"마우스 조작감, 단축키, 필수 툴바 아이콘 배치 순서"
+===
+
+
+\*\*OHIF Viewer의 핵심 구조(좌-중-우 3단 레이아웃)\*\*를 벤치마킹하여, 뇌종양 CDSS 프로젝트에 최적화된 \*\*React 프로젝트 구조(Directory Structure)\*\*와 \*\*컴포넌트 트리(Component Tree)\*\*를 제안합니다.
+
+이 구조는 **확장성**과 **유지보수**를 고려하여 설계되었습니다.
+
+-----
+
+### 1\. 프로젝트 폴더 구조 (Directory Structure)
+
+기능별로 폴더를 나누되, \*\*Viewer(영상 처리)\*\*와 **AI(분석 결과)** 관련 로직을 명확히 분리하는 것이 핵심입니다.
+
+```text
+src/
+├── assets/                # 이미지, 아이콘, 스타일 파일
+├── components/            # 재사용 가능한 UI 컴포넌트
+│   ├── common/            # 버튼, 모달, 로딩 스피너 등 공통 UI
+│   ├── layout/            # 전체 레이아웃 (Header, Sidebar 등)
+│   ├── viewer/            # [핵심] 의료 영상 뷰어 관련 컴포넌트 (CornerstoneJS 연동)
+│   │   ├── Viewport.jsx       # 실제 DICOM 영상이 렌더링되는 캔버스
+│   │   ├── Toolbar.jsx        # 줌, 팬, 윈도우 레벨링 도구 모음
+│   │   └── OverlayLayer.jsx   # AI Segmentation 마스크를 덮어씌우는 레이어
+│   └── ai-results/        # [CDSS] AI 분석 결과 패널
+│       ├── PredictionScore.jsx # 종양 확률/확신도 그래프
+│       └── ReportCard.jsx      # AI 소견 및 텍스트 리포트
+├── hooks/                 # 커스텀 훅 (예: useDICOMStore, useAIModel)
+├── pages/                 # 실제 라우팅되는 페이지
+│   ├── Dashboard.jsx      # 환자 목록 및 검색 페이지
+│   └── AnalysisViewer.jsx # [메인] 영상 분석 및 뷰어 페이지
+├── services/              # API 통신 (Django 백엔드 연동)
+│   ├── api.js             # 기본 Axios 인스턴스
+│   ├── dicomService.js    # 영상 데이터 로드
+│   └── aiService.js       # AI 추론 요청 및 결과 수신
+├── utils/                 # 헬퍼 함수 (DICOM 파싱, 날짜 포맷팅 등)
+└── App.js                 # 라우터 설정
+```
+
+-----
+
+### 2\. 컴포넌트 트리 (Component Tree) - 메인 뷰어 페이지
+
+OHIF의 구조를 차용하여 **`AnalysisViewer.jsx`** 페이지를 구성하는 컴포넌트 계층도입니다.
+
+```mermaid
+graph TD
+    Page[AnalysisViewer Page] --> Layout[Main Layout (Grid System)]
+    
+    Layout --> Header[Header / Navigation]
+    Layout --> LeftPanel[Left Panel: Patient & Series]
+    Layout --> CenterPanel[Center Panel: Main Viewport]
+    Layout --> RightPanel[Right Panel: AI CDSS Results]
+    
+    LeftPanel --> PatientInfo[Patient Info Card]
+    LeftPanel --> SeriesList[Series Selector (T1, T2, FLAIR)]
+    
+    CenterPanel --> Toolbar[Tools (Zoom/Pan/WW/WL)]
+    CenterPanel --> Canvas[Cornerstone Canvas (DICOM)]
+    Canvas --> Segmentation[AI Mask Overlay]
+    
+    RightPanel --> Score[Tumor Probability Graph]
+    RightPanel --> Class[Tumor Classification (Glioma/Meningioma)]
+    RightPanel --> Action[Save/Export Report Button]
+```
+
+-----
+
+### 3\. 주요 컴포넌트 상세 설명 (역할 정의)
+
+CDSS의 핵심 기능을 담당할 주요 컴포넌트들의 역할입니다.
+
+#### A. `viewer/Viewport.jsx` (중앙 패널)
+
+  * **역할:** CornerstoneJS를 사용하여 실제 MRI 영상을 그리는 캔버스입니다.
+  * **기능:**
+      * DICOM 이미지를 로드하고 렌더링합니다.
+      * OHIF처럼 **Stack Scroll** (마우스 휠로 슬라이스 넘기기) 기능을 구현합니다.
+      * **핵심:** `OverlayLayer` 컴포넌트를 자식으로 두어, 원본 영상 위에 AI가 예측한 종양 영역(Mask)을 반투명하게 겹쳐서 보여줍니다.
+
+#### B. `ai-results/RightPanel.jsx` (우측 패널)
+
+  * **역할:** 의사결정 지원(CDSS)의 핵심 정보를 보여주는 곳입니다. (OHIF의 Measurement 패널 위치 활용)
+  * **기능:**
+      * **AI 확신도(Confidence):** "뇌종양 확률 98.5%"와 같은 수치를 시각적으로 표현합니다.
+      * **종양 타입:** AI가 분류한 종양의 종류(예: 교모세포종, 수막종 등)를 표시합니다.
+      * **Toggle Switch:** "AI 결과 보기/숨기기" 버튼을 두어 원본과 AI 결과를 비교할 수 있게 합니다.
+
+#### C. `layout/SidebarLeft.jsx` (좌측 패널)
+
+  * **역할:** 환자 정보와 촬영된 MRI 시퀀스(Series)를 선택하는 내비게이터입니다.
+  * **기능:**
+      * T1, T2, FLAIR 등 다양한 MRI 시퀀스 썸네일을 리스트로 보여주고, 클릭 시 중앙 뷰어에 띄웁니다.
+      * OHIF의 'Study Browser'와 동일한 역할을 합니다.
+
+-----
+
+### 다음 단계 제안 (진행하나요?)
+
+이제 뼈대(구조)는 잡혔습니다. 실제 구현을 위해 다음 중 어떤 작업을 먼저 도와드릴까요?
+
+1.  **기본 레이아웃 코드 작성:** 위 구조를 바탕으로 좌-중-우 패널이 배치된 `AnalysisViewer.jsx`의 **React + CSS(Tailwind or Styled-components)** 기본 코드를 작성해 드릴까요?
+2.  **CornerstoneJS 연동 준비:** React에서 CornerstoneJS를 초기화하고 빈 캔버스를 띄우는 **기본 뷰어 컴포넌트 코드**를 작성해 드릴까요?
+3.  **Django API 명세 설계:** 프론트엔드 구조에 맞춰, Django 백엔드에서 어떤 데이터를 보내줘야 할지 **API JSON 데이터 구조**를 먼저 정의할까요?
+
