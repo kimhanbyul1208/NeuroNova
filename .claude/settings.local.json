@@ -8,7 +8,11 @@
       "Bash(python manage.py:*)",
       "Bash(touch:*)",
       "Bash(tree:*)",
-      "Bash(flutter create:*)"
+      "Bash(flutter create:*)",
+      "Bash(dart pub global activate:*)",
+      "Bash(flutterfire configure:*)",
+      "Bash(C:UsersgksquAppDataLocalPubCachebinflutterfire.bat configure --project=neuronova-cdss)",
+      "Bash(dart pub global run flutterfire_cli:flutterfire configure:*)"
     ],
     "deny": [],
     "ask": []
