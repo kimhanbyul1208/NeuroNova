@@ -127,93 +127,84 @@ docker exec neuronova-django-1 python manage.py migrate
 |--------|------|------|------|
 | **django** | 8000 | Django REST API 서버 | 백엔드 API |
 | **react** | 3000 | React Web (Nginx) | 프론트엔드 웹 |
-| **db** | 3306 | MySQL 8.0 | **개발용 로컬 DB** ⚠️ |
 | **redis** | 6379 | Redis 캐시/세션 | 필수 |
 | **flask** | 5000 | AI 추론 서버 | ML 모델 서빙 |
-| **orthanc** | 8042, 4242 | DICOM 서버 | **개발용 로컬** ⚠️ |
 
-### ⚠️ 중요: 개발 환경 vs 운영 환경 차이
+**제거된 서비스**:
+- ~~MySQL (db)~~ → 원격 MySQL 사용 (.env 설정)
+- ~~Orthanc~~ → 나중에 별도 서버에 설치 예정
 
-#### 현재 docker-compose.yml의 문제점:
+### ✅ 원격 DB 사용 설정 완료
 
-1. **MySQL (db 서비스)**
-   - **docker-compose.yml**: 로컬 MySQL 컨테이너 사용
-   - **settings.py 기본값**: `34.61.113.204` (원격 DB)
-   - **문제**: Docker Compose 환경변수가 settings.py를 덮어씀!
+**현재 구성**:
+- **MySQL**: 원격 DB 사용 (settings.py에서 .env 파일 참조)
+- **Docker Compose**: 로컬 MySQL 제거됨
+- **DB 설정**: `backend/django_main/.env` 파일에서 관리
 
-   ```yaml
-   # docker-compose.yml - 현재 설정
-   django:
-     environment:
-       - DB_HOST=db  # ← 이게 settings.py의 원격 DB를 덮어씀!
-   ```
+**설정 방법**:
+1. `.env` 파일 생성 (아래 참조)
+2. 원격 DB 정보 입력
+3. Docker Compose 실행
 
-2. **Orthanc (orthanc 서비스)**
-   - **현재**: 로컬 개발용으로 자동 실행 중
-   - **실제 운영**: 장고와 같은 서버에 별도로 설치 예정
-   - **현재 상태**: API 클라이언트 코드만 있고, 실제 서버는 나중에 구성
+```bash
+# backend/django_main/.env
+DB_ENGINE=django.db.backends.mysql
+DB_NAME=your-database-name
+DB_USER=your-database-user
+DB_PASSWORD=your-database-password
+DB_HOST=your-remote-db-host
+DB_PORT=3306
+```
+
+**Orthanc 서버**:
+- **현재 상태**: Docker Compose에서 제거됨
+- **향후 계획**: 별도 서버에 설치 예정 (Django와 같은 서버)
+- **코드**: API 클라이언트만 구현되어 있음 ([orthanc_service.py](../backend/django_main/apps/core/services/orthanc_service.py))
 
 ---
 
 ## 운영 환경 설정 방법
 
-### 1. docker-compose.yml 수정 (권장)
+### 1. 현재 docker-compose.yml (이미 정리됨 ✅)
 
-운영 환경에 배포할 때는 아래와 같이 수정하세요:
+**현재 구성 (원격 DB 사용)**:
 
 ```yaml
 version: '3.8'
 
 services:
-  # ========================================
-  # 개발용 서비스 (운영 시 제거)
-  # ========================================
-
-  # db:  # ← 주석 처리 (원격 DB 사용)
-  #   image: mysql:8.0
-  #   ...
-
-  # orthanc:  # ← 주석 처리 (별도 서버에 설치)
-  #   image: jodogne/orthanc
-  #   ...
-
-  # ========================================
-  # 필수 서비스 (운영 환경)
-  # ========================================
-
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-    restart: always
+    restart: unless-stopped
 
   django:
     build: ./backend/django_main
-    command: gunicorn neuronova.wsgi:application --bind 0.0.0.0:8000 --workers 4
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend/django_main:/app
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
     ports:
       - "8000:8000"
     depends_on:
       - redis
     environment:
-      # DB 설정 제거 (settings.py의 기본값 사용)
+      # DB 설정은 .env 파일에서 관리 (원격 DB 사용)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    restart: always
+      - REDIS_DB=0
+    restart: unless-stopped
 
   flask:
     build: ./backend/flask_inference
-    command: gunicorn app:app --bind 0.0.0.0:5000 --workers 2 --timeout 300
+    command: python app.py
     volumes:
       - ./backend/flask_inference:/app
     ports:
       - "5000:5000"
     environment:
       - DJANGO_API_URL=http://django:8000
-    restart: always
+    restart: unless-stopped
 
   react:
     build:
@@ -223,30 +214,14 @@ services:
       - "3000:80"
     depends_on:
       - django
-    restart: always
-
-  # ========================================
-  # Nginx 리버스 프록시 (선택사항)
-  # ========================================
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - static_volume:/staticfiles:ro
-      - media_volume:/media:ro
-    depends_on:
-      - django
-      - react
-    restart: always
-
-volumes:
-  static_volume:
-  media_volume:
+    restart: unless-stopped
 ```
+
+**운영 환경 추가 설정** (필요 시):
+
+- Gunicorn으로 Django 실행 변경
+- Static/Media 볼륨 추가
+- Nginx 리버스 프록시 추가
 
 ---
 
@@ -254,23 +229,24 @@ volumes:
 
 #### backend/django_main/.env 파일 생성
 
+**⚠️ 중요**: 이 파일은 절대 Git에 커밋하지 마세요!
+
 ```env
 # Django Settings
-SECRET_KEY=your-production-secret-key-here
+SECRET_KEY=your-production-secret-key-here-CHANGE-THIS
 DEBUG=False
 ALLOWED_HOSTS=your-domain.com,www.your-domain.com
 
-# 원격 MySQL 설정
+# 원격 MySQL 설정 (필수)
 DB_ENGINE=django.db.backends.mysql
-DB_NAME=neuronova
-DB_USER=neuronova
-DB_PASSWORD=your-secure-password
-DB_HOST=34.61.113.204  # 원격 DB IP
+DB_NAME=your-database-name
+DB_USER=your-database-user
+DB_PASSWORD=your-database-password
+DB_HOST=your-remote-db-host
 DB_PORT=3306
 
-# Redis (Docker 내부 또는 원격)
-REDIS_HOST=redis  # Docker 내부 Redis
-# REDIS_HOST=your-redis-server.com  # 원격 Redis 사용 시
+# Redis (Docker 내부 Redis 사용)
+REDIS_HOST=redis
 REDIS_PORT=6379
 REDIS_DB=0
 
@@ -284,9 +260,29 @@ ORTHANC_USERNAME=orthanc
 ORTHANC_PASSWORD=your-orthanc-password
 
 # JWT
-JWT_SECRET_KEY=your-jwt-secret-key
+JWT_SECRET_KEY=your-jwt-secret-key-CHANGE-THIS
 JWT_ACCESS_TOKEN_LIFETIME=60
 JWT_REFRESH_TOKEN_LIFETIME=1440
+
+# Firebase (선택사항 - FCM 사용 시)
+# Firebase Admin SDK는 firebase-service-account.json 파일 사용
+```
+
+**개발 환경 예시** (`backend/django_main/.env`):
+```env
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+DB_ENGINE=django.db.backends.mysql
+DB_NAME=your-db-name
+DB_USER=your-db-user
+DB_PASSWORD=your-db-password
+DB_HOST=your-remote-db-host
+DB_PORT=3306
+
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_DB=0
 ```
 
 ---

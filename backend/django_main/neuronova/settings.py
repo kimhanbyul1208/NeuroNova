@@ -82,10 +82,10 @@ WSGI_APPLICATION = 'neuronova.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': config('DB_ENGINE', default='django.db.backends.mysql'),
-        'NAME': config('DB_NAME', default='daejeon'),
-        'USER': config('DB_USER', default='acorn'),
-        'PASSWORD': config('DB_PASSWORD', default='acorn1234'),
-        'HOST': config('DB_HOST', default='34.61.113.204'),
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT', default='3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
