@@ -14,7 +14,13 @@
       "Bash(C:UsersgksquAppDataLocalPubCachebinflutterfire.bat configure --project=neuronova-cdss)",
       "Bash(dart pub global run flutterfire_cli:flutterfire configure:*)",
       "Bash(pip install:*)",
-      "Bash(python test_fcm_notification.py:*)"
+      "Bash(python test_fcm_notification.py:*)",
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(npm --version:*)",
+      "Bash(node --version:*)",
+      "Bash(timeout 5 bash:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
