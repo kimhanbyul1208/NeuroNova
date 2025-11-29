@@ -12,7 +12,9 @@
       "Bash(dart pub global activate:*)",
       "Bash(flutterfire configure:*)",
       "Bash(C:UsersgksquAppDataLocalPubCachebinflutterfire.bat configure --project=neuronova-cdss)",
-      "Bash(dart pub global run flutterfire_cli:flutterfire configure:*)"
+      "Bash(dart pub global run flutterfire_cli:flutterfire configure:*)",
+      "Bash(pip install:*)",
+      "Bash(python test_fcm_notification.py:*)"
     ],
     "deny": [],
     "ask": []

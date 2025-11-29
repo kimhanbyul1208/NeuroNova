@@ -241,3 +241,19 @@ LOGGING = {
 # Create logs directory if it doesn't exist
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
+
+# Firebase Admin SDK 초기화
+try:
+    import firebase_admin
+    from firebase_admin import credentials
+
+    FIREBASE_CREDENTIALS_PATH = BASE_DIR / 'config' / 'firebase-service-account.json'
+
+    if FIREBASE_CREDENTIALS_PATH.exists():
+        cred = credentials.Certificate(str(FIREBASE_CREDENTIALS_PATH))
+        firebase_admin.initialize_app(cred)
+        print("[OK] Firebase Admin SDK initialized")
+    else:
+        print("[WARNING] Firebase credentials not found at", FIREBASE_CREDENTIALS_PATH)
+except Exception as e:
+    print(f"[WARNING] Failed to initialize Firebase Admin SDK: {e}")
