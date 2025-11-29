@@ -20,7 +20,8 @@
       "Bash(npm --version:*)",
       "Bash(node --version:*)",
       "Bash(timeout 5 bash:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
