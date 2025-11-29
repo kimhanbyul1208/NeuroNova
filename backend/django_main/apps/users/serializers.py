@@ -4,6 +4,7 @@ Serializers for Users app.
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
 from apps.users.models import UserProfile
 from typing import Dict, Any
 import logging
@@ -92,9 +93,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     Serializer for user registration.
     Creates both User and UserProfile instances.
     """
-    from django.contrib.auth.password_validation import validate_password
-    from config.constants import UserRole
-
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -172,8 +170,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     """Serializer for password change endpoint."""
-    from django.contrib.auth.password_validation import validate_password
-
     old_password = serializers.CharField(
         required=True,
         write_only=True,

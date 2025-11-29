@@ -49,7 +49,7 @@ axiosClient.interceptors.response.use(
 
         // Refresh access token
         const response = await axios.post(
-          `${API_CONFIG.BASE_URL}/api/auth/token/refresh/`,
+          `${API_CONFIG.BASE_URL}/api/${API_CONFIG.API_VERSION}/users/refresh/`,
           { refresh: refreshToken }
         );
 

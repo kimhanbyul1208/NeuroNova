@@ -14,15 +14,15 @@ export const API_CONFIG = {
 // API Endpoints
 export const API_ENDPOINTS = {
   // Authentication (aligned with Django backend)
-  LOGIN: '/api/auth/token/',
-  LOGOUT: '/api/auth/logout/',
-  REFRESH_TOKEN: '/api/auth/token/refresh/',
-  ME: '/api/auth/me/',
-  REGISTER: '/api/auth/register/',
+  LOGIN: `/api/${API_CONFIG.API_VERSION}/users/login/`,
+  REFRESH_TOKEN: `/api/${API_CONFIG.API_VERSION}/users/refresh/`,
+  REGISTER: `/api/${API_CONFIG.API_VERSION}/users/register/`,
+  ME: `/api/${API_CONFIG.API_VERSION}/users/profiles/me/`,
 
   // Users
-  USERS: `/api/${API_CONFIG.API_VERSION}/users/`,
-  USER_PROFILE: (id) => `/api/${API_CONFIG.API_VERSION}/users/${id}/`,
+  USERS: `/api/${API_CONFIG.API_VERSION}/users/users/`,
+  USER_PROFILE: (id) => `/api/${API_CONFIG.API_VERSION}/users/profiles/${id}/`,
+  USER_PROFILES: `/api/${API_CONFIG.API_VERSION}/users/profiles/`,
 
   // EMR
   PATIENTS: `/api/${API_CONFIG.API_VERSION}/emr/patients/`,

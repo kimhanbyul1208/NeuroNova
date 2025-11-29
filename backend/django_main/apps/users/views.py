@@ -89,3 +89,16 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         else:
             # Others can only see their own profile
             return UserProfile.objects.filter(user=user)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        """Get current user's profile."""
+        try:
+            profile = request.user.profile
+            serializer = self.get_serializer(profile)
+            return Response(serializer.data)
+        except UserProfile.DoesNotExist:
+            return Response(
+                {'error': 'Profile not found for this user'},
+                status=status.HTTP_404_NOT_FOUND
+            )

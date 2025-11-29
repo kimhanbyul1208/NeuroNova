@@ -1,6 +1,7 @@
 /**
  * Authentication Context for NeuroNova.
  * Manages user authentication state and provides auth methods.
+ * Optimized to use JWT payload directly, reducing API calls.
  */
 import { createContext, useContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
@@ -28,18 +29,14 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const decoded = jwtDecode(token);
+
           // Check if token is expired
           if (decoded.exp * 1000 < Date.now()) {
             logout();
           } else {
-            // Fetch user details
-            try {
-              const response = await axiosClient.get('/api/auth/me');
-              setUser({ ...decoded, ...response.data });
-            } catch (error) {
-              console.error('Failed to fetch user:', error);
-              logout();
-            }
+            // ✅ OPTIMIZATION: Use JWT payload directly instead of API call
+            // Django CustomTokenObtainPairSerializer includes: role, groups, email, username, phone_number
+            setUser(decoded);
           }
         } catch (error) {
           console.error('Invalid token:', error);
@@ -59,26 +56,41 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
-      const { access, refresh } = response.data;
+      const { access, refresh, user: userInfo } = response.data;
 
       // Store tokens
       localStorage.setItem('access', access);
       localStorage.setItem('refresh', refresh);
 
-      // Fetch user details after login
-      const userResponse = await axiosClient.get('/api/auth/me');
-      const userData = userResponse.data;
-
-      // Decode token and set user
+      // ✅ OPTIMIZATION: Decode token and merge with response user  info
+      // No need for additional /profiles/me/ API call
       const decoded = jwtDecode(access);
-      setUser({ ...decoded, ...userData });
+
+      // Merge token claims with user data from login response
+      // Django sends: { access, refresh, user: { id, username, email, role, groups } }
+      const userData = {
+        ...decoded,        // JWT payload: role, groups, email, username, phone_number
+        ...userInfo,       // Response data: id, username, email, role, groups
+      };
+
+      setUser(userData);
 
       return { success: true };
     } catch (error) {
       console.error('Login failed:', error);
+      let errorMessage = '로그인에 실패했습니다.';
+
+      if (error.response?.status === 401) {
+        errorMessage = '아이디 또는 비밀번호가 올바르지 않습니다.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.code === 'ERR_NETWORK') {
+        errorMessage = '서버와의 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.';
+      }
+
       return {
         success: false,
-        error: error.response?.data?.message || 'Login failed',
+        error: errorMessage,
       };
     }
   };

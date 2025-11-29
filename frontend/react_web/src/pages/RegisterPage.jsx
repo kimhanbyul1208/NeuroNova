@@ -15,7 +15,8 @@ import {
   Grid,
 } from '@mui/material';
 import { PersonAdd } from '@mui/icons-material';
-import axios from 'axios';
+import axiosClient from '../api/axios';
+import { API_ENDPOINTS } from '../utils/config';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -37,10 +38,9 @@ const RegisterPage = () => {
   });
 
   const roles = [
-    { value: 'doctor', label: '의사' },
-    { value: 'nurse', label: '간호사' },
-    { value: 'radiologist', label: '영상의학과 전문의' },
-    { value: 'admin', label: '관리자' },
+    { value: 'DOCTOR', label: '의사' },
+    { value: 'NURSE', label: '간호사' },
+    { value: 'ADMIN', label: '관리자' },
   ];
 
   const handleChange = (e) => {
@@ -69,17 +69,16 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      // Django API 호출
-      const response = await axios.post('/api/auth/register/', {
+      // Use axiosClient and correct endpoint
+      const response = await axiosClient.post(API_ENDPOINTS.REGISTER, {
         username: formData.username,
         email: formData.email,
         password: formData.password,
+        password_confirm: formData.password_confirm,
         first_name: formData.first_name,
         last_name: formData.last_name,
         role: formData.role,
         phone_number: formData.phone_number,
-        department: formData.department,
-        license_number: formData.license_number,
       });
 
       setSuccess(true);
@@ -90,8 +89,10 @@ const RegisterPage = () => {
       if (err.response?.data) {
         const errorMessages = Object.values(err.response.data).flat().join(' ');
         setError(errorMessages || '회원가입에 실패했습니다.');
+      } else if (err.code === 'ERR_NETWORK') {
+        setError('서버와의 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.');
       } else {
-        setError('서버와의 연결에 실패했습니다.');
+        setError('회원가입에 실패했습니다.');
       }
     } finally {
       setLoading(false);
