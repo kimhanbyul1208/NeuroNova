@@ -134,6 +134,14 @@ FCM Token: dXXXXXXXXXXXXXXXXXX...
 **이 토큰을 복사하세요!**
 
 ### 3-3. Django에서 테스트 알림 전송
+
+**방법 1: 테스트 스크립트 사용 (권장)**
+```bash
+cd backend/django_main
+python test_fcm_notification.py "위에서_복사한_FCM_토큰"
+```
+
+**방법 2: Django Shell 사용**
 ```bash
 python manage.py shell
 ```
@@ -144,8 +152,8 @@ from apps.core.services.notification_service import NotificationService
 service = NotificationService()
 token = "위에서_복사한_FCM_토큰"
 
-result = service.send_notification(
-    token=token,
+result = service.send_push_notification(
+    fcm_token=token,
     title="NeuroNova 테스트",
     body="푸시 알림 테스트!",
     data={'type': 'test'}
@@ -167,9 +175,10 @@ print(result)
 - [ ] Firebase Admin SDK 키 다운로드
 
 ### 로컬 설정:
-- [ ] 파일 배치 완료 (3개 파일)
-- [ ] `pip install firebase-admin` 실행
-- [ ] Django `settings.py` 수정
+- [x] 파일 배치 완료 (3개 파일)
+- [x] `pip install firebase-admin` 실행
+- [x] Django `settings.py` 수정
+- [x] NotificationService Firebase Admin SDK로 업데이트
 
 ### 테스트:
 - [ ] Flutter 앱 실행 성공
