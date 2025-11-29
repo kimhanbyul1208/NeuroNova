@@ -136,14 +136,20 @@ result = service.send_notification(
 
 ## 체크리스트
 
-- [ ] Firebase CLI 설치
-- [ ] FlutterFire CLI 설치
-- [ ] `flutterfire configure` 실행
-- [ ] `firebase_options.dart` 생성 확인
-- [ ] `main.dart` 수정
-- [ ] 서비스 계정 키 다운로드
-- [ ] Django 설정 완료
-- [ ] 테스트 성공
+### 수동 설정으로 완료됨:
+- [x] ~~Firebase CLI 설치~~ (수동 설정으로 대체)
+- [x] ~~FlutterFire CLI 설치~~ (수동 설정으로 대체)
+- [x] ~~`flutterfire configure` 실행~~ (수동 설정으로 대체)
+- [x] Firebase Console에서 파일 다운로드 완료
+- [x] `google-services.json` 배치 완료
+- [x] `GoogleService-Info.plist` 배치 완료
+- [x] 서비스 계정 키 다운로드 완료
+- [x] Django 설정 완료
+
+### 다음 단계 (테스트):
+- [ ] Flutter 앱 실행
+- [ ] FCM 토큰 확인
+- [ ] Django 알림 전송 테스트
 
 ---
 

@@ -168,11 +168,11 @@ print(result)
 ## 완료 체크리스트
 
 ### Firebase Console:
-- [ ] Android 앱 등록 (`com.neuronova.app`)
-- [ ] `google-services.json` 다운로드 및 배치
-- [ ] iOS 앱 등록 (`com.neuronova.app`)
-- [ ] `GoogleService-Info.plist` 다운로드 및 배치
-- [ ] Firebase Admin SDK 키 다운로드
+- [x] Android 앱 등록 (`com.neuronova.app`)
+- [x] `google-services.json` 다운로드 및 배치
+- [x] iOS 앱 등록 (`com.neuronova.app`)
+- [x] `GoogleService-Info.plist` 다운로드 및 배치
+- [x] Firebase Admin SDK 키 다운로드
 
 ### 로컬 설정:
 - [x] 파일 배치 완료 (3개 파일)
@@ -180,7 +180,7 @@ print(result)
 - [x] Django `settings.py` 수정
 - [x] NotificationService Firebase Admin SDK로 업데이트
 
-### 테스트:
+### 테스트 (다음 단계):
 - [ ] Flutter 앱 실행 성공
 - [ ] FCM 토큰 출력 확인
 - [ ] Django 알림 전송 성공
