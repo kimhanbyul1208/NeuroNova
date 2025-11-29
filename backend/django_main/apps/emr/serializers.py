@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class PatientSerializer(serializers.ModelSerializer):
     """Patient serializer."""
     
-    full_name = serializers.CharField(source='full_name', read_only=True)
+    full_name = serializers.CharField(read_only=True)
     age = serializers.IntegerField(source='get_age', read_only=True)
     
     class Meta:

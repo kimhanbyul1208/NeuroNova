@@ -6,7 +6,10 @@ import NavBar from './components/NavBar';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
+import AdminDashboard from './pages/dashboard/AdminDashboard';
+import DoctorDashboard from './pages/dashboard/DoctorDashboard';
+import StaffDashboard from './pages/dashboard/StaffDashboard';
+
 import PatientListPage from './pages/PatientListPage';
 import PatientDetailPage from './pages/PatientDetailPage';
 import AppointmentManagementPage from './pages/AppointmentManagementPage';
@@ -29,12 +32,39 @@ function ProtectedRoute({ children, roles = [] }) {
     return <Navigate to="/login" replace />;
   }
 
-  // If roles are specified, check if user has required role
-  if (roles.length > 0 && !roles.includes(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+  // If roles are specified, check if user has required role (Case Insensitive)
+  if (roles.length > 0) {
+    const userRole = user?.role?.toUpperCase();
+    const requiredRoles = roles.map(r => r.toUpperCase());
+
+    if (!requiredRoles.includes(userRole)) {
+      console.log(`Access denied. User role: ${userRole}, Required: ${requiredRoles}`);
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return children;
+}
+
+// Dashboard Redirect Component
+function DashboardRedirect() {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+
+  const role = user.role?.toUpperCase();
+  console.log('Redirecting based on role:', role);
+
+  switch (role) {
+    case 'ADMIN': return <Navigate to="/admin/dashboard" replace />;
+    case 'DOCTOR': return <Navigate to="/doctor/dashboard" replace />;
+    case 'NURSE': return <Navigate to="/staff/dashboard" replace />;
+    case 'PATIENT': return <div>Patient Portal Coming Soon</div>;
+    default:
+      console.warn('Unknown role:', role);
+      return <div>Unknown Role: {user.role}</div>;
+  }
 }
 
 function App() {
@@ -52,21 +82,37 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/about" element={<AboutPage />} />
 
-        {/* Protected Routes */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <DashboardPage />
+        {/* Dashboard Routing */}
+        <Route path="/dashboard" element={<DashboardRedirect />} />
+
+        {/* Role-Based Dashboards */}
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <AdminDashboard />
           </ProtectedRoute>
         } />
 
+        <Route path="/doctor/dashboard" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorDashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/staff/dashboard" element={
+          <ProtectedRoute roles={['NURSE']}>
+            <StaffDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* Feature Routes */}
         <Route path="/patients" element={
-          <ProtectedRoute roles={['doctor', 'admin']}>
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN', 'NURSE']}>
             <PatientListPage />
           </ProtectedRoute>
         } />
 
         <Route path="/patients/:id" element={
-          <ProtectedRoute roles={['doctor', 'admin']}>
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN', 'NURSE']}>
             <PatientDetailPage />
           </ProtectedRoute>
         } />
@@ -78,25 +124,25 @@ function App() {
         } />
 
         <Route path="/dicom/:studyId" element={
-          <ProtectedRoute roles={['doctor', 'admin']}>
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <DicomViewerPage />
           </ProtectedRoute>
         } />
 
         <Route path="/diagnosis/:id" element={
-          <ProtectedRoute roles={['doctor', 'admin']}>
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <DiagnosisDetailPage />
           </ProtectedRoute>
         } />
 
         <Route path="/soap/:encounterId" element={
-          <ProtectedRoute roles={['doctor', 'admin']}>
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <SOAPChartPage />
           </ProtectedRoute>
         } />
 
         <Route path="/prescriptions" element={
-          <ProtectedRoute roles={['doctor', 'admin']}>
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <PrescriptionManagementPage />
           </ProtectedRoute>
         } />
