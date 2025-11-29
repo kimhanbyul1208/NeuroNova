@@ -30,24 +30,29 @@ export default function NavBar() {
         </span>
       </Link>
 
-      <Link to="/" style={linkStyle}>대시보드</Link>
+      <Link to="/dashboard" style={linkStyle}>대시보드</Link>
 
-      {(user?.role === 'doctor' || user?.role === 'admin') && (
+      {(user?.role === 'DOCTOR' || user?.role === 'ADMIN' || user?.role === 'NURSE') && (
         <>
           <Link to="/patients" style={linkStyle}>환자 관리</Link>
+        </>
+      )}
+
+      {(user?.role === 'DOCTOR' || user?.role === 'ADMIN') && (
+        <>
           <Link to="/appointments" style={linkStyle}>예약 관리</Link>
           <Link to="/prescriptions" style={linkStyle}>처방 관리</Link>
         </>
       )}
 
-      {user?.role === 'patient' && (
+      {user?.role === 'PATIENT' && (
         <>
           <Link to="/appointments" style={linkStyle}>내 예약</Link>
           <Link to="/notifications" style={linkStyle}>알림</Link>
         </>
       )}
 
-      {user?.role === 'admin' && (
+      {user?.role === 'ADMIN' && (
         <Link to="/about" style={linkStyle}>시스템 관리</Link>
       )}
 
@@ -89,10 +94,10 @@ const linkStyle = {
 
 function getRoleName(role) {
   const roleNames = {
-    'admin': '관리자',
-    'doctor': '의사',
-    'patient': '환자',
-    'staff': '직원'
+    'ADMIN': '관리자',
+    'DOCTOR': '의사',
+    'PATIENT': '환자',
+    'NURSE': '간호사/직원'
   };
   return roleNames[role] || role;
 }

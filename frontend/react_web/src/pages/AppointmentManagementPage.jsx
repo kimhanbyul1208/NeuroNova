@@ -8,9 +8,14 @@ import {
   Tab,
   Grid,
   Snackbar,
-  Alert
+  Alert,
+  CircularProgress,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  Chip
 } from '@mui/material';
-import { AppointmentCard, LoadingSpinner, ErrorAlert } from '../components';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS, APPOINTMENT_STATUS } from '../utils/config';
 
@@ -117,7 +122,11 @@ const AppointmentManagementPage = () => {
   );
 
   if (loading) {
-    return <LoadingSpinner fullScreen />;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
@@ -134,11 +143,11 @@ const AppointmentManagementPage = () => {
 
       {/* 에러 표시 */}
       {error && (
-        <ErrorAlert
-          message={error}
-          title="오류 발생"
-          onRetry={fetchAppointments}
-        />
+        <Alert severity="error" sx={{ marginBottom: 2 }}>
+          <Typography variant="h6">오류 발생</Typography>
+          <Typography>{error}</Typography>
+          <Button onClick={fetchAppointments} sx={{ marginTop: 1 }}>재시도</Button>
+        </Alert>
       )}
 
       {/* 탭 메뉴 */}
@@ -168,12 +177,19 @@ const AppointmentManagementPage = () => {
                   <Grid container spacing={2}>
                     {pendingAppointments.map((appointment) => (
                       <Grid item xs={12} md={6} key={appointment.id}>
-                        <AppointmentCard
-                          appointment={appointment}
-                          onApprove={handleApprove}
-                          onReject={handleReject}
-                          showActions={true}
-                        />
+                        <Card>
+                          <CardContent>
+                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                            </Typography>
+                            <Chip label={appointment.status} size="small" sx={{ marginTop: 1 }} />
+                          </CardContent>
+                          <CardActions>
+                            <Button size="small" color="primary" onClick={() => handleApprove(appointment.id)}>승인</Button>
+                            <Button size="small" color="error" onClick={() => handleReject(appointment.id)}>거부</Button>
+                          </CardActions>
+                        </Card>
                       </Grid>
                     ))}
                   </Grid>
@@ -194,7 +210,15 @@ const AppointmentManagementPage = () => {
                   <Grid container spacing={2}>
                     {confirmedAppointments.map((appointment) => (
                       <Grid item xs={12} md={6} key={appointment.id}>
-                        <AppointmentCard appointment={appointment} />
+                        <Card>
+                          <CardContent>
+                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                            </Typography>
+                            <Chip label={appointment.status} size="small" color="success" sx={{ marginTop: 1 }} />
+                          </CardContent>
+                        </Card>
                       </Grid>
                     ))}
                   </Grid>
@@ -215,7 +239,15 @@ const AppointmentManagementPage = () => {
                   <Grid container spacing={2}>
                     {completedAppointments.map((appointment) => (
                       <Grid item xs={12} md={6} key={appointment.id}>
-                        <AppointmentCard appointment={appointment} />
+                        <Card>
+                          <CardContent>
+                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                            </Typography>
+                            <Chip label={appointment.status} size="small" color="default" sx={{ marginTop: 1 }} />
+                          </CardContent>
+                        </Card>
                       </Grid>
                     ))}
                   </Grid>
@@ -236,7 +268,15 @@ const AppointmentManagementPage = () => {
                   <Grid container spacing={2}>
                     {cancelledAppointments.map((appointment) => (
                       <Grid item xs={12} md={6} key={appointment.id}>
-                        <AppointmentCard appointment={appointment} />
+                        <Card>
+                          <CardContent>
+                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                            </Typography>
+                            <Chip label={appointment.status} size="small" color="error" sx={{ marginTop: 1 }} />
+                          </CardContent>
+                        </Card>
                       </Grid>
                     ))}
                   </Grid>

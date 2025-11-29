@@ -37,9 +37,13 @@ services:
   react:
     build:
       context: ./frontend/react_web
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
+    command: npm run dev -- --host
+    volumes:
+      - ./frontend/react_web:/app
+      - /app/node_modules
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       - django
     restart: unless-stopped
