@@ -5,7 +5,7 @@ Extends Django's default User model with UserProfile.
 from django.contrib.auth.models import User
 from django.db import models
 from apps.core.models import BaseModel
-from config.constants import UserRole
+from config.constants import UserRole, ApprovalStatus
 from typing import Optional
 import logging
 
@@ -77,6 +77,14 @@ class UserProfile(BaseModel):
         default=UserRole.PATIENT,
         verbose_name="역할",
         help_text="시스템 내 사용자 역할 (RBAC)"
+    )
+
+    approval_status = models.CharField(
+        max_length=20,
+        choices=ApprovalStatus.CHOICES,
+        default=ApprovalStatus.APPROVED,
+        verbose_name="승인 상태",
+        help_text="관리자 승인 상태 (PENDING, APPROVED, REJECTED)"
     )
 
     phone_number = models.CharField(

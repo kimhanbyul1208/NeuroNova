@@ -31,10 +31,41 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         Register a new user.
         Public endpoint - no authentication required.
         """
+        from django.conf import settings
+        from django.template.loader import render_to_string
+        from config.constants import UserRole
+        
+        # Check if privileged signup is allowed for privileged roles
+        role = request.data.get('role', 'PATIENT')
+        
+        # Define pending message data
+        pending_message_data = {
+            "status": "pending_approval",
+            "message": "admin 관리자의 허가가 있어야합니다. 허가를 기다리는 중입니다. 보통 6시간 정도 소요됩니다.",
+            "contact": "담당자 전화 번호 : 010-1234-5678"
+        }
+
+        def get_pending_response(status_code):
+            """Helper to return JSON or HTML response based on Accept header."""
+            if 'text/html' in request.META.get('HTTP_ACCEPT', ''):
+                html_content = render_to_string('signup_pending.html', pending_message_data)
+                return Response(html_content, status=status_code, content_type='text/html')
+            return Response(pending_message_data, status=status_code)
+
+        # 1. Check if privileged signup is completely disabled
+        if role in UserRole.PRIVILEGED_ROLES and not getattr(settings, 'ALLOW_PRIVILEGED_SIGNUP', False):
+            return get_pending_response(status.HTTP_200_OK)
+
+        # 2. Proceed with registration
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             user_data = UserSerializer(user).data
+            
+            # 3. Check if user was created but is pending approval (ALLOW_PRIVILEGED_SIGNUP = True case)
+            if not user.is_active:
+                return get_pending_response(status.HTTP_202_ACCEPTED)
+
             return Response(
                 {
                     'message': 'User registered successfully',

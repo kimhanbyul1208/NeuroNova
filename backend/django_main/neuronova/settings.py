@@ -22,6 +22,10 @@ PROJECT_NAME = config('PROJECT_NAME', default='NeuroNova')
 PROJECT_VERSION = config('PROJECT_VERSION', default='1.0.0')
 API_VERSION = config('API_VERSION', default='v1')
 
+ALLOW_PRIVILEGED_SIGNUP = True
+# 개발 단계: True
+# 운영 배포: False 로 전환
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

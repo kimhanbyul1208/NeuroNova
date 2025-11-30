@@ -1,0 +1,93 @@
+프롬5,  권한on_off 
+
+Django + Django REST Framework 기반 회원가입 기능을 아래 요구사항에 맞게 구현해줘.
+
+────────────────────────────────────────────
+📌 절대 금지
+- “가정한다”, “추정한다”, “~이라고 가정하고 작성한다” 같은 표현 사용 금지.
+- DB(User 모델) 필드를 상상하거나 임의로 만들지 말 것.
+- User 모델의 실제 필드를 반드시 확인하고 그 필드명을 그대로 사용해서 코드를 작성할 것.
+────────────────────────────────────────────
+
+# 1. privileged_roles
+privileged_roles = ["admin", "doctor", "staff"]
+이 역할을 가진 사용자는 일반 회원처럼 즉시 활성화되면 안 된다.
+
+# 2. settings.py 수정
+settings.py 파일에 다음 항목을 직접 추가하는 방식으로 구현해라.
+
+ALLOW_PRIVILEGED_SIGNUP = True
+# 개발 단계: True
+# 운영 배포: False 로 전환
+
+settings.py 에 이 플래그를 추가하는 코드까지 포함해라.
+
+# 3. User 모델 구조 확인 필수
+User 모델의 실제 구조를 먼저 확인하고 아래 항목에 따라 작성해라.
+
+확인해야 할 필드:
+- 역할(role) 필드의 실제 이름
+- 승인 상태를 나타내는 필드 존재 여부 (예: is_approved, approval_status, status 등)
+- 유저 활성화 여부를 나타내는 필드 (예: is_active 등)
+
+필요한 승인/대기 관련 필드가 없다면:
+- 어떤 필드가 필요한지 명확하게 언급하고
+- migration 코드 전체를 제공해라.
+
+절대 임의로 필드를 지어내지 말 것. “DB에 존재하는 필드 기반”으로만 작성할 것.
+
+# 4. privileged role 처리 방식
+## ALLOW_PRIVILEGED_SIGNUP = True 일 때
+- privileged role 사용자도 회원가입을 제출할 수 있다.
+- 하지만 유저는 즉시 활성 상태가 되어서는 안 된다.
+- 반드시 “승인 대기 상태”로 저장한다. (실제 모델에 있는 필드를 사용해서 표현)
+- 응답은 성공 처리 대신 다음 안내 메시지를 반환한다:
+
+"""
+admin 관리자의 허가가 있어야합니다.
+허가를 기다리는 중입니다.
+보통 6시간 정도 소요됩니다.
+담당자 전화 번호 :
+"""
+
+- HTTP 상태코드: 202 Accepted 사용
+
+## ALLOW_PRIVILEGED_SIGNUP = False 일 때
+- privileged role 회원가입 시도 시 유저를 생성하지 않는다.
+- 위 메시지를 그대로 JSON 또는 HTML 페이지로 반환한다.
+- 200 또는 202 응답
+
+ValidationError, 400 에러 등은 절대 사용하지 말 것.
+
+# 5. 응답 방식
+두 종류 모두 제공해라:
+1) JSON 기반 응답  
+2) HTML 템플릿 렌더링 버전 (templates/signup_pending.html)
+
+JSON 응답 예시:
+{
+  "status": "pending_approval",
+  "message": "admin 관리자의 허가가 있어야합니다. 허가를 기다리는 중입니다. 보통 6시간 정도 소요됩니다.",
+  "contact": "담당자 전화 번호 : "
+}
+
+# 6. 파일별 전체 구현 요구
+다음 파일을 **완전한 형태로** 작성해라:
+- settings.py 수정 내용(플래그 추가 포함)
+- serializers.py 전체 코드 (validate_role 사용하되 ValidationError 금지)
+- views.py 전체 코드 (APIView 기반)
+- User 모델 검증 후 필요한 경우 migration 코드
+- signup_pending.html 템플릿 예시
+- privileged pending 상태를 프론트엔드가 처리할 때 받을 JSON 형태 예시
+
+# 7. 핵심 요약
+- privileged role 은 즉시 활성화 금지
+- 승인 대기 상태로 저장하거나 저장 없이 안내 메시지 반환
+- 에러 반환 금지 → 반드시 안내 메시지 반환
+- DB 실제 필드 기반으로 정확히 작성
+- settings.py 에 플래그를 직접 추가하는 코드 포함
+- JSON + HTML 응답 양쪽 모두 제공
+
+────────────────────────────────────────────
+
+그리고 위 모든 조건을 충족하는 프로덕션 수준 Django + DRF, flutter 코드를 작성해줘.
