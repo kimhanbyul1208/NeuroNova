@@ -133,3 +133,58 @@ final_pr/
 * **Coding Standard:** 변수명, API Key, 설정값은 하드코딩하지 않고 환경변수(.env)나 설정 파일로 분리 (Soft-coding).
 * **Design Patterns:** Factory (AI 모델), Strategy (알림), DTO/Serializer (데이터 검증).
 * **Permission Control:** 특수 권한(의사 등)은 `ALLOW_PRIVILEGED_SIGNUP` 플래그에 따라 승인 대기 처리.
+
+---
+
+## 7. 보안 체크리스트 (Security Checklist)
+
+### 7.1 완료된 보안 조치
+* **민감 정보 제거:** `settings.py`의 DB 정보, Secret Key 등을 `.env`로 이관.
+* **Git 보안:** `.gitignore`에 `.env`, `*.log`, `db.sqlite3`, `media/` 등 포함.
+* **Docker 보안:** 로컬 DB 컨테이너 제거 (원격 DB 사용), Redis/Django/Flask/React 컨테이너 구성.
+
+### 7.2 배포 전 필수 체크
+* [ ] `.env` 파일 생성 및 `SECRET_KEY`, `DB_PASSWORD`, `JWT_SECRET_KEY` 변경 (강력한 비밀번호 사용).
+* [ ] `DEBUG=False` 설정 및 `ALLOWED_HOSTS` 도메인 추가.
+* [ ] Git 히스토리에 민감 정보가 없는지 재확인 (`git log` 검사).
+* [ ] Firebase `service-account.json` 파일 권한 확인 및 `.gitignore` 포함 여부 확인.
+
+### 7.3 권장 보안 조치
+* **HTTPS/SSL:** Let's Encrypt 인증서 적용 및 Nginx SSL 설정.
+* **DB 보안:** SSL/TLS 연결 사용, 최소 권한 원칙 적용.
+* **API 보안:** CORS 설정(`ALLOWED_HOSTS`), JWT 만료 시간 설정, Rate Limiting 구현.
+
+---
+
+## 8. 테스트 전략 (Testing Strategy)
+
+### 8.1 테스트 개요
+| 종류 | 목적 | 목표 커버리지 |
+|------|------|--------------|
+| **Unit** | 개별 함수/메서드 검증 | 80% 이상 |
+| **Integration** | 모듈 간 연동 검증 | 60% 이상 |
+| **E2E** | 전체 사용자 시나리오 검증 | 주요 기능 100% |
+
+### 8.2 Backend (Django) 테스트
+* **도구:** `Django TestCase`, `DRF APITestCase`.
+* **실행:** `python manage.py test`
+* **주요 테스트 대상:**
+    * **Users:** 회원가입, 로그인, 권한 제어 (RBAC).
+    * **EMR:** 환자 생성, 진료 기록 조회, SOAP/Vitals 생성.
+    * **Custom:** 예약 생성/확인/취소, AI 진단 결과 검증(Human-in-the-loop).
+
+### 8.3 Frontend (React) 테스트
+* **도구:** `Vitest`, `React Testing Library`.
+* **실행:** `npm test`
+* **주요 테스트 대상:**
+    * **Components:** 렌더링, 사용자 상호작용 (버튼 클릭 등).
+    * **Context:** AuthContext (로그인 상태 관리).
+    * **Pages:** 로그인 페이지, 환자 목록 페이지 등 주요 화면.
+
+### 8.4 Frontend (Flutter) 테스트
+* **도구:** `flutter_test`, `mockito`.
+* **실행:** `flutter test`
+* **주요 테스트 대상:**
+    * **Widgets:** 앱 시작, 로그인 폼 렌더링.
+    * **Repositories:** AuthRepository (토큰 관리), AppointmentRepository.
+    * **Services:** AuthService (Singleton 패턴).
