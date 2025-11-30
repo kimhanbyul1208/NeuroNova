@@ -1,22 +1,83 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
+import {
+    RegisterPatientModal,
+    AssignDoctorModal,
+    LoadingSpinner,
+    ErrorAlert
+} from '../../components';
+import axiosClient from '../../api/axios';
+import { API_ENDPOINTS } from '../../utils/config';
 
 const StaffDashboard = () => {
     const { user, logout } = useAuth();
     const [queue, setQueue] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Modal States
+    const [registerModalOpen, setRegisterModalOpen] = useState(false);
+    const [assignModalOpen, setAssignModalOpen] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState(null);
 
     useEffect(() => {
-        // Mock data
-        setTimeout(() => {
-            setQueue([
-                { id: 1, name: '홍길동', pid: 'PT-2025-001', status: '접수완료', waitTime: '10분' },
-                { id: 2, name: '김영희', pid: 'PT-2025-002', status: '바이탈 대기', waitTime: '5분' },
-                { id: 3, name: '이철수', pid: 'PT-2025-003', status: '진료 대기', waitTime: '25분' },
-            ]);
-            setLoading(false);
-        }, 1000);
+        fetchQueue();
     }, []);
+
+    const fetchQueue = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            // Fetch encounters that are scheduled or in progress
+            // We might need a specific endpoint for "queue" or filter encounters
+            // For now, let's fetch recent encounters. 
+            // Ideally, the backend should have a queue endpoint.
+            // Let's use /api/emr/encounters/?status=SCHEDULED,IN_PROGRESS if supported, or just all for now and filter client side if needed.
+            // Assuming the backend supports filtering.
+            const response = await axiosClient.get(API_ENDPOINTS.ENCOUNTERS);
+            // Filter for active encounters if needed, or just show all recent
+            // Let's assume the API returns a list.
+            setQueue(response.data);
+        } catch (err) {
+            console.error("Error fetching queue:", err);
+            setError("환자 대기열을 불러오는데 실패했습니다.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRegisterSuccess = () => {
+        // Refresh queue or show success message
+        fetchQueue();
+    };
+
+    const handleAssignSuccess = () => {
+        fetchQueue();
+    };
+
+    const openAssignModal = (patient) => {
+        setSelectedPatient(patient);
+        setAssignModalOpen(true);
+    };
+
+    // Helper to get patient info from encounter or if the queue item IS a patient (depends on API)
+    // The current queue seems to be Encounters.
+    // If we want to assign a doctor to a patient, we need the patient object.
+    // Encounter object usually has 'patient' field which might be an ID or object.
+    // If it's an ID, we might need to fetch patient details or pass what we have.
+    // Let's assume the serializer returns nested patient info or we handle it.
+    // In `EncounterSerializer`, patient is usually a PrimaryKeyRelatedField unless `depth` is set.
+    // Let's check `EncounterSerializer` in `apps/emr/serializers.py`... 
+    // Wait, I can't check it now. 
+    // But `EncounterDetailSerializer` has it. `EncounterSerializer` might not.
+    // If `EncounterSerializer` returns patient ID, we can't display name easily without fetching.
+    // However, for the "Patient Queue", we usually need names.
+    // Let's assume `EncounterSerializer` has been updated or we use `EncounterDetailSerializer` if possible.
+    // Or, we can fetch Patients directly for a "Patient List" view if the Queue is empty.
+
+    // Actually, the "Patient Queue" usually implies "Encounters today".
+    // If the API returns simple encounters, we might need to fetch patient names.
+    // Let's assume for now the API returns enough info or we'll fix it.
 
     return (
         <div style={styles.container}>
@@ -32,40 +93,75 @@ const StaffDashboard = () => {
                 {/* Patient Queue */}
                 <div style={styles.card}>
                     <div style={styles.cardHeader}>
-                        <h2 style={styles.cardTitle}>Patient Queue</h2>
-                        <button style={styles.refreshButton}>Refresh</button>
+                        <h2 style={styles.cardTitle}>Patient Queue (Today's Encounters)</h2>
+                        <button onClick={fetchQueue} style={styles.refreshButton}>Refresh</button>
                     </div>
 
-                    <table style={styles.table}>
-                        <thead>
-                            <tr>
-                                <th style={styles.th}>Patient Name</th>
-                                <th style={styles.th}>PID</th>
-                                <th style={styles.th}>Status</th>
-                                <th style={styles.th}>Wait Time</th>
-                                <th style={styles.th}>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {queue.map(patient => (
-                                <tr key={patient.id} style={styles.tr}>
-                                    <td style={styles.td}>
-                                        <span style={styles.patientName}>{patient.name}</span>
-                                    </td>
-                                    <td style={styles.td}>{patient.pid}</td>
-                                    <td style={styles.td}>
-                                        <span style={{ ...styles.statusBadge, ...getStatusStyle(patient.status) }}>
-                                            {patient.status}
-                                        </span>
-                                    </td>
-                                    <td style={styles.td}>{patient.waitTime}</td>
-                                    <td style={styles.td}>
-                                        <button style={styles.actionButton}>Call</button>
-                                    </td>
+                    {loading ? (
+                        <LoadingSpinner />
+                    ) : error ? (
+                        <ErrorAlert message={error} />
+                    ) : (
+                        <table style={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th style={styles.th}>Date/Time</th>
+                                    <th style={styles.th}>Patient</th>
+                                    <th style={styles.th}>Status</th>
+                                    <th style={styles.th}>Facility</th>
+                                    <th style={styles.th}>Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {queue.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="5" style={{ ...styles.td, textAlign: 'center' }}>대기 중인 환자가 없습니다.</td>
+                                    </tr>
+                                ) : (
+                                    queue.map(encounter => (
+                                        <tr key={encounter.id} style={styles.tr}>
+                                            <td style={styles.td}>
+                                                {new Date(encounter.encounter_date).toLocaleString()}
+                                            </td>
+                                            <td style={styles.td}>
+                                                {/* Handling if patient is object or ID. 
+                                                    If ID, we just show ID. If object, show name.
+                                                    Ideally serializer sends name. 
+                                                    Let's try to access patient_name if available (custom serializer field) 
+                                                    or patient.first_name if nested.
+                                                */}
+                                                <span style={styles.patientName}>
+                                                    {encounter.patient_name || encounter.patient || 'Unknown'}
+                                                </span>
+                                            </td>
+                                            <td style={styles.td}>
+                                                <span style={{ ...styles.statusBadge, ...getStatusStyle(encounter.status) }}>
+                                                    {encounter.status}
+                                                </span>
+                                            </td>
+                                            <td style={styles.td}>{encounter.facility}</td>
+                                            <td style={styles.td}>
+                                                {/* We can assign doctor if not assigned or re-assign */}
+                                                <button
+                                                    style={styles.actionButton}
+                                                    onClick={() => {
+                                                        // We need to pass a patient object to the modal.
+                                                        // If encounter.patient is just ID, we construct a minimal object.
+                                                        const patientObj = typeof encounter.patient === 'object'
+                                                            ? encounter.patient
+                                                            : { id: encounter.patient, pid: 'Unknown', last_name: 'Patient', first_name: 'ID: ' + encounter.patient };
+                                                        openAssignModal(patientObj);
+                                                    }}
+                                                >
+                                                    Assign Dr.
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
 
                 {/* Quick Tasks */}
@@ -73,7 +169,12 @@ const StaffDashboard = () => {
                     <div style={styles.taskCard}>
                         <h3 style={styles.taskTitle}>Quick Tasks</h3>
                         <div style={styles.buttonGroup}>
-                            <button style={styles.primaryButton}>+ Register New Patient</button>
+                            <button
+                                style={styles.primaryButton}
+                                onClick={() => setRegisterModalOpen(true)}
+                            >
+                                + Register New Patient
+                            </button>
                             <button style={styles.secondaryButton}>Record Vitals</button>
                             <button style={styles.secondaryButton}>Upload Documents</button>
                         </div>
@@ -88,14 +189,29 @@ const StaffDashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Modals */}
+            <RegisterPatientModal
+                open={registerModalOpen}
+                onClose={() => setRegisterModalOpen(false)}
+                onRegisterSuccess={handleRegisterSuccess}
+            />
+
+            <AssignDoctorModal
+                open={assignModalOpen}
+                onClose={() => setAssignModalOpen(false)}
+                patient={selectedPatient}
+                onAssignSuccess={handleAssignSuccess}
+            />
         </div>
     );
 };
 
 const getStatusStyle = (status) => {
     switch (status) {
-        case '바이탈 대기': return { backgroundColor: '#fff3e0', color: '#e65100' };
-        case '진료 대기': return { backgroundColor: '#e3f2fd', color: '#1565c0' };
+        case 'SCHEDULED': return { backgroundColor: '#fff3e0', color: '#e65100' };
+        case 'IN_PROGRESS': return { backgroundColor: '#e3f2fd', color: '#1565c0' };
+        case 'COMPLETED': return { backgroundColor: '#e8f5e9', color: '#2e7d32' };
         default: return { backgroundColor: '#f5f5f5', color: '#616161' };
     }
 };

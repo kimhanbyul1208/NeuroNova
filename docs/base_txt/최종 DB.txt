@@ -157,21 +157,6 @@ Django 기본 인증 테이블 확장 또는 사용
 
 사용자의 역할(Role)과 추가 정보를 관리합니다.
 
-```python
-{
-    "id": 1,
-    "user_id": 1,       # Auth_User FK (OneToOne)
-    "role": "DOCTOR",   # DOCTOR, NURSE, PATIENT, ADMIN
-    "phone_number": "010-9999-8888",
-    "profile_image": "/media/profiles/dr_kim.jpg",
-    "fcm_token": "f43...a1" # 앱 푸시 알림용 토큰
-}
-```
-
------
-
-## 4\. 커스텀 (NeuroNova Core)
-
 뇌종양 진단 보조 및 서비스 특화 기능
 
 ### 1\. Doctor (의사 정보)

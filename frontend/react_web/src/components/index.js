@@ -5,4 +5,6 @@ export { default as PatientCard } from './PatientCard';
 export { default as AppointmentCard } from './AppointmentCard';
 export { default as DiagnosisResultCard } from './DiagnosisResultCard';
 export { default as XAIVisualization } from './XAIVisualization';
+export { default as RegisterPatientModal } from './RegisterPatientModal';
+export { default as AssignDoctorModal } from './AssignDoctorModal';
 export { default as NavBar } from './NavBar';

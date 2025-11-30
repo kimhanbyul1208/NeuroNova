@@ -5,11 +5,18 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from apps.users.models import UserProfile
+from apps.users.models import UserProfile, Department
 from typing import Dict, Any
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    """Department serializer."""
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'location', 'phone_number', 'description']
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -57,7 +64,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         
         return data
 
-
 class UserProfileSerializer(serializers.ModelSerializer):
     """User profile serializer."""
     username = serializers.CharField(source='user.username', read_only=True)
@@ -65,11 +71,54 @@ class UserProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
     full_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    department = DepartmentSerializer(read_only=True)
 
     class Meta:
         model = UserProfile
         fields = '__all__'
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        token['email'] = user.email
+        
+        # Add role from UserProfile
+        try:
+            profile = user.profile
+            token['role'] = profile.role
+            token['phone_number'] = profile.phone_number
+        except UserProfile.DoesNotExist:
+            token['role'] = 'PATIENT'  # Default role
+            token['phone_number'] = ''
+
+        # Add groups
+        token['groups'] = list(user.groups.values_list('name', flat=True))
+        
+        # Add permissions (optional, can make token large)
+        # token['permissions'] = list(user.get_all_permissions())
+
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        # Add user information to response
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+            'role': getattr(self.user.profile, 'role', 'PATIENT') if hasattr(self.user, 'profile') else 'PATIENT',
+            'groups': list(self.user.groups.values_list('name', flat=True)),
+        }
+        
+        return data
+
+
+
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -218,4 +218,52 @@ class AuthRepository {
       return false;
     }
   }
+  /// 서버에서 사용자 프로필 정보 가져오기
+  Future<Map<String, dynamic>> fetchUserProfile() async {
+    try {
+      final token = await _storage.read(key: 'access_token');
+      if (token == null) throw Exception('로그인이 필요합니다.');
+
+      // TODO: 실제 API 엔드포인트 확인 필요. 현재는 가정.
+      final response = await _dio.get(
+        '${AppConfig.apiBaseUrl}/api/users/me/', 
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception('프로필 조회 실패');
+      }
+    } catch (e) {
+      AppLogger.error('Fetch profile error: $e');
+      // API 호출 실패 시 로컬 스토리지 정보라도 반환 시도 가능
+      throw Exception('프로필 정보를 불러오는데 실패했습니다.');
+    }
+  }
+
+  /// 프로필 업데이트
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    try {
+      final token = await _storage.read(key: 'access_token');
+      if (token == null) throw Exception('로그인이 필요합니다.');
+
+      final response = await _dio.patch(
+        '${AppConfig.apiBaseUrl}/api/users/me/',
+        data: data,
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('프로필 업데이트 실패: ${response.statusMessage}');
+      }
+    } on DioException catch (e) {
+      AppLogger.error('Update profile error: ${e.message}');
+      throw Exception('프로필 업데이트 중 오류가 발생했습니다.');
+    }
+  }
 }

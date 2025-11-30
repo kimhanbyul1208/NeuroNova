@@ -12,6 +12,10 @@ import 'features/admin/admin_main_page.dart';
 import 'features/staff/staff_main_page.dart';
 import 'features/appointment/appointment_list_screen.dart';
 import 'features/appointment/appointment_create_screen.dart';
+import 'features/medication/add_medication_screen.dart';
+import 'features/records/medical_records_screen.dart';
+import 'features/records/record_detail_screen.dart';
+import 'features/profile/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +35,7 @@ void main() async {
     AppLogger.error('Failed to initialize database', e, stackTrace);
   }
 
-  // Initialize Firebase push notifications
+  // Initialize push notifications (placeholder)
   try {
     await NotificationService().initialize();
     AppLogger.info('Notification service initialized');
@@ -56,7 +60,7 @@ Future<String> _getInitialRoute() async {
       case 'doctor':
         return '/doctorMain';
       case 'patient':
-        return '/patientMain';
+        return '/main';
       case 'staff':
         return '/staffMain';
       default:
@@ -98,12 +102,19 @@ class MyApp extends StatelessWidget {
       // 라우트 정의
       routes: {
         '/login': (context) => const LoginScreen(),
+        '/main': (context) => const MainNavigationScreen(),
         '/patientMain': (context) => const PatientHomePage(),
         '/doctorMain': (context) => const DoctorMainPage(),
         '/adminMain': (context) => const AdminMainPage(),
         '/staffMain': (context) => const StaffMainPage(),
         '/appointments': (context) => const AppointmentListScreen(),
         '/appointment-create': (context) => const AppointmentCreateScreen(),
+        '/add-medication': (context) => const AddMedicationScreen(),
+        '/medical-records': (context) => const MedicalRecordsScreen(),
+        '/record-detail': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as String;
+          return RecordDetailScreen(recordId: args);
+        },
       },
     );
   }
@@ -130,13 +141,15 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future.delayed(const Duration(seconds: 2));
 
       // Check if user is logged in
-      final authRepo = AuthRepository();
-      final isLoggedIn = await authRepo.isLoggedIn();
+      // TODO: Implement AuthRepository
+      // final authRepo = AuthRepository();
+      // final isLoggedIn = await authRepo.isLoggedIn();
+      final isLoggedIn = false; // Temporarily hardcoded
 
       if (mounted) {
         if (isLoggedIn) {
           // Already logged in - go to home
-          Navigator.of(context).pushReplacementNamed('/home');
+          Navigator.of(context).pushReplacementNamed('/main');
         } else {
           // Not logged in - go to login screen
           Navigator.of(context).pushReplacementNamed('/login');
@@ -199,8 +212,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const HomeScreen(),
+    const PatientHomePage(), // Using actual patient home page
     const AppointmentListScreen(),
+    const MedicalRecordsScreen(), // New Medical Records screen
+    const NotificationsScreen(),
     const NotificationsScreen(),
     const ProfileScreen(),
   ];
@@ -218,6 +233,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: '예약',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.description),
+            label: '진료내역',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
@@ -262,6 +281,40 @@ class NotificationsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               '알림이 없습니다',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Profile Placeholder Screen
+class ProfilePlaceholderScreen extends StatelessWidget {
+  const ProfilePlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('프로필'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.person_outline,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '프로필 페이지 개발 중...',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],

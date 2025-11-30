@@ -12,6 +12,42 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class Department(BaseModel):
+    """
+    Medical Department (진료과).
+    Stores location and contact info.
+    """
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="진료과명"
+    )
+
+    location = models.CharField(
+        max_length=200,
+        verbose_name="위치",
+        help_text="예: 본관 3층 301호"
+    )
+
+    phone_number = models.CharField(
+        max_length=20,
+        verbose_name="대표 전화번호"
+    )
+
+    description = models.TextField(
+        blank=True,
+        verbose_name="설명"
+    )
+
+    class Meta:
+        db_table = 'department'
+        verbose_name = '진료과'
+        verbose_name_plural = '진료과 목록'
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class UserProfile(BaseModel):
     """
     Extended user profile for NeuroNova.
@@ -24,6 +60,15 @@ class UserProfile(BaseModel):
         related_name='profile',
         verbose_name="사용자",
         help_text="Django User 모델과 1:1 관계"
+    )
+
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='members',
+        verbose_name="소속 진료과"
     )
 
     role = models.CharField(
