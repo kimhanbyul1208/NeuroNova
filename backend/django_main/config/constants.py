@@ -24,6 +24,23 @@ class UserRole:
         (PATIENT, "Patient"),
     ]
 
+    # Roles that require admin approval
+    PRIVILEGED_ROLES: Final[List[str]] = [ADMIN, DOCTOR, NURSE]
+    
+    
+# Approval Status
+class ApprovalStatus:
+    """User approval status constants."""
+    PENDING: Final[str] = "PENDING"
+    APPROVED: Final[str] = "APPROVED"
+    REJECTED: Final[str] = "REJECTED"
+
+    CHOICES: Final[List[tuple]] = [
+        (PENDING, "Pending"),
+        (APPROVED, "Approved"),
+        (REJECTED, "Rejected"),
+    ]
+
 
 # Encounter Status
 class EncounterStatus:

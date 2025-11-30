@@ -197,6 +197,26 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         phone_number = validated_data.pop('phone_number', '')
         validated_data.pop('password_confirm')
 
+        # Check privileged signup settings
+        from django.conf import settings
+        from config.constants import ApprovalStatus, UserRole
+
+        is_privileged = role in UserRole.PRIVILEGED_ROLES
+        allow_privileged = getattr(settings, 'ALLOW_PRIVILEGED_SIGNUP', False)
+        
+        # Determine active status and approval status
+        is_active = True
+        approval_status = ApprovalStatus.APPROVED
+
+        if is_privileged:
+            if allow_privileged:
+                # Allow signup but set to inactive/pending
+                is_active = False
+                approval_status = ApprovalStatus.PENDING
+            else:
+                # Should be handled in view, but safety check here
+                pass
+
         # Create user
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -205,15 +225,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
         )
+        
+        # Set active status
+        user.is_active = is_active
+        user.save()
 
         # Create user profile
         UserProfile.objects.create(
             user=user,
             role=role,
             phone_number=phone_number,
+            approval_status=approval_status
         )
 
-        logger.info(f"New user registered: {user.username} with role {role}")
+        logger.info(f"New user registered: {user.username} with role {role}. Active: {is_active}, Status: {approval_status}")
         return user
 
 
