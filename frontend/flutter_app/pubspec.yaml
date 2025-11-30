@@ -36,10 +36,9 @@ dependencies:
   path: ^1.8.3
 
   # Push Notifications
-  # TODO: Re-enable with compatible versions
-  # firebase_core: ^2.24.2
-  # firebase_messaging: ^14.7.9
-  # flutter_local_notifications: ^16.3.0
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.9
+  flutter_local_notifications: ^16.3.0
 
   # Utils
   intl: ^0.20.2  # Date formatting
