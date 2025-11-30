@@ -1,29 +1,10 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.9-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-# Set work directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libgl1 \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install dependencies
-COPY requirements.txt /app/
-RUN pip install --upgrade pip
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy project
-COPY . /app/
+COPY . .
 
-# Expose port
-EXPOSE 5000
-
-# Run command
 CMD ["python", "app.py"]

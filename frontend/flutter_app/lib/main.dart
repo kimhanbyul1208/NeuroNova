@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/config/app_config.dart';
 import 'core/utils/logger.dart';
 import 'core/services/notification_service.dart';
@@ -23,6 +24,14 @@ void main() async {
   // Initialize logger
   AppLogger.info('Starting NeuroNova App v${AppConfig.appVersion}');
 
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp();
+    AppLogger.info('Firebase initialized');
+  } catch (e, stackTrace) {
+    AppLogger.error('Failed to initialize Firebase', e, stackTrace);
+  }
+
   // Initialize encrypted local database
   try {
     await LocalDatabase.database;
@@ -35,7 +44,7 @@ void main() async {
     AppLogger.error('Failed to initialize database', e, stackTrace);
   }
 
-  // Initialize push notifications (placeholder)
+  // Initialize push notifications
   try {
     await NotificationService().initialize();
     AppLogger.info('Notification service initialized');
@@ -216,7 +225,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const AppointmentListScreen(),
     const MedicalRecordsScreen(), // New Medical Records screen
     const NotificationsScreen(),
-    const NotificationsScreen(),
     const ProfileScreen(),
   ];
 
@@ -292,38 +300,3 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 }
-
-/// Profile Placeholder Screen
-class ProfilePlaceholderScreen extends StatelessWidget {
-  const ProfilePlaceholderScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('프로필'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.person_outline,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '프로필 페이지 개발 중...',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-

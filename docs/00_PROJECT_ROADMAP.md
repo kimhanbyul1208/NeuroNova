@@ -1,26 +1,29 @@
 # 프로젝트 평가 및 향후 로드맵 (Project Evaluation & Roadmap)
 
+**마지막 업데이트**: 2025-11-30
+
+---
+
 ## 1. 현재 상태 평가 (Current Status Evaluation)
 
 ### 🏆 성과 (Achievements)
-*   **문서화 (Documentation)**: 프로젝트 전반(`01_NeuroNova_Context.md`), API(`10_django_api.md`), Firebase(`60_firebase_integration.md`), AI(`12_flask_ai_integration.md`)에 대한 문서가 매우 체계적으로 정리되고 한글화되었습니다. 이는 유지보수와 협업에 큰 자산입니다.
-*   **Backend (Django)**: 사용자 관리, 권한 제어(`approval_status`), EMR 시스템 등 핵심 기능이 구현되어 있으며, Docker 환경도 구성되어 있습니다.
-*   **Frontend (Flutter)**: 환자용 앱의 기본 구조, UI, 블루투스 비콘 연동 등이 구현되었습니다.
-*   **Frontend (React)**: 의료진용 대시보드 및 환자 관리 기능이 구현되었습니다.
+*   **문서화 (Documentation)**: 프로젝트 전반, API, Firebase, AI에 대한 문서가 체계적으로 정리되고 한글화되었습니다.
+*   **Backend (Django)**: 사용자 관리, 권한 제어, EMR 시스템 등 핵심 기능 구현 완료.
+*   **Frontend (Flutter)**: 환자용 앱의 기본 구조, UI, Firebase 연동, 블루투스 비콘 보안 구현 완료.
+*   **Frontend (React)**: 의료진용 대시보드 및 환자 관리 기능 구현 완료.
 
 ### ⚠️ 부족한 점 & 과제 (Gaps & Challenges)
-*   **Flask AI 미구현**: AI 추론 엔진에 대한 **설계와 가이드(문서)는 완벽**하지만, 실제 **코드 구현은 되어 있지 않습니다** (`backend/flask_inference` 디렉토리가 비어 있음).
-*   **Firebase 연동 보류**: Flutter 앱에서 의존성 충돌 문제로 Firebase 기능이 주석 처리되어 있어, 푸시 알림 등 핵심 기능이 작동하지 않습니다.
-*   **서비스 간 통합 미비**: Django와 Flask 간의 통신, Flutter와 실제 백엔드 API 간의 연동 테스트가 더 필요합니다.
+*   **Flask AI 미구현**: AI 추론 엔진에 대한 설계와 가이드는 완성되었으나, 실제 코드 구현은 다른 개발자에게 할당됨.
+*   **서비스 간 통합 미비**: Django와 Flask 간의 통신, Flutter와 백엔드 API 간의 연동 테스트 필요.
 
 ---
 
 ## 2. 향후 파이프라인 (Future Pipeline)
 
-프로젝트 완성을 위한 단계별 계획입니다.
-
-### Phase 1: Flask AI 서버 구현 (우선순위: 높음)
+### Phase 1: Flask AI 서버 구현 (우선순위: 높음) 🔜
+> **담당**: 다른 개발자
 > **목표**: `docs/12_flask_ai_integration.md` 가이드를 기반으로 실제 작동하는 AI 추론 서버 구축
+
 1.  **환경 설정**: `backend/flask_inference`에 가상환경 및 패키지 설치 (`requirements.txt` 작성).
 2.  **기본 구조 구현**: `create_app`, 설정(`config.py`), 로깅 설정.
 3.  **모델 로더 & 전처리**: `ModelLoader`, `DICOMProcessor` 구현.
@@ -29,27 +32,23 @@
 
 ### Phase 2: Django-Flask 통합 (우선순위: 중간)
 > **목표**: Django에서 이미지를 업로드하면 Flask로 분석 요청을 보내고 결과를 저장
+
 1.  **Django View 구현**: `requests` 라이브러리를 사용하여 Flask API 호출 로직 작성.
 2.  **결과 저장**: 분석 결과를 DB(`PatientPredictionResult` 모델 등)에 저장하는 로직 구현.
 3.  **예외 처리**: 타임아웃, 서버 다운 시 처리 로직 추가.
 
-### Phase 3: Flutter Firebase 복구 및 기능 완성 (우선순위: 중간)
-> **목표**: 환자용 앱의 푸시 알림 및 보안 기능 정상화
-1.  **의존성 해결**: `pubspec.yaml`에서 Firebase 관련 패키지 버전 호환성 해결 및 주석 해제.
-2.  **FCM 연동**: 실제 기기/에뮬레이터에서 푸시 알림 수신 테스트.
-3.  **블루투스 보안 테스트**: 비콘 감지 시에만 의료기록 다운로드 기능이 작동하는지 실제 테스트.
-
 ### Phase 4: 전체 시스템 통합 테스트 (우선순위: 낮음)
 > **목표**: 모든 서비스가 유기적으로 작동하는지 확인
+
 1.  **E2E 시나리오 테스트**:
-    *   환자 회원가입 -> (의료진 승인) -> 로그인 -> 진료 예약 -> (의료진) CT 촬영 -> (AI) 분석 -> (의료진) 결과 확인 -> (환자) 결과 알림 수신.
+    *   환자 회원가입 → (의료진 승인) → 로그인 → 진료 예약 → (의료진) CT 촬영 → (AI) 분석 → (의료진) 결과 확인 → (환자) 결과 알림 수신.
 2.  **배포 준비**: 프로덕션 환경(`docker-compose.prod.yml`)에서의 안정성 확인.
 
 ---
 
-## 3. 추천하는 다음 작업 (Next Action)
+## 4. 추천하는 다음 작업 (Next Action)
 
-**"Phase 1: Flask AI 서버 구현"**을 시작하는 것을 강력히 추천합니다. 현재 문서화가 완벽하게 되어 있으므로, 이를 코드로 옮기는 작업만 수행하면 됩니다.
+**Phase 1: Flask AI 서버 구현**을 다른 개발자와 협업하여 시작하는 것을 추천합니다. 현재 문서화가 완벽하게 되어 있으므로, 이를 코드로 옮기는 작업만 수행하면 됩니다.
 
-**명령어 제안:**
-> "Flask AI 구현 가이드(Phase 1)에 따라 `backend/flask_inference` 디렉토리에 실제 코드를 작성해줘."
+**Phase 4: E2E 테스트**를 통해 현재 구현된 기능들(Django, Flutter, Firebase)이 정상 작동하는지 확인하는 것도 좋은 선택입니다.
+
