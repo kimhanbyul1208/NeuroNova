@@ -33,8 +33,13 @@ const PatientListPage = () => {
       setLoading(true);
       setError(null);
       const response = await axiosClient.get(API_ENDPOINTS.PATIENTS);
-      setPatients(response.data);
-      setFilteredPatients(response.data);
+
+      // Handle pagination (DRF returns { count, next, previous, results })
+      const data = response.data;
+      const patientList = Array.isArray(data) ? data : data.results || [];
+
+      setPatients(patientList);
+      setFilteredPatients(patientList);
     } catch (err) {
       setError(err.response?.data?.message || '환자 목록을 불러오는데 실패했습니다.');
       console.error('Error fetching patients:', err);

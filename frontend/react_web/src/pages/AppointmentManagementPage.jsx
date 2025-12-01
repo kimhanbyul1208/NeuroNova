@@ -36,7 +36,10 @@ const AppointmentManagementPage = () => {
       setLoading(true);
       setError(null);
       const response = await axiosClient.get(API_ENDPOINTS.APPOINTMENTS);
-      setAppointments(response.data || []);
+
+      // Handle pagination
+      const data = response.data;
+      setAppointments(Array.isArray(data) ? data : data.results || []);
     } catch (err) {
       setError(err.response?.data?.message || '예약 목록을 불러오는데 실패했습니다.');
       console.error('Error fetching appointments:', err);
@@ -52,9 +55,8 @@ const AppointmentManagementPage = () => {
   // 예약 승인
   const handleApprove = async (appointmentId) => {
     try {
-      await axiosClient.patch(`${API_ENDPOINTS.APPOINTMENTS}${appointmentId}/`, {
-        status: APPOINTMENT_STATUS.CONFIRMED
-      });
+      // Use specific action endpoint
+      await axiosClient.post(`${API_ENDPOINTS.APPOINTMENTS}${appointmentId}/confirm/`);
 
       setSnackbar({
         open: true,
@@ -77,9 +79,8 @@ const AppointmentManagementPage = () => {
   // 예약 거부
   const handleReject = async (appointmentId) => {
     try {
-      await axiosClient.patch(`${API_ENDPOINTS.APPOINTMENTS}${appointmentId}/`, {
-        status: APPOINTMENT_STATUS.CANCELLED
-      });
+      // Use specific action endpoint
+      await axiosClient.post(`${API_ENDPOINTS.APPOINTMENTS}${appointmentId}/cancel/`);
 
       setSnackbar({
         open: true,

@@ -66,7 +66,10 @@ const PrescriptionManagementPage = () => {
             setLoading(true);
             setError(null);
             const response = await axiosClient.get(API_ENDPOINTS.PRESCRIPTIONS);
-            setPrescriptions(response.data.results || response.data);
+
+            // Handle pagination
+            const data = response.data;
+            setPrescriptions(Array.isArray(data) ? data : data.results || []);
         } catch (err) {
             setError(err.response?.data?.message || '처방전 목록을 불러오는데 실패했습니다.');
         } finally {
