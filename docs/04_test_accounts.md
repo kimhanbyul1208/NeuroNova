@@ -1,8 +1,8 @@
 # NeuroNova Test Accounts
 
-## 전체 계정 목록 (Total: 14 accounts)
+## 전체 계정 목록 (Total: 12 accounts)
 
-각 역할별로 3개씩 총 12개의 계정과 기존 2개 계정을 포함하여 총 14개의 테스트 계정이 생성되었습니다.
+각 역할별로 3개씩 총 12개의 테스트 계정이 생성되었습니다.
 
 ---
 
@@ -37,7 +37,6 @@ Admin 계정(admin1)으로 로그인합니다.
 
 | Username | Password | Email | Role | Specialty |
 |----------|----------|-------|------|-----------|
-| `doctor` | `doctor123` | doctor@neuronova.com | DOCTOR | General |
 | `doctor1` | `doctor123` | doctor1@neuronova.com | DOCTOR | Neurosurgeon |
 | `doctor2` | `doctor123` | doctor2@neuronova.com | DOCTOR | Neurologist |
 | `doctor3` | `doctor123` | doctor3@neuronova.com | DOCTOR | Radiologist |
@@ -62,10 +61,9 @@ Admin 계정(admin1)으로 로그인합니다.
 
 | Username | Password | Email | Role | Name |
 |----------|----------|-------|------|------|
-| `patient` | `patient123` | patient@neuronova.com | PATIENT | Lee |
 | `patient1` | `patient123` | patient1@neuronova.com | PATIENT | John Doe |
 | `patient2` | `patient123` | patient2@neuronova.com | PATIENT | Jane Smith |
-| `patient3` | `patient123` | patient123@neuronova.com | PATIENT | Bob Johnson |
+| `patient3` | `patient123` | patient3@neuronova.com | PATIENT | Bob Johnson |
 
 **권한**: 환자 (예약, 진료 기록 조회)
 
@@ -110,9 +108,9 @@ python manage.py shell < create_all_accounts.py
 
 모든 테스트 계정은 다음 패턴을 따릅니다:
 - **Admin**: `admin123`
-- **Doctor**: `doctor123`
+- **Doctor**: `password123` (created by populate_db.py)
 - **Nurse**: `nurse123`
-- **Patient**: `patient123`
+- **Patient**: `password123` (created by populate_db.py)
 
 > [!WARNING]
 > 이 계정들은 **개발/테스트 전용**입니다. 프로덕션 환경에서는 절대 사용하지 마세요!
@@ -177,5 +175,5 @@ print(f"Total Doctors: {doctors.count()}")
 ---
 
 **생성일**: 2025-12-01  
-**총 계정 수**: 14개 (ADMIN: 3, DOCTOR: 4, NURSE: 3, PATIENT: 4)  
+**총 계정 수**: 12개 (ADMIN: 3, DOCTOR: 3, NURSE: 3, PATIENT: 3)  
 **상태**: ✅ 모두 APPROVED

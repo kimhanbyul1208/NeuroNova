@@ -40,8 +40,7 @@ npm run dev
 비밀번호: (Backend에서 생성한 계정)
 ```
 
-04_ test_accounts.md
-참고
+04_test_accounts.md 파일 참조 (총 12개 계정)
 
 ---
 
@@ -93,6 +92,16 @@ npm run dev
 # Terminal 5: Flutter App
 cd frontend/flutter_app
 flutter run
+
+### 3. Docker Compose 실행 (권장)
+```bash
+# 전체 시스템 실행 (Backend + Frontend + DB)
+docker-compose up --build
+# → React: http://localhost:3000
+# → Django: http://localhost:8000
+```
+> **Note**: Docker 환경에서는 `VITE_API_URL` 환경 변수가 자동으로 설정됩니다.
+
 ```
 
 ---
@@ -258,6 +267,11 @@ CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 1. Django 서버 실행 중인지 확인 (http://localhost:8000)
 2. `.env` 파일의 `VITE_API_BASE_URL` 확인
 3. 브라우저 개발자 도구 → Network 탭 확인
+
+#### 문제: Docker에서 로컬 DB 연결 실패
+**해결**:
+`settings.py`의 DATABASES 설정에서 HOST를 `host.docker.internal`로 설정하세요.
+(Windows/Mac Docker Desktop 기준)
 
 ---
 

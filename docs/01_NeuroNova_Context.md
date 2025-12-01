@@ -17,7 +17,7 @@ AI 어시스턴트는 이 컨텍스트를 바탕으로 코드를 생성하고 �
 시스템 아키텍처
 [Flutter App (환자)]    [React Web (의료진)]
          ↓                      ↓
-    [Nginx + Gunicorn]
+           [Nginx + Gunicorn]
          ↓
     [Django 메인 서버] ←→ [Flask AI 추론] + [Orthanc DICOM]
          ↓

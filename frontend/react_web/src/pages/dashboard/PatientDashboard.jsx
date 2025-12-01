@@ -64,7 +64,7 @@ const PatientDashboard = () => {
                     <div style={styles.card}>
                         <h2 style={styles.cardTitle}>Quick Actions</h2>
                         <div style={styles.buttonGroup}>
-                            <button style={styles.actionButton} onClick={() => alert('Feature coming soon')}>
+                            <button style={styles.actionButton} onClick={() => navigate('/appointments/new')}>
                                 📅 Book Appointment
                             </button>
                             <button style={styles.actionButton} onClick={() => alert('Feature coming soon')}>

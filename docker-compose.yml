@@ -21,6 +21,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
   flask:
@@ -46,4 +48,6 @@ services:
       - "3000:3000"
     depends_on:
       - django
+    environment:
+      - VITE_API_URL=http://django:8000
     restart: unless-stopped
