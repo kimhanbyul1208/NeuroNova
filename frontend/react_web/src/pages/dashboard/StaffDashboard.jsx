@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import {
     RegisterPatientModal,
@@ -12,6 +13,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 
 const StaffDashboard = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [queue, setQueue] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -134,8 +136,18 @@ const StaffDashboard = () => {
                             >
                                 + Register New Patient
                             </button>
-                            <button style={styles.secondaryButton}>Record Vitals</button>
-                            <button style={styles.secondaryButton}>Upload Documents</button>
+                            <button
+                                style={styles.secondaryButton}
+                                onClick={() => navigate('/forms')}
+                            >
+                                Record Vitals
+                            </button>
+                            <button
+                                style={styles.secondaryButton}
+                                onClick={() => navigate('/forms')}
+                            >
+                                Upload Documents
+                            </button>
                         </div>
                     </div>
 

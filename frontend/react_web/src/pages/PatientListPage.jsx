@@ -7,9 +7,16 @@ import {
   Grid,
   InputAdornment,
   Paper,
-  Pagination
+  Pagination,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Stack
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import AddIcon from '@mui/icons-material/Add';
 import { PatientCard, LoadingSpinner, ErrorAlert } from '../components';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
@@ -25,6 +32,15 @@ const PatientListPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [newPatient, setNewPatient] = useState({
+    first_name: '',
+    last_name: '',
+    pid: '',
+    phone: '',
+    gender: 'M',
+    date_of_birth: ''
+  });
   const patientsPerPage = 9;
 
   // 환자 목록 불러오기
@@ -45,6 +61,31 @@ const PatientListPage = () => {
       console.error('Error fetching patients:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 환자 삭제
+  const handleDeletePatient = async (id) => {
+    try {
+      await axiosClient.delete(`${API_ENDPOINTS.PATIENTS}${id}/`);
+      setPatients(patients.filter(p => p.id !== id));
+      setFilteredPatients(filteredPatients.filter(p => p.id !== id));
+    } catch (err) {
+      console.error('Error deleting patient:', err);
+      alert('환자 삭제에 실패했습니다.');
+    }
+  };
+
+  // 환자 추가
+  const handleAddPatient = async () => {
+    try {
+      await axiosClient.post(API_ENDPOINTS.PATIENTS, newPatient);
+      setOpenAddDialog(false);
+      setNewPatient({ first_name: '', last_name: '', pid: '', phone: '', gender: 'M', date_of_birth: '' });
+      fetchPatients(); // Refresh list
+    } catch (err) {
+      console.error('Error adding patient:', err);
+      alert('환자 추가에 실패했습니다.');
     }
   };
 
@@ -92,13 +133,22 @@ const PatientListPage = () => {
   return (
     <Container maxWidth="lg" sx={{ marginTop: 4, marginBottom: 4 }}>
       {/* 헤더 */}
-      <Box sx={{ marginBottom: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          환자 목록
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          등록된 환자를 조회하고 관리합니다.
-        </Typography>
+      <Box sx={{ marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom>
+            환자 목록
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            등록된 환자를 조회하고 관리합니다.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setOpenAddDialog(true)}
+        >
+          환자 추가
+        </Button>
       </Box>
 
       {/* 검색 바 */}
@@ -146,7 +196,7 @@ const PatientListPage = () => {
           <Grid container spacing={3}>
             {currentPatients.map((patient) => (
               <Grid item xs={12} sm={6} md={4} key={patient.id}>
-                <PatientCard patient={patient} />
+                <PatientCard patient={patient} onDelete={handleDeletePatient} />
               </Grid>
             ))}
           </Grid>
@@ -165,6 +215,61 @@ const PatientListPage = () => {
           )}
         </>
       )}
+      {/* 환자 추가 다이얼로그 */}
+      <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
+        <DialogTitle>새 환자 추가</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ marginTop: 1, minWidth: 300 }}>
+            <TextField
+              label="성 (Last Name)"
+              value={newPatient.last_name}
+              onChange={(e) => setNewPatient({ ...newPatient, last_name: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="이름 (First Name)"
+              value={newPatient.first_name}
+              onChange={(e) => setNewPatient({ ...newPatient, first_name: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="환자 번호 (PID)"
+              value={newPatient.pid}
+              onChange={(e) => setNewPatient({ ...newPatient, pid: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="전화번호"
+              value={newPatient.phone}
+              onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="생년월일"
+              type="date"
+              value={newPatient.date_of_birth}
+              onChange={(e) => setNewPatient({ ...newPatient, date_of_birth: e.target.value })}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              select
+              label="성별"
+              value={newPatient.gender}
+              onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
+              SelectProps={{ native: true }}
+              fullWidth
+            >
+              <option value="M">남성</option>
+              <option value="F">여성</option>
+            </TextField>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenAddDialog(false)}>취소</Button>
+          <Button onClick={handleAddPatient} variant="contained">추가</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

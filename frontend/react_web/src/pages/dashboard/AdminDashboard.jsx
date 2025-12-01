@@ -55,13 +55,13 @@ const AdminDashboard = () => {
                 <div style={styles.actionGrid}>
                     <button
                         style={styles.actionButton}
-                        onClick={() => navigate('/patients')}
+                        onClick={() => navigate('/admin/users')}
                     >
                         Manage Users
                     </button>
                     <button
                         style={styles.actionButton}
-                        onClick={() => alert('System Settings feature coming soon!')}
+                        onClick={() => navigate('/admin/settings')}
                     >
                         System Settings
                     </button>
@@ -154,8 +154,9 @@ const styles = {
         fontWeight: '600',
     },
     actionGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
         gap: '1rem',
     },
     actionButton: {

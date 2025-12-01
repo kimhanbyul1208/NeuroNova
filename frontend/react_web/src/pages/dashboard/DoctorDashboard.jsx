@@ -46,10 +46,34 @@ const DoctorDashboard = () => {
             <div style={styles.dashboardGrid}>
                 {/* Stats Row */}
                 <div style={styles.statsRow}>
-                    <StatCard title="Today's Patients" value={appointments.length} icon="👨‍⚕️" color="#4facfe" />
-                    <StatCard title="Pending Reviews" value="5" icon="📝" color="#ff9a9e" />
-                    <StatCard title="AI Analysis" value="8" icon="🧠" color="#a18cd1" />
-                    <StatCard title="Surgery" value="1" icon="🏥" color="#43e97b" />
+                    <StatCard
+                        title="Today's Patients"
+                        value={appointments.length}
+                        icon="👨‍⚕️"
+                        color="#4facfe"
+                        onClick={() => navigate('/appointments')}
+                    />
+                    <StatCard
+                        title="Pending Reviews"
+                        value="5"
+                        icon="📝"
+                        color="#ff9a9e"
+                        onClick={() => navigate('/doctor/cdss')} // Or a specific pending reviews page
+                    />
+                    <StatCard
+                        title="AI Analysis"
+                        value="8"
+                        icon="🧠"
+                        color="#a18cd1"
+                        onClick={() => navigate('/doctor/cdss')}
+                    />
+                    <StatCard
+                        title="Surgery"
+                        value="1"
+                        icon="🏥"
+                        color="#43e97b"
+                        onClick={() => navigate('/appointments')}
+                    />
                 </div>
 
                 {/* Main Section: Schedule & Quick Actions */}
@@ -87,7 +111,12 @@ const DoctorDashboard = () => {
                                             <span style={{ ...styles.statusTag, ...getStatusStyle(apt.status) }}>
                                                 {apt.status}
                                             </span>
-                                            <button style={styles.actionIconBtn}>→</button>
+                                            <button
+                                                style={styles.actionIconBtn}
+                                                onClick={() => navigate(`/patients/${apt.patient}`)}
+                                            >
+                                                →
+                                            </button>
                                         </div>
                                     </div>
                                 ))
@@ -154,8 +183,8 @@ const DoctorDashboard = () => {
 };
 
 // Sub-components
-const StatCard = ({ title, value, icon, color }) => (
-    <div style={styles.statCard}>
+const StatCard = ({ title, value, icon, color, onClick }) => (
+    <div style={styles.statCard} onClick={onClick}>
         <div style={{ ...styles.statIcon, backgroundColor: `${color}20`, color: color }}>{icon}</div>
         <div>
             <div style={styles.statValue}>{value}</div>
