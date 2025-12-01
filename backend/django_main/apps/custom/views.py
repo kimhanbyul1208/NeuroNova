@@ -65,6 +65,13 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     search_fields = ['patient__full_name', 'reason']
     ordering_fields = ['scheduled_at', 'created_at']
 
+    def perform_create(self, serializer):
+        """Set patient to current user if user is a patient."""
+        if hasattr(self.request.user, 'patient'):
+            serializer.save(patient=self.request.user.patient)
+        else:
+            serializer.save()
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanManageAppointments])
     def confirm(self, request, pk=None):
         """Confirm an appointment."""

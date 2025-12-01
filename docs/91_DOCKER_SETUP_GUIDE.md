@@ -137,9 +137,9 @@ docker exec neuronova-django-1 python manage.py migrate
 ### ✅ 원격 DB 사용 설정 완료
 
 **현재 구성**:
-- **MySQL**: 원격 DB 사용 (settings.py에서 .env 파일 참조)
-- **Docker Compose**: 로컬 MySQL 제거됨
-- **DB 설정**: `backend/django_main/.env` 파일에서 관리
+- **MySQL**: 원격 DB 사용 (.env 설정) 또는 **로컬 DB 사용** (host.docker.internal)
+- **Docker Compose**: 로컬 MySQL 제거됨 (호스트 DB 사용 권장)
+- **DB 설정**: `backend/django_main/.env` 또는 `settings.py`에서 관리
 
 **설정 방법**:
 1. `.env` 파일 생성 (아래 참조)
@@ -492,8 +492,21 @@ Error: Bind for 0.0.0.0:3000 failed: port is already allocated
 netstat -ano | findstr :3000
 
 # 프로세스 종료
+# 프로세스 종료
 taskkill /PID <PID> /F
 ```
+
+---
+
+### 5. 로컬 DB 연결 문제 (host.docker.internal)
+Docker 컨테이너 내부에서 호스트 머신(내 컴퓨터)의 DB에 접근하려면:
+1. `docker-compose.yml`의 `django` 서비스에 `extra_hosts` 추가:
+   ```yaml
+   extra_hosts:
+     - "host.docker.internal:host-gateway"
+   ```
+2. `settings.py`에서 `HOST`를 `host.docker.internal`로 설정.
+
 
 ---
 

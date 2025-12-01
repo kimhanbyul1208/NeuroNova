@@ -21,6 +21,8 @@ import SOAPChartPage from './pages/SOAPChartPage';
 import PrescriptionManagementPage from './pages/PrescriptionManagementPage';
 import NotificationCenterPage from './pages/NotificationCenterPage';
 import CDSSPage from './pages/CDSSPage';
+import DataManagementPage from './pages/DataManagementPage';
+import BookAppointmentPage from './pages/BookAppointmentPage';
 
 // Protected Route Component
 function ProtectedRoute({ children, roles = [] }) {
@@ -131,6 +133,12 @@ function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/appointments/new" element={
+          <ProtectedRoute roles={['PATIENT', 'ADMIN']}>
+            <BookAppointmentPage />
+          </ProtectedRoute>
+        } />
+
         <Route path="/dicom/:studyId" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <DicomViewerPage />
@@ -164,6 +172,12 @@ function App() {
         <Route path="/doctor/cdss" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <CDSSPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/doctor/data-management" element={
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
+            <DataManagementPage />
           </ProtectedRoute>
         } />
       </Routes>

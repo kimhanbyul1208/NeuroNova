@@ -8,5 +8,6 @@ from . import views
 app_name = "notifications"
 
 router = DefaultRouter()
+router.register(r'logs', views.NotificationLogViewSet, basename='notification-log')
 
 urlpatterns = router.urls

@@ -59,6 +59,9 @@
 - [x] `DashboardPage.jsx` - 대시보드
   - [x] 통계 요약
   - [x] 샘플 데이터
+- [x] `BookAppointmentPage.jsx` - 예약 하기 (환자용)
+  - [x] 예약 폼 구현
+  - [x] API 연동
 - [x] `PatientListPage.jsx` - 환자 목록
   - [x] 검색 기능
   - [x] 페이지네이션
@@ -282,7 +285,7 @@ flutter run
 - [x] README.md (React, Flutter 각각)
 - [x] FRONTEND_IMPLEMENTATION_GUIDE.md
 - [x] FRONTEND_CHECKLIST.md
-- [ ] API 명세서 (Backend 팀)
+- [ ]  (Backend 팀)
 - [ ] 배포 가이드
 
 ---

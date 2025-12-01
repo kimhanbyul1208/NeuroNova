@@ -31,6 +31,10 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
                 ...commonItems,
                 { icon: '👥', path: '/admin/users', title: 'Users', id: 'users' },
                 { icon: '⚙️', path: '/admin/settings', title: 'Settings', id: 'settings' },
+                // Debug/Role Switcher Links
+                { icon: '👨‍⚕️', path: '/doctor/dashboard', title: 'View as Doctor', id: 'view_doctor' },
+                { icon: '👩‍⚕️', path: '/staff/dashboard', title: 'View as Nurse', id: 'view_nurse' },
+                { icon: '🏥', path: '/patient/dashboard', title: 'View as Patient', id: 'view_patient' },
             ];
         }
         if (role === 'NURSE') { // Staff
@@ -125,6 +129,7 @@ const styles = {
         backgroundColor: '#f5f6fa', // Light background
         color: '#2f3542', // Dark text
         fontFamily: "'Inter', sans-serif",
+        position: 'relative',
     },
     sidebar: {
         width: '80px',
@@ -135,9 +140,11 @@ const styles = {
         padding: '2rem 0',
         borderRight: '1px solid #e1e1e1',
         boxShadow: '2px 0 10px rgba(0,0,0,0.05)',
-        position: 'fixed',
+        position: 'sticky',
+        top: 0,
         height: '100vh',
         zIndex: 100,
+        flexShrink: 0,
     },
     logoIcon: {
         width: '40px',
@@ -190,8 +197,9 @@ const styles = {
     mainContent: {
         flex: 1,
         padding: '2rem',
-        marginLeft: '80px', // Sidebar width
+        // marginLeft: '80px', // Removed because sidebar is no longer fixed
         overflowY: 'auto',
+        width: 'calc(100% - 80px)', // Ensure content takes remaining width
     },
     header: {
         display: 'flex',

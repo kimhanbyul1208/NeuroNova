@@ -42,6 +42,7 @@ export default function NavBar() {
         <>
           <Link to="/appointments" style={linkStyle}>예약 관리</Link>
           <Link to="/prescriptions" style={linkStyle}>처방 관리</Link>
+          <Link to="/doctor/data-management" style={linkStyle}>데이터 관리</Link>
         </>
       )}
 

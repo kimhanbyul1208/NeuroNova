@@ -71,8 +71,8 @@ class CanManageAppointments(permissions.BasePermission):
 
         if hasattr(request.user, 'profile'):
             role = request.user.profile.role
-            # Doctors, patients, and admins can manage appointments
-            return role in [UserRole.DOCTOR, UserRole.PATIENT, UserRole.ADMIN]
+            # Doctors, nurses, patients, and admins can manage appointments
+            return role in [UserRole.DOCTOR, UserRole.NURSE, UserRole.PATIENT, UserRole.ADMIN]
 
         return False
 
@@ -80,8 +80,8 @@ class CanManageAppointments(permissions.BasePermission):
         if hasattr(request.user, 'profile'):
             role = request.user.profile.role
 
-            # Admins and doctors can manage any appointment
-            if role in [UserRole.ADMIN, UserRole.DOCTOR]:
+            # Admins, doctors, and nurses can manage any appointment
+            if role in [UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE]:
                 return True
 
             # Patients can only cancel their own pending appointments
