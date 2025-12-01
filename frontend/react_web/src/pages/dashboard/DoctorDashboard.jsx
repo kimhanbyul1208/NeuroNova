@@ -1,199 +1,155 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import DashboardLayout from '../../layouts/DashboardLayout';
+import axiosClient from '../../api/axios';
+import { API_ENDPOINTS } from '../../utils/config';
 
 const DoctorDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
-    const [currentTime, setCurrentTime] = useState(new Date());
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const currentTime = new Date();
 
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        const fetchAppointments = async () => {
+            try {
+                setLoading(true);
+                const response = await axiosClient.get(API_ENDPOINTS.APPOINTMENTS);
+                const data = response.data;
+                // Handle pagination or direct list
+                const results = Array.isArray(data) ? data : data.results || [];
 
-        // Mock data fetch
-        setTimeout(() => {
-            setAppointments([
-                { id: 1, time: '09:00', patient: '홍길동', type: '초진', status: '대기중', gender: 'M', age: 45 },
-                { id: 2, time: '10:30', patient: '김영희', type: '재진', status: '예약', gender: 'F', age: 32 },
-                { id: 3, time: '14:00', patient: '이철수', type: '검사결과', status: '예약', gender: 'M', age: 58 },
-                { id: 4, time: '15:30', patient: '박지민', type: '수술상담', status: '예약', gender: 'F', age: 29 },
-            ]);
-            setLoading(false);
-        }, 1000);
+                // Filter for today's appointments (optional, but good for dashboard)
+                // For now, just showing the latest 5
+                setAppointments(results.slice(0, 5));
+            } catch (error) {
+                console.error("Error fetching appointments:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        return () => clearInterval(timer);
+        fetchAppointments();
     }, []);
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
+    const greeting = (
+        <>
+            Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'},
+            <span style={{ fontWeight: '300', color: '#57606f' }}> Dr. {user?.last_name || user?.username}</span>
+        </>
+    );
 
     return (
-        <div style={styles.container}>
-            {/* Sidebar / Navigation (Simplified for Dashboard) */}
-            <nav style={styles.sidebar}>
-                <div style={styles.logoArea}>
-                    <div style={styles.logoIcon}>N</div>
+        <DashboardLayout role="DOCTOR" activePage="dashboard" title={greeting}>
+            <div style={styles.dashboardGrid}>
+                {/* Stats Row */}
+                <div style={styles.statsRow}>
+                    <StatCard title="Today's Patients" value={appointments.length} icon="👨‍⚕️" color="#4facfe" />
+                    <StatCard title="Pending Reviews" value="5" icon="📝" color="#ff9a9e" />
+                    <StatCard title="AI Analysis" value="8" icon="🧠" color="#a18cd1" />
+                    <StatCard title="Surgery" value="1" icon="🏥" color="#43e97b" />
                 </div>
-                <div style={styles.navItems}>
-                    <div
-                        style={{ ...styles.navItem, ...styles.activeNavItem }}
-                        onClick={() => navigate('/doctor/dashboard')}
-                        title="Dashboard"
-                    >📊</div>
-                    <div
-                        style={styles.navItem}
-                        onClick={() => navigate('/patients')}
-                        title="Patients"
-                    >👥</div>
-                    <div
-                        style={styles.navItem}
-                        onClick={() => navigate('/appointments')}
-                        title="Schedule"
-                    >📅</div>
-                    <div
-                        style={styles.navItem}
-                        onClick={() => alert('Settings coming soon')}
-                        title="Settings"
-                    >⚙️</div>
-                </div>
-                <div style={styles.userAvatar} onClick={handleLogout} title="Logout">
-                    {user?.first_name?.[0] || 'D'}
-                </div>
-            </nav>
 
-            {/* Main Content */}
-            <main style={styles.mainContent}>
-                {/* Header */}
-                <header style={styles.header}>
-                    <div>
-                        <h1 style={styles.greeting}>
-                            Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'},
-                            <span style={styles.nameHighlight}> Dr. {user?.last_name || user?.username}</span>
-                        </h1>
-                        <p style={styles.dateDisplay}>
-                            {currentTime.toLocaleDateString('ko-KR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                        </p>
-                    </div>
-                    <div style={styles.headerRight}>
-                        <div style={styles.searchBar}>
-                            <span style={styles.searchIcon}>🔍</span>
-                            <input type="text" placeholder="Search patients..." style={styles.searchInput} />
+                {/* Main Section: Schedule & Quick Actions */}
+                <div style={styles.contentRow}>
+                    {/* Schedule Card */}
+                    <div style={styles.largeCard}>
+                        <div style={styles.cardHeader}>
+                            <h2 style={styles.cardTitle}>Today's Schedule</h2>
+                            <button
+                                style={styles.viewAllBtn}
+                                onClick={() => navigate('/appointments')}
+                            >
+                                View All
+                            </button>
                         </div>
-                        <div style={styles.notificationBtn} onClick={() => navigate('/notifications')}>
-                            🔔<span style={styles.badge}>3</span>
-                        </div>
-                    </div>
-                </header>
-
-                {/* Dashboard Grid */}
-                <div style={styles.dashboardGrid}>
-                    {/* Stats Row */}
-                    <div style={styles.statsRow}>
-                        <StatCard title="Today's Patients" value="12" icon="👨‍⚕️" color="#4facfe" />
-                        <StatCard title="Pending Reviews" value="5" icon="📝" color="#ff9a9e" />
-                        <StatCard title="AI Analysis" value="8" icon="🧠" color="#a18cd1" />
-                        <StatCard title="Surgery" value="1" icon="🏥" color="#43e97b" />
-                    </div>
-
-                    {/* Main Section: Schedule & Quick Actions */}
-                    <div style={styles.contentRow}>
-                        {/* Schedule Card */}
-                        <div style={styles.largeCard}>
-                            <div style={styles.cardHeader}>
-                                <h2 style={styles.cardTitle}>Today's Schedule</h2>
-                                <button
-                                    style={styles.viewAllBtn}
-                                    onClick={() => navigate('/appointments')}
-                                >
-                                    View All
-                                </button>
-                            </div>
-                            <div style={styles.scheduleList}>
-                                {loading ? (
-                                    <div style={styles.loading}>Loading schedule...</div>
-                                ) : (
-                                    appointments.map(apt => (
-                                        <div key={apt.id} style={styles.appointmentItem}>
-                                            <div style={styles.timeColumn}>
-                                                <span style={styles.timeText}>{apt.time}</span>
-                                                <div style={styles.timelineLine}></div>
-                                            </div>
-                                            <div style={styles.appointmentCard}>
-                                                <div style={styles.patientInfo}>
-                                                    <span style={styles.patientName}>{apt.patient}</span>
-                                                    <span style={styles.patientMeta}>{apt.gender}/{apt.age} • {apt.type}</span>
-                                                </div>
-                                                <span style={{ ...styles.statusTag, ...getStatusStyle(apt.status) }}>
-                                                    {apt.status}
-                                                </span>
-                                                <button style={styles.actionIconBtn}>→</button>
-                                            </div>
+                        <div style={styles.scheduleList}>
+                            {loading ? (
+                                <div style={styles.loading}>Loading schedule...</div>
+                            ) : appointments.length === 0 ? (
+                                <div style={styles.emptyState}>No appointments scheduled for today.</div>
+                            ) : (
+                                appointments.map(apt => (
+                                    <div key={apt.id} style={styles.appointmentItem}>
+                                        <div style={styles.timeColumn}>
+                                            <span style={styles.timeText}>
+                                                {new Date(apt.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                            <div style={styles.timelineLine}></div>
                                         </div>
-                                    ))
-                                )}
+                                        <div style={styles.appointmentCard}>
+                                            <div style={styles.patientInfo}>
+                                                <span style={styles.patientName}>{apt.patient_name || 'Unknown Patient'}</span>
+                                                <span style={styles.patientMeta}>{apt.reason || 'Regular Checkup'}</span>
+                                            </div>
+                                            <span style={{ ...styles.statusTag, ...getStatusStyle(apt.status) }}>
+                                                {apt.status}
+                                            </span>
+                                            <button style={styles.actionIconBtn}>→</button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column */}
+                    <div style={styles.rightColumn}>
+                        {/* Quick Actions */}
+                        <div style={styles.card}>
+                            <h2 style={styles.cardTitle}>Quick Actions</h2>
+                            <div style={styles.quickActionsGrid}>
+                                <ActionButton
+                                    icon="➕"
+                                    label="New Patient"
+                                    color="#4facfe"
+                                    onClick={() => navigate('/patients')}
+                                />
+                                <ActionButton
+                                    icon="🧬"
+                                    label="AI Analysis"
+                                    color="#a18cd1"
+                                    onClick={() => navigate('/doctor/cdss')}
+                                />
+                                <ActionButton
+                                    icon="💊"
+                                    label="Prescribe"
+                                    color="#ff9a9e"
+                                    onClick={() => navigate('/prescriptions')}
+                                />
+                                <ActionButton
+                                    icon="📅"
+                                    label="Schedule"
+                                    color="#43e97b"
+                                    onClick={() => navigate('/appointments')}
+                                />
                             </div>
                         </div>
 
-                        {/* Right Column */}
-                        <div style={styles.rightColumn}>
-                            {/* Quick Actions */}
-                            <div style={styles.card}>
-                                <h2 style={styles.cardTitle}>Quick Actions</h2>
-                                <div style={styles.quickActionsGrid}>
-                                    <ActionButton
-                                        icon="➕"
-                                        label="New Patient"
-                                        color="#4facfe"
-                                        onClick={() => navigate('/patients')}
-                                    />
-                                    <ActionButton
-                                        icon="🧬"
-                                        label="AI Analysis"
-                                        color="#a18cd1"
-                                        onClick={() => navigate('/doctor/cdss')}
-                                    />
-                                    <ActionButton
-                                        icon="💊"
-                                        label="Prescribe"
-                                        color="#ff9a9e"
-                                        onClick={() => navigate('/prescriptions')}
-                                    />
-                                    <ActionButton
-                                        icon="📅"
-                                        label="Schedule"
-                                        color="#43e97b"
-                                        onClick={() => navigate('/appointments')}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Recent Activity / AI Alerts */}
-                            <div style={{ ...styles.card, flex: 1 }}>
-                                <h2 style={styles.cardTitle}>AI Alerts</h2>
-                                <div style={styles.alertList}>
-                                    <AlertItem
-                                        message="High probability of Meningioma detected"
-                                        patient="홍길동"
-                                        time="10m ago"
-                                        severity="high"
-                                    />
-                                    <AlertItem
-                                        message="MRI Scan upload complete"
-                                        patient="김영희"
-                                        time="1h ago"
-                                        severity="medium"
-                                    />
-                                </div>
+                        {/* Recent Activity / AI Alerts */}
+                        <div style={{ ...styles.card, flex: 1 }}>
+                            <h2 style={styles.cardTitle}>AI Alerts</h2>
+                            <div style={styles.alertList}>
+                                <AlertItem
+                                    message="High probability of Meningioma detected"
+                                    patient="홍길동"
+                                    time="10m ago"
+                                    severity="high"
+                                />
+                                <AlertItem
+                                    message="MRI Scan upload complete"
+                                    patient="김영희"
+                                    time="1h ago"
+                                    severity="medium"
+                                />
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </DashboardLayout>
     );
 };
 
@@ -227,154 +183,14 @@ const AlertItem = ({ message, patient, time, severity }) => (
 
 const getStatusStyle = (status) => {
     switch (status) {
-        case '대기중': return { backgroundColor: 'rgba(255, 159, 67, 0.15)', color: '#ff9f43' };
-        case '진료중': return { backgroundColor: 'rgba(46, 213, 115, 0.15)', color: '#2ed573' };
+        case 'PENDING': return { backgroundColor: 'rgba(255, 159, 67, 0.15)', color: '#ff9f43' };
+        case 'CONFIRMED': return { backgroundColor: 'rgba(46, 213, 115, 0.15)', color: '#2ed573' };
         default: return { backgroundColor: 'rgba(84, 160, 255, 0.15)', color: '#54a0ff' };
     }
 };
 
-// Styles
+// Styles (Component specific)
 const styles = {
-    container: {
-        display: 'flex',
-        minHeight: '100vh',
-        backgroundColor: '#f5f6fa', // Light background
-        color: '#2f3542', // Dark text
-        fontFamily: "'Inter', sans-serif",
-    },
-    sidebar: {
-        width: '80px',
-        backgroundColor: '#ffffff', // White sidebar
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '2rem 0',
-        borderRight: '1px solid #e1e1e1',
-        boxShadow: '2px 0 10px rgba(0,0,0,0.05)',
-    },
-    logoIcon: {
-        width: '40px',
-        height: '40px',
-        borderRadius: '12px',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: 'bold',
-        fontSize: '1.2rem',
-        marginBottom: '3rem',
-        color: 'white',
-    },
-    navItems: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.5rem',
-        flex: 1,
-    },
-    navItem: {
-        width: '40px',
-        height: '40px',
-        borderRadius: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        fontSize: '1.2rem',
-        color: '#a4b0be',
-        transition: 'all 0.2s',
-        ':hover': { backgroundColor: '#f1f2f6', color: '#57606f' }
-    },
-    activeNavItem: {
-        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-        color: '#667eea',
-    },
-    userAvatar: {
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
-        backgroundColor: '#764ba2',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        color: 'white',
-    },
-    mainContent: {
-        flex: 1,
-        padding: '2rem',
-        overflowY: 'auto',
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: '2.5rem',
-    },
-    greeting: {
-        fontSize: '2rem',
-        fontWeight: '700',
-        margin: 0,
-        color: '#2f3542',
-    },
-    nameHighlight: {
-        fontWeight: '300',
-        color: '#57606f',
-    },
-    dateDisplay: {
-        color: '#747d8c',
-        margin: '0.5rem 0 0 0',
-        fontSize: '0.95rem',
-    },
-    headerRight: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1.5rem',
-    },
-    searchBar: {
-        display: 'flex',
-        alignItems: 'center',
-        backgroundColor: '#ffffff',
-        padding: '0.6rem 1rem',
-        borderRadius: '12px',
-        border: '1px solid #e1e1e1',
-        width: '250px',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
-    },
-    searchIcon: {
-        marginRight: '0.5rem',
-        opacity: 0.5,
-        color: '#2f3542',
-    },
-    searchInput: {
-        background: 'none',
-        border: 'none',
-        color: '#2f3542',
-        width: '100%',
-        outline: 'none',
-        fontSize: '0.9rem',
-    },
-    notificationBtn: {
-        position: 'relative',
-        fontSize: '1.2rem',
-        cursor: 'pointer',
-        padding: '0.5rem',
-        backgroundColor: '#ffffff',
-        borderRadius: '10px',
-        border: '1px solid #e1e1e1',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
-    },
-    badge: {
-        position: 'absolute',
-        top: '-2px',
-        right: '-2px',
-        backgroundColor: '#ff6b6b',
-        color: 'white',
-        fontSize: '0.7rem',
-        padding: '2px 5px',
-        borderRadius: '10px',
-        fontWeight: 'bold',
-    },
     dashboardGrid: {
         display: 'flex',
         flexDirection: 'column',
@@ -592,6 +408,17 @@ const styles = {
         fontSize: '0.8rem',
         color: '#747d8c',
     },
+    loading: {
+        padding: '2rem',
+        textAlign: 'center',
+        color: '#747d8c',
+    },
+    emptyState: {
+        padding: '2rem',
+        textAlign: 'center',
+        color: '#747d8c',
+        fontStyle: 'italic',
+    }
 };
 
 export default DoctorDashboard;
