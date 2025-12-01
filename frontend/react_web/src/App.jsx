@@ -20,6 +20,7 @@ import AboutPage from './pages/AboutPage';
 import SOAPChartPage from './pages/SOAPChartPage';
 import PrescriptionManagementPage from './pages/PrescriptionManagementPage';
 import NotificationCenterPage from './pages/NotificationCenterPage';
+import CDSSPage from './pages/CDSSPage';
 
 // Protected Route Component
 function ProtectedRoute({ children, roles = [] }) {
@@ -94,19 +95,19 @@ function App() {
         } />
 
         <Route path="/doctor/dashboard" element={
-          <ProtectedRoute roles={['DOCTOR']}>
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <DoctorDashboard />
           </ProtectedRoute>
         } />
 
         <Route path="/staff/dashboard" element={
-          <ProtectedRoute roles={['NURSE']}>
+          <ProtectedRoute roles={['NURSE', 'ADMIN']}>
             <StaffDashboard />
           </ProtectedRoute>
         } />
 
         <Route path="/patient/dashboard" element={
-          <ProtectedRoute roles={['PATIENT']}>
+          <ProtectedRoute roles={['PATIENT', 'ADMIN']}>
             <PatientDashboard />
           </ProtectedRoute>
         } />
@@ -157,6 +158,12 @@ function App() {
         <Route path="/notifications" element={
           <ProtectedRoute>
             <NotificationCenterPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/doctor/cdss" element={
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
+            <CDSSPage />
           </ProtectedRoute>
         } />
       </Routes>

@@ -8,3 +8,4 @@ export { default as XAIVisualization } from './XAIVisualization';
 export { default as RegisterPatientModal } from './RegisterPatientModal';
 export { default as AssignDoctorModal } from './AssignDoctorModal';
 export { default as NavBar } from './NavBar';
+export { default as ProteinViewer } from './ProteinViewer';
