@@ -15,32 +15,54 @@ import React, { useEffect, useRef, useState } from 'react';
 const ProteinViewer = ({ pdbId, width = '100%', height = '400px', style = {} }) => {
     const viewerRef = useRef(null);
     const [viewer, setViewer] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [libLoaded, setLibLoaded] = useState(false);
 
-    // Initialize Viewer
+    // Check for 3Dmol library availability with retry
     useEffect(() => {
-        if (!viewerRef.current) return;
+        let attempts = 0;
+        const maxAttempts = 10; // Try for 5 seconds (500ms * 10)
 
-        // Check if 3Dmol is loaded
-        if (!window.$3Dmol) {
-            setError("3Dmol.js library not loaded");
-            return;
+        const checkLib = setInterval(() => {
+            if (window.$3Dmol) {
+                setLibLoaded(true);
+                clearInterval(checkLib);
+            } else {
+                attempts++;
+                if (attempts >= maxAttempts) {
+                    clearInterval(checkLib);
+                    setError("3Dmol.js library failed to load. Please check your internet connection.");
+                    setLoading(false);
+                }
+            }
+        }, 500);
+
+        return () => clearInterval(checkLib);
+    }, []);
+
+    // Initialize Viewer once library is loaded
+    useEffect(() => {
+        if (!libLoaded || !viewerRef.current || viewer) return;
+
+        try {
+            const element = viewerRef.current;
+            const config = { backgroundColor: 'white' };
+            const v = window.$3Dmol.createWebGLViewer(element, config);
+            setViewer(v);
+        } catch (err) {
+            console.error("Failed to initialize 3Dmol viewer:", err);
+            setError("Failed to initialize 3D viewer. WebGL might not be supported.");
+            setLoading(false);
         }
 
-        // Create the viewer
-        const element = viewerRef.current;
-        const config = { backgroundColor: 'white' };
-        const v = window.$3Dmol.createWebGLViewer(element, config);
-        setViewer(v);
-
-        // Cleanup on unmount
         return () => {
-            if (v) {
-                v.clear();
+            if (viewer) {
+                // Cleanup if needed, though 3Dmol doesn't have a strict destroy method
+                // viewer.clear(); // Optional
             }
         };
-    }, []);
+    }, [libLoaded, viewer]);
 
     // Load PDB Data when pdbId or viewer changes
     useEffect(() => {
@@ -86,12 +108,16 @@ const ProteinViewer = ({ pdbId, width = '100%', height = '400px', style = {} }) 
         <div style={{ position: 'relative', width, height, ...style }}>
             {loading && (
                 <div style={styles.overlay}>
-                    Loading structure...
+                    <div style={styles.spinner}></div>
+                    <span style={{ marginLeft: '10px' }}>Loading structure...</span>
                 </div>
             )}
             {error && (
                 <div style={styles.overlay}>
-                    Error: {error}
+                    <div style={{ textAlign: 'center', color: '#e74c3c' }}>
+                        <strong>Error</strong><br />
+                        {error}
+                    </div>
                 </div>
             )}
             <div
@@ -112,11 +138,33 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
         zIndex: 10,
         color: '#333',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        borderRadius: '12px', // Match parent border radius
+    },
+    spinner: {
+        width: '20px',
+        height: '20px',
+        border: '3px solid #f3f3f3',
+        borderTop: '3px solid #3498db',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
     }
 };
+
+// Add keyframes for spinner if not present globally
+if (typeof document !== 'undefined') {
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(styleSheet);
+}
 
 export default ProteinViewer;
