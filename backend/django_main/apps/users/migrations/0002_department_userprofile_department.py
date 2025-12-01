@@ -35,4 +35,9 @@ class Migration(migrations.Migration):
             name='department',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='members', to='users.department', verbose_name='소속 진료과'),
         ),
+        migrations.AddField(
+            model_name='userprofile',
+            name='approval_status',
+            field=models.CharField(choices=[('PENDING', 'Pending'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected')], default='APPROVED', help_text='관리자 승인 상태 (PENDING, APPROVED, REJECTED)', max_length=20, verbose_name='승인 상태'),
+        ),
     ]
