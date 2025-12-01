@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import * as $3Dmol from '3dmol';
 
 /**
  * ProteinViewer Component
  * 
- * Visualizes a protein structure from a PDB ID using 3Dmol.js.
+ * Visualizes a protein structure from a PDB ID using 3Dmol.js (via CDN).
  * 
  * @component
  * @param {Object} props
@@ -23,18 +22,20 @@ const ProteinViewer = ({ pdbId, width = '100%', height = '400px', style = {} }) 
     useEffect(() => {
         if (!viewerRef.current) return;
 
+        // Check if 3Dmol is loaded
+        if (!window.$3Dmol) {
+            setError("3Dmol.js library not loaded");
+            return;
+        }
+
         // Create the viewer
         const element = viewerRef.current;
         const config = { backgroundColor: 'white' };
-        const v = $3Dmol.createWebGLViewer(element, config);
+        const v = window.$3Dmol.createWebGLViewer(element, config);
         setViewer(v);
 
         // Cleanup on unmount
         return () => {
-            // 3Dmol doesn't have a specific destroy method documented for simple cleanup,
-            // but we can clear the element content if needed. 
-            // However, React handles DOM removal.
-            // We can clear the viewer content.
             if (v) {
                 v.clear();
             }
