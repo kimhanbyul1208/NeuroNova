@@ -26,6 +26,7 @@ import BookAppointmentPage from './pages/BookAppointmentPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import FormsPage from './pages/nurse/FormsPage';
+import MedicalRecordsPage from './pages/MedicalRecordsPage';
 
 // Protected Route Component
 function ProtectedRoute({ children, roles = [] }) {
@@ -105,6 +106,12 @@ function App() {
         } />
 
         {/* Feature Routes */}
+        <Route path="/patient/medical-records" element={
+          <ProtectedRoute roles={['PATIENT', 'ADMIN']}>
+            <MedicalRecordsPage />
+          </ProtectedRoute>
+        } />
+
         <Route path="/patients" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN', 'NURSE']}>
             <PatientListPage />

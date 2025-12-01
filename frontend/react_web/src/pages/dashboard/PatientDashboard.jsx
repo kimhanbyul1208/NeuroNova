@@ -76,7 +76,7 @@ const PatientDashboard = () => {
                             <button style={styles.actionButton} onClick={() => navigate('/prescriptions')}>
                                 💊 My Prescriptions
                             </button>
-                            <button style={styles.actionButton} onClick={() => alert('Medical Records feature coming soon')}>
+                            <button style={styles.actionButton} onClick={() => navigate('/patient/medical-records')}>
                                 📄 Medical Records
                             </button>
                         </div>
