@@ -1,0 +1,77 @@
+[
+  {
+    "id": "lung-m",
+    "name": "Lung (남성 폐)",
+    "modelPath": "/models/3d-vh-m-lung.glb"
+  },
+  {
+    "id": "lung-f",
+    "name": "Lung (여성 폐)",
+    "modelPath": "/models/3d-vh-f-lung.glb"
+  },
+  {
+    "id": "liver-m",
+    "name": "Liver (남성 간)",
+    "modelPath": "/models/3d-vh-m-liver.glb"
+  },
+  {
+    "id": "liver-f",
+    "name": "Liver (여성 간)",
+    "modelPath": "/models/3d-vh-f-liver.glb"
+  },
+  {
+    "id": "kidney-l-m",
+    "name": "Left Kidney (남성 왼쪽 신장)",
+    "modelPath": "/models/3d-vh-m-kidney-l.glb"
+  },
+  {
+    "id": "heart-f",
+    "name": "Heart (여성 심장)",
+    "modelPath": "/models/3d-vh-f-heart.glb"
+  },
+  {
+    "id": "heart-m",
+    "name": "Heart (남성 심장)",
+    "modelPath": "/models/3d-vh-m-heart.glb"
+  },
+  {
+    "id": "eye-r-m",
+    "name": "Right Eye (남성 오른쪽 눈)",
+    "modelPath": "/models/3d-vh-m-eye-r.glb"
+  },
+  {
+    "id": "eye-l-m",
+    "name": "Left Eye (남성 왼쪽 눈)",
+    "modelPath": "/models/3d-vh-m-eye-l.glb"
+  },
+  {
+    "id": "eye-r-f",
+    "name": "Right Eye (여성 오른쪽 눈)",
+    "modelPath": "/models/3d-vh-f-eye-r.glb"
+  },
+  {
+    "id": "eye-l-f",
+    "name": "Left Eye (여성 왼쪽 눈)",
+    "modelPath": "/models/3d-vh-f-eye-l.glb"
+  },
+  {
+    "id": "brain-m",
+    "name": "Brain (남성 뇌)",
+    "modelPath": "/models/3d-allen-m-brain.glb"
+  },
+  {
+    "id": "brain-f",
+    "name": "Brain (여성 뇌)",
+    "modelPath": "/models/3d-allen-f-brain.glb"
+  },
+  {
+    "id": "blood-vasculature-m",
+    "name": "Blood Vasculature (남성 혈관계)",
+    "modelPath": "/models/3d-vh-m-blood-vasculature.glb"
+  },
+  {
+    "id": "blood-vasculature-f",
+    "name": "Blood Vasculature (여성 혈관계)",
+    "modelPath": "/models/3d-vh-f-blood-vasculature.glb"
+  }
+]

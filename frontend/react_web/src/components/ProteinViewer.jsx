@@ -3,16 +3,18 @@ import React, { useEffect, useRef, useState } from 'react';
 /**
  * ProteinViewer Component
  * 
- * Visualizes a protein structure from a PDB ID using 3Dmol.js (via CDN).
+ * Visualizes a protein structure from a PDB ID or custom URL using 3Dmol.js (via CDN).
  * 
  * @component
  * @param {Object} props
- * @param {string} props.pdbId - The PDB ID of the protein to visualize (e.g., '1UBQ').
+ * @param {string} [props.pdbId] - The PDB ID of the protein to visualize (e.g., '1UBQ').
+ * @param {string} [props.customUrl] - Custom URL to load structure from (e.g., AlphaFold PDB URL).
  * @param {string} [props.width='100%'] - Width of the viewer container.
  * @param {string} [props.height='400px'] - Height of the viewer container.
  * @param {Object} [props.style] - Additional CSS styles for the container.
+ * @param {Function} [props.onViewerReady] - Callback when viewer is initialized.
  */
-const ProteinViewer = ({ pdbId, width = '100%', height = '400px', style = {} }) => {
+const ProteinViewer = ({ pdbId, customUrl, width = '100%', height = '400px', style = {}, onViewerReady }) => {
     const viewerRef = useRef(null);
     const [viewer, setViewer] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -50,59 +52,67 @@ const ProteinViewer = ({ pdbId, width = '100%', height = '400px', style = {} }) 
             const config = { backgroundColor: 'white' };
             const v = window.$3Dmol.createWebGLViewer(element, config);
             setViewer(v);
+            if (onViewerReady) {
+                onViewerReady(v);
+            }
         } catch (err) {
             console.error("Failed to initialize 3Dmol viewer:", err);
             setError("Failed to initialize 3D viewer. WebGL might not be supported.");
             setLoading(false);
         }
+    }, [libLoaded, viewer, onViewerReady]);
 
-        return () => {
-            if (viewer) {
-                // Cleanup if needed, though 3Dmol doesn't have a strict destroy method
-                // viewer.clear(); // Optional
-            }
-        };
-    }, [libLoaded, viewer]);
-
-    // Load PDB Data when pdbId or viewer changes
+    // Load PDB Data when pdbId or customUrl changes
     useEffect(() => {
-        if (!viewer || !pdbId) return;
+        if (!viewer) return;
+        if (!pdbId && !customUrl) return;
 
         const loadStructure = async () => {
             setLoading(true);
             setError(null);
             try {
-                // Fetch PDB data from RCSB PDB
-                const response = await fetch(`https://files.rcsb.org/download/${pdbId}.pdb`);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch PDB data for ID: ${pdbId}`);
-                }
-                const pdbData = await response.text();
-
-                // Clear previous model
                 viewer.clear();
 
-                // Add model
-                viewer.addModel(pdbData, "pdb");
+                if (customUrl) {
+                    // Load from URL (e.g., AlphaFold)
+                    // 3Dmol.js download method handles fetching and parsing
+                    // Note: 'pdb' format is assumed for AlphaFold, but we can try to detect or default
+                    window.$3Dmol.download(`url:${customUrl}`, viewer, { multiselect: true }, function () {
+                        viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
+                        viewer.zoomTo();
+                        viewer.render();
+                        setLoading(false);
+                    });
+                } else if (pdbId) {
+                    // Fetch PDB data from RCSB PDB
+                    const response = await fetch(`https://files.rcsb.org/download/${pdbId}.pdb`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch PDB data for ID: ${pdbId}`);
+                    }
+                    const pdbData = await response.text();
 
-                // Set style to Cartoon
-                viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
+                    // Add model
+                    viewer.addModel(pdbData, "pdb");
 
-                // Zoom to fit
-                viewer.zoomTo();
+                    // Set style to Cartoon
+                    viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
 
-                // Render
-                viewer.render();
+                    // Zoom to fit
+                    viewer.zoomTo();
+
+                    // Render
+                    viewer.render();
+                    setLoading(false);
+                }
             } catch (err) {
                 console.error("Error loading protein structure:", err);
                 setError(err.message);
-            } finally {
                 setLoading(false);
             }
         };
 
         loadStructure();
-    }, [viewer, pdbId]);
+    }, [viewer, pdbId, customUrl]);
 
     return (
         <div style={{ position: 'relative', width, height, ...style }}>
@@ -142,7 +152,7 @@ const styles = {
         zIndex: 10,
         color: '#333',
         fontWeight: 'bold',
-        borderRadius: '12px', // Match parent border radius
+        borderRadius: '12px',
     },
     spinner: {
         width: '20px',
