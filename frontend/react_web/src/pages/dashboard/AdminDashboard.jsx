@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import axiosClient from '../../api/axios';
+import DashboardLayout from '../../layouts/DashboardLayout';
 
 const AdminDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [stats, setStats] = useState({
         totalUsers: 0,
@@ -28,15 +28,8 @@ const AdminDashboard = () => {
     }, []);
 
     return (
-        <div style={styles.container}>
-            <header style={styles.header}>
-                <div>
-                    <h1 style={styles.title}>Admin Dashboard</h1>
-                    <p style={styles.subtitle}>Welcome back, {user?.username} ({user?.role})</p>
-                </div>
-                <button onClick={logout} style={styles.logoutButton}>Logout</button>
-            </header>
-
+        <DashboardLayout role="ADMIN" activePage="dashboard" title="Admin Dashboard">
+            {/* Stats Grid */}
             <div style={styles.grid}>
                 <div style={styles.card}>
                     <h3 style={styles.cardTitle}>Total Users</h3>
@@ -56,6 +49,7 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
+            {/* System Management Section */}
             <div style={styles.section}>
                 <h2 style={styles.sectionTitle}>System Management</h2>
                 <div style={styles.actionGrid}>
@@ -87,7 +81,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Debug Views Section */}
-            <div style={{ ...styles.section, marginTop: '2rem', borderTop: '4px solid #ff9800' }}>
+            <div style={{ ...styles.section, borderTop: '4px solid #ff9800' }}>
                 <h2 style={styles.sectionTitle}>🛠️ Debug Views (Admin Only)</h2>
                 <p style={{ color: '#666', marginBottom: '1.5rem' }}>
                     Access other role-specific dashboards for debugging and support purposes.
@@ -113,61 +107,27 @@ const AdminDashboard = () => {
                     </button>
                 </div>
             </div>
-        </div>
+        </DashboardLayout>
     );
 };
 
 const styles = {
-    container: {
-        padding: '2rem',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        fontFamily: "'Inter', sans-serif",
-        color: '#333',
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem',
-        borderBottom: '1px solid #eee',
-        paddingBottom: '1rem',
-    },
-    title: {
-        fontSize: '1.8rem',
-        fontWeight: '700',
-        color: '#1a237e',
-        margin: 0,
-    },
-    subtitle: {
-        color: '#666',
-        margin: '0.5rem 0 0 0',
-    },
-    logoutButton: {
-        padding: '0.5rem 1rem',
-        backgroundColor: '#f44336',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontWeight: '600',
-    },
     grid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1.5rem',
-        marginBottom: '3rem',
     },
     card: {
         backgroundColor: 'white',
         padding: '1.5rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        borderRadius: '16px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
         textAlign: 'center',
+        border: '1px solid #e1e1e1',
     },
     cardTitle: {
         margin: '0 0 0.5rem 0',
-        color: '#555',
+        color: '#747d8c',
         fontSize: '0.9rem',
         textTransform: 'uppercase',
         letterSpacing: '1px',
@@ -176,19 +136,22 @@ const styles = {
         margin: 0,
         fontSize: '2.5rem',
         fontWeight: '700',
-        color: '#1a237e',
+        color: '#2f3542',
     },
     section: {
         backgroundColor: 'white',
         padding: '2rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        borderRadius: '16px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
         textAlign: 'center',
+        border: '1px solid #e1e1e1',
     },
     sectionTitle: {
         marginTop: 0,
         marginBottom: '1.5rem',
-        color: '#333',
+        color: '#2f3542',
+        fontSize: '1.2rem',
+        fontWeight: '600',
     },
     actionGrid: {
         display: 'grid',
@@ -197,22 +160,23 @@ const styles = {
     },
     actionButton: {
         padding: '1rem',
-        backgroundColor: '#f5f5f5',
-        border: '1px solid #ddd',
-        borderRadius: '6px',
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #e1e1e1',
+        borderRadius: '12px',
         cursor: 'pointer',
         fontSize: '1rem',
         fontWeight: '500',
+        color: '#2f3542',
         transition: 'all 0.2s',
         ':hover': {
-            backgroundColor: '#e0e0e0',
+            backgroundColor: '#e1e1e1',
         }
     },
     debugButton: {
         padding: '1rem',
         backgroundColor: '#fff3e0',
         border: '1px solid #ffb74d',
-        borderRadius: '6px',
+        borderRadius: '12px',
         cursor: 'pointer',
         fontSize: '1rem',
         fontWeight: '600',

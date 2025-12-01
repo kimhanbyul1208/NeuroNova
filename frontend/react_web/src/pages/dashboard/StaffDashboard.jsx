@@ -8,9 +8,10 @@ import {
 } from '../../components';
 import axiosClient from '../../api/axios';
 import { API_ENDPOINTS } from '../../utils/config';
+import DashboardLayout from '../../layouts/DashboardLayout';
 
 const StaffDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const [queue, setQueue] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -55,15 +56,7 @@ const StaffDashboard = () => {
     };
 
     return (
-        <div style={styles.container}>
-            <header style={styles.header}>
-                <div>
-                    <h1 style={styles.title}>Staff Dashboard</h1>
-                    <p style={styles.subtitle}>Medical Staff: {user?.username} ({user?.role})</p>
-                </div>
-                <button onClick={logout} style={styles.logoutButton}>Logout</button>
-            </header>
-
+        <DashboardLayout role="NURSE" activePage="dashboard" title="Staff Dashboard">
             <div style={styles.grid}>
                 {/* Patient Queue */}
                 <div style={styles.card}>
@@ -169,7 +162,7 @@ const StaffDashboard = () => {
                 patient={selectedPatient}
                 onAssignSuccess={handleAssignSuccess}
             />
-        </div>
+        </DashboardLayout>
     );
 };
 
@@ -183,44 +176,6 @@ const getStatusStyle = (status) => {
 };
 
 const styles = {
-    container: {
-        padding: '2rem',
-        maxWidth: '1400px',
-        margin: '0 auto',
-        fontFamily: "'Inter', sans-serif",
-        color: '#333',
-        backgroundColor: '#f4f7f6',
-        minHeight: '100vh',
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem',
-        backgroundColor: 'white',
-        padding: '1.5rem',
-        borderRadius: '10px',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-    },
-    title: {
-        fontSize: '1.6rem',
-        fontWeight: '700',
-        color: '#00695c',
-        margin: 0,
-    },
-    subtitle: {
-        color: '#666',
-        margin: '0.5rem 0 0 0',
-    },
-    logoutButton: {
-        padding: '0.6rem 1.2rem',
-        backgroundColor: '#ff5252',
-        color: 'white',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontWeight: '600',
-    },
     grid: {
         display: 'grid',
         gridTemplateColumns: '3fr 1fr',
@@ -228,9 +183,10 @@ const styles = {
     },
     card: {
         backgroundColor: 'white',
-        borderRadius: '10px',
+        borderRadius: '16px',
         padding: '1.5rem',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+        border: '1px solid #e1e1e1',
     },
     cardHeader: {
         display: 'flex',
@@ -241,7 +197,8 @@ const styles = {
     cardTitle: {
         margin: 0,
         fontSize: '1.2rem',
-        color: '#333',
+        color: '#2f3542',
+        fontWeight: '600',
     },
     refreshButton: {
         padding: '0.4rem 0.8rem',
@@ -259,7 +216,7 @@ const styles = {
         textAlign: 'left',
         padding: '1rem',
         borderBottom: '2px solid #eee',
-        color: '#666',
+        color: '#747d8c',
         fontWeight: '600',
         fontSize: '0.9rem',
     },
@@ -269,10 +226,11 @@ const styles = {
     td: {
         padding: '1rem',
         verticalAlign: 'middle',
+        color: '#2f3542',
     },
     patientName: {
         fontWeight: '600',
-        color: '#2c3e50',
+        color: '#2f3542',
     },
     statusBadge: {
         padding: '0.3rem 0.8rem',
@@ -295,14 +253,16 @@ const styles = {
     },
     taskCard: {
         backgroundColor: 'white',
-        borderRadius: '10px',
+        borderRadius: '16px',
         padding: '1.5rem',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+        border: '1px solid #e1e1e1',
     },
     taskTitle: {
         margin: '0 0 1rem 0',
         fontSize: '1.1rem',
-        color: '#455a64',
+        color: '#2f3542',
+        fontWeight: '600',
     },
     buttonGroup: {
         display: 'flex',
