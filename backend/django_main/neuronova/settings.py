@@ -100,12 +100,12 @@ WSGI_APPLICATION = 'neuronova.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'neuronova',
-        'USER': 'root',
-        'PASSWORD': 'acorn1234',
-        'HOST': 'host.docker.internal',
-        'PORT': '3306',
+        'ENGINE': config('DB_ENGINE', default='django.db.backends.mysql'),
+        'NAME': config('DB_NAME', default='neuronova'),
+        'USER': config('DB_USER', default='root'),
+        'PASSWORD': config('DB_PASSWORD', default='acorn1234'),
+        'HOST': config('DB_HOST', default='host.docker.internal'),
+        'PORT': config('DB_PORT', default='3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
