@@ -15,18 +15,23 @@
 
 ```mermaid
 graph LR
-    User(의료진/Web) -- HTTP/REST --> React[React Frontend]
+    User(의료진/Web/Mobile) -- HTTP/REST --> React[React Frontend]
+    User -- HTTP/REST --> Flutter[Flutter App]
     React -- API Req --> Django[Django Backend]
+    Flutter -- API Req --> Django
     Django -- Task Queue --> Celery[Celery Worker]
     Celery -- Model Req --> Flask[Flask AI Server]
     Flask -- Prediction --> Celery
     Celery -- Save Result --> DB[(PostgreSQL)]
     React -- Polling --> Django
+    Flutter -- Polling --> Django
+    Django -- FCM --> Flutter
 ```
 
-1. **React**: 사용자 인터페이스 및 인터랙션 담당
-2. **Django**: 사용자 관리, 환자 데이터 관리, API Gateway 역할
-3. **Flask**: 딥러닝 모델 추론 및 XAI(설명 가능한 AI) 시각화 생성
+1. **React**: 웹 사용자 인터페이스 및 인터랙션 담당
+2. **Flutter**: 모바일(Android/iOS) 앱 인터페이스 및 푸시 알림 수신
+3. **Django**: 사용자 관리, 환자 데이터 관리, API Gateway 역할
+4. **Flask**: 딥러닝 모델 추론 및 XAI(설명 가능한 AI) 시각화 생성
 
 ---
 
@@ -46,6 +51,7 @@ graph LR
 | 구분 | 기술 |
 | :--- | :--- |
 | **Frontend** | React, Redux/Context API, Material-UI (MUI), Axios |
+| **Mobile** | Flutter (Dart), FCM (Firebase Cloud Messaging) |
 | **Backend** | Django REST Framework (DRF), Celery, Redis |
 | **AI Server** | Flask, PyTorch/TensorFlow, OpenCV |
 | **Database** | PostgreSQL |

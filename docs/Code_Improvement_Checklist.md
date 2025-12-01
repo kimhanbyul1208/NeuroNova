@@ -59,7 +59,30 @@
 
 ---
 
-## 7️⃣ 설정 파일 및 환경 변수 관리
+## 7️⃣ 보안 강화 (Critical)
+
+- [ ] **CORS 설정**: `CORS_ORIGIN_ALLOW_ALL = True` 제거하고, `CORS_ALLOWED_ORIGINS`에 프론트엔드 도메인만 명시
+- [ ] **DEBUG 모드**: 운영 환경(`prod.py`)에서는 반드시 `DEBUG = False` 설정
+- [ ] **DB/Secret 관리**: `settings.py`의 default 값 제거하고, `.env` 누락 시 서버 실행 차단하도록 변경
+
+---
+
+## 8️⃣ 모바일(Flutter) 연동 및 최적화
+
+- [ ] **API 호환성 검증**: React와 동일한 엔드포인트 사용 시, 모바일 환경(쿠키 vs 토큰)에 맞는 인증 방식 확인
+- [ ] **FCM 연동**: Django `apps.notifications`와 Flutter `NotificationService` 간의 실제 알림 발송/수신 테스트
+- [ ] **상태 관리 고도화**: `setState` 대신 `Provider` 또는 `Riverpod` 도입하여 복잡한 앱 상태 관리
+
+---
+
+## 9️⃣ 실시간성 확보 (Real-time)
+
+- [ ] **WebSocket 도입**: Django Channels를 설치하여 AI 분석 진행률을 실시간으로 푸시 (Polling 대체)
+- [ ] **UI 피드백 강화**: 긴 작업 시 단순 로딩 스피너 대신 **Progress Bar** 또는 **Step Indicator** 표시
+
+---
+
+## 🔟 설정 파일 및 환경 변수 관리
 
 - [ ] **Environment Variables**: API Key, DB 접속 정보 등 민감 정보는 `.env` 파일로 관리하고 Git 추적 제외
 - [ ] **Config Validation**: 서버 시작 시 필수 환경 변수 로드 여부를 체크하는 로직 추가
