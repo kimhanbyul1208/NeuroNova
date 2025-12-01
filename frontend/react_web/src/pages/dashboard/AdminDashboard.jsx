@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import axiosClient from '../../api/axios';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalDoctors: 0,
@@ -57,10 +59,30 @@ const AdminDashboard = () => {
             <div style={styles.section}>
                 <h2 style={styles.sectionTitle}>System Management</h2>
                 <div style={styles.actionGrid}>
-                    <button style={styles.actionButton}>Manage Users</button>
-                    <button style={styles.actionButton}>System Settings</button>
-                    <button style={styles.actionButton}>View Audit Logs</button>
-                    <button style={styles.actionButton}>Database Maintenance</button>
+                    <button
+                        style={styles.actionButton}
+                        onClick={() => navigate('/patients')}
+                    >
+                        Manage Users
+                    </button>
+                    <button
+                        style={styles.actionButton}
+                        onClick={() => alert('System Settings feature coming soon!')}
+                    >
+                        System Settings
+                    </button>
+                    <button
+                        style={styles.actionButton}
+                        onClick={() => alert('Audit Logs feature coming soon!')}
+                    >
+                        View Audit Logs
+                    </button>
+                    <button
+                        style={styles.actionButton}
+                        onClick={() => alert('Database Maintenance feature coming soon!')}
+                    >
+                        Database Maintenance
+                    </button>
                 </div>
             </div>
         </div>
@@ -133,6 +155,7 @@ const styles = {
         padding: '2rem',
         borderRadius: '8px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        textAlign: 'center',
     },
     sectionTitle: {
         marginTop: 0,

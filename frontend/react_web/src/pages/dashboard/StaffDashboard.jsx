@@ -28,16 +28,11 @@ const StaffDashboard = () => {
         try {
             setLoading(true);
             setError(null);
-            // Fetch encounters that are scheduled or in progress
-            // We might need a specific endpoint for "queue" or filter encounters
-            // For now, let's fetch recent encounters. 
-            // Ideally, the backend should have a queue endpoint.
-            // Let's use /api/emr/encounters/?status=SCHEDULED,IN_PROGRESS if supported, or just all for now and filter client side if needed.
-            // Assuming the backend supports filtering.
             const response = await axiosClient.get(API_ENDPOINTS.ENCOUNTERS);
-            // Filter for active encounters if needed, or just show all recent
-            // Let's assume the API returns a list.
-            setQueue(response.data);
+
+            // Handle pagination (DRF returns { count, next, previous, results })
+            const data = response.data;
+            setQueue(Array.isArray(data) ? data : data.results || []);
         } catch (err) {
             console.error("Error fetching queue:", err);
             setError("환자 대기열을 불러오는데 실패했습니다.");
@@ -47,7 +42,6 @@ const StaffDashboard = () => {
     };
 
     const handleRegisterSuccess = () => {
-        // Refresh queue or show success message
         fetchQueue();
     };
 
@@ -59,25 +53,6 @@ const StaffDashboard = () => {
         setSelectedPatient(patient);
         setAssignModalOpen(true);
     };
-
-    // Helper to get patient info from encounter or if the queue item IS a patient (depends on API)
-    // The current queue seems to be Encounters.
-    // If we want to assign a doctor to a patient, we need the patient object.
-    // Encounter object usually has 'patient' field which might be an ID or object.
-    // If it's an ID, we might need to fetch patient details or pass what we have.
-    // Let's assume the serializer returns nested patient info or we handle it.
-    // In `EncounterSerializer`, patient is usually a PrimaryKeyRelatedField unless `depth` is set.
-    // Let's check `EncounterSerializer` in `apps/emr/serializers.py`... 
-    // Wait, I can't check it now. 
-    // But `EncounterDetailSerializer` has it. `EncounterSerializer` might not.
-    // If `EncounterSerializer` returns patient ID, we can't display name easily without fetching.
-    // However, for the "Patient Queue", we usually need names.
-    // Let's assume `EncounterSerializer` has been updated or we use `EncounterDetailSerializer` if possible.
-    // Or, we can fetch Patients directly for a "Patient List" view if the Queue is empty.
-
-    // Actually, the "Patient Queue" usually implies "Encounters today".
-    // If the API returns simple encounters, we might need to fetch patient names.
-    // Let's assume for now the API returns enough info or we'll fix it.
 
     return (
         <div style={styles.container}>
@@ -124,12 +99,6 @@ const StaffDashboard = () => {
                                                 {new Date(encounter.encounter_date).toLocaleString()}
                                             </td>
                                             <td style={styles.td}>
-                                                {/* Handling if patient is object or ID. 
-                                                    If ID, we just show ID. If object, show name.
-                                                    Ideally serializer sends name. 
-                                                    Let's try to access patient_name if available (custom serializer field) 
-                                                    or patient.first_name if nested.
-                                                */}
                                                 <span style={styles.patientName}>
                                                     {encounter.patient_name || encounter.patient || 'Unknown'}
                                                 </span>
@@ -141,12 +110,9 @@ const StaffDashboard = () => {
                                             </td>
                                             <td style={styles.td}>{encounter.facility}</td>
                                             <td style={styles.td}>
-                                                {/* We can assign doctor if not assigned or re-assign */}
                                                 <button
                                                     style={styles.actionButton}
                                                     onClick={() => {
-                                                        // We need to pass a patient object to the modal.
-                                                        // If encounter.patient is just ID, we construct a minimal object.
                                                         const patientObj = typeof encounter.patient === 'object'
                                                             ? encounter.patient
                                                             : { id: encounter.patient, pid: 'Unknown', last_name: 'Patient', first_name: 'ID: ' + encounter.patient };

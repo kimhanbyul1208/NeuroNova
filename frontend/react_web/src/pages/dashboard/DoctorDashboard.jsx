@@ -11,7 +11,7 @@ const DoctorDashboard = () => {
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        
+
         // Mock data fetch
         setTimeout(() => {
             setAppointments([
@@ -39,10 +39,26 @@ const DoctorDashboard = () => {
                     <div style={styles.logoIcon}>N</div>
                 </div>
                 <div style={styles.navItems}>
-                    <div style={{...styles.navItem, ...styles.activeNavItem}}>📊</div>
-                    <div style={styles.navItem}>👥</div>
-                    <div style={styles.navItem}>📅</div>
-                    <div style={styles.navItem}>⚙️</div>
+                    <div
+                        style={{ ...styles.navItem, ...styles.activeNavItem }}
+                        onClick={() => navigate('/doctor/dashboard')}
+                        title="Dashboard"
+                    >📊</div>
+                    <div
+                        style={styles.navItem}
+                        onClick={() => navigate('/patients')}
+                        title="Patients"
+                    >👥</div>
+                    <div
+                        style={styles.navItem}
+                        onClick={() => navigate('/appointments')}
+                        title="Schedule"
+                    >📅</div>
+                    <div
+                        style={styles.navItem}
+                        onClick={() => alert('Settings coming soon')}
+                        title="Settings"
+                    >⚙️</div>
                 </div>
                 <div style={styles.userAvatar} onClick={handleLogout} title="Logout">
                     {user?.first_name?.[0] || 'D'}
@@ -55,7 +71,7 @@ const DoctorDashboard = () => {
                 <header style={styles.header}>
                     <div>
                         <h1 style={styles.greeting}>
-                            Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'}, 
+                            Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'},
                             <span style={styles.nameHighlight}> Dr. {user?.last_name || user?.username}</span>
                         </h1>
                         <p style={styles.dateDisplay}>
@@ -67,7 +83,9 @@ const DoctorDashboard = () => {
                             <span style={styles.searchIcon}>🔍</span>
                             <input type="text" placeholder="Search patients..." style={styles.searchInput} />
                         </div>
-                        <div style={styles.notificationBtn}>🔔<span style={styles.badge}>3</span></div>
+                        <div style={styles.notificationBtn} onClick={() => navigate('/notifications')}>
+                            🔔<span style={styles.badge}>3</span>
+                        </div>
                     </div>
                 </header>
 
@@ -87,7 +105,12 @@ const DoctorDashboard = () => {
                         <div style={styles.largeCard}>
                             <div style={styles.cardHeader}>
                                 <h2 style={styles.cardTitle}>Today's Schedule</h2>
-                                <button style={styles.viewAllBtn}>View All</button>
+                                <button
+                                    style={styles.viewAllBtn}
+                                    onClick={() => navigate('/appointments')}
+                                >
+                                    View All
+                                </button>
                             </div>
                             <div style={styles.scheduleList}>
                                 {loading ? (
@@ -104,7 +127,7 @@ const DoctorDashboard = () => {
                                                     <span style={styles.patientName}>{apt.patient}</span>
                                                     <span style={styles.patientMeta}>{apt.gender}/{apt.age} • {apt.type}</span>
                                                 </div>
-                                                <span style={{...styles.statusTag, ...getStatusStyle(apt.status)}}>
+                                                <span style={{ ...styles.statusTag, ...getStatusStyle(apt.status) }}>
                                                     {apt.status}
                                                 </span>
                                                 <button style={styles.actionIconBtn}>→</button>
@@ -121,28 +144,48 @@ const DoctorDashboard = () => {
                             <div style={styles.card}>
                                 <h2 style={styles.cardTitle}>Quick Actions</h2>
                                 <div style={styles.quickActionsGrid}>
-                                    <ActionButton icon="➕" label="New Patient" color="#4facfe" />
-                                    <ActionButton icon="🧬" label="AI Analysis" color="#a18cd1" />
-                                    <ActionButton icon="💊" label="Prescribe" color="#ff9a9e" />
-                                    <ActionButton icon="📅" label="Schedule" color="#43e97b" />
+                                    <ActionButton
+                                        icon="➕"
+                                        label="New Patient"
+                                        color="#4facfe"
+                                        onClick={() => navigate('/patients')}
+                                    />
+                                    <ActionButton
+                                        icon="🧬"
+                                        label="AI Analysis"
+                                        color="#a18cd1"
+                                        onClick={() => alert('Please select a patient first')}
+                                    />
+                                    <ActionButton
+                                        icon="💊"
+                                        label="Prescribe"
+                                        color="#ff9a9e"
+                                        onClick={() => navigate('/prescriptions')}
+                                    />
+                                    <ActionButton
+                                        icon="📅"
+                                        label="Schedule"
+                                        color="#43e97b"
+                                        onClick={() => navigate('/appointments')}
+                                    />
                                 </div>
                             </div>
 
                             {/* Recent Activity / AI Alerts */}
-                            <div style={{...styles.card, flex: 1}}>
+                            <div style={{ ...styles.card, flex: 1 }}>
                                 <h2 style={styles.cardTitle}>AI Alerts</h2>
                                 <div style={styles.alertList}>
-                                    <AlertItem 
-                                        message="High probability of Meningioma detected" 
-                                        patient="홍길동" 
-                                        time="10m ago" 
-                                        severity="high" 
+                                    <AlertItem
+                                        message="High probability of Meningioma detected"
+                                        patient="홍길동"
+                                        time="10m ago"
+                                        severity="high"
                                     />
-                                    <AlertItem 
-                                        message="MRI Scan upload complete" 
-                                        patient="김영희" 
-                                        time="1h ago" 
-                                        severity="medium" 
+                                    <AlertItem
+                                        message="MRI Scan upload complete"
+                                        patient="김영희"
+                                        time="1h ago"
+                                        severity="medium"
                                     />
                                 </div>
                             </div>
@@ -157,7 +200,7 @@ const DoctorDashboard = () => {
 // Sub-components
 const StatCard = ({ title, value, icon, color }) => (
     <div style={styles.statCard}>
-        <div style={{...styles.statIcon, backgroundColor: `${color}20`, color: color}}>{icon}</div>
+        <div style={{ ...styles.statIcon, backgroundColor: `${color}20`, color: color }}>{icon}</div>
         <div>
             <div style={styles.statValue}>{value}</div>
             <div style={styles.statTitle}>{title}</div>
@@ -165,16 +208,16 @@ const StatCard = ({ title, value, icon, color }) => (
     </div>
 );
 
-const ActionButton = ({ icon, label, color }) => (
-    <button style={styles.quickActionButton}>
-        <div style={{...styles.actionBtnIcon, background: `linear-gradient(135deg, ${color}, ${color}dd)`}}>{icon}</div>
+const ActionButton = ({ icon, label, color, onClick }) => (
+    <button style={styles.quickActionButton} onClick={onClick}>
+        <div style={{ ...styles.actionBtnIcon, background: `linear-gradient(135deg, ${color}, ${color}dd)` }}>{icon}</div>
         <span style={styles.actionBtnLabel}>{label}</span>
     </button>
 );
 
 const AlertItem = ({ message, patient, time, severity }) => (
     <div style={styles.alertItem}>
-        <div style={{...styles.alertDot, backgroundColor: severity === 'high' ? '#ff6b6b' : '#feca57'}}></div>
+        <div style={{ ...styles.alertDot, backgroundColor: severity === 'high' ? '#ff6b6b' : '#feca57' }}></div>
         <div style={styles.alertContent}>
             <div style={styles.alertMessage}>{message}</div>
             <div style={styles.alertMeta}>{patient} • {time}</div>

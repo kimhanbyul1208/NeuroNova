@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import DoctorDashboard from './pages/dashboard/DoctorDashboard';
 import StaffDashboard from './pages/dashboard/StaffDashboard';
+import PatientDashboard from './pages/dashboard/PatientDashboard';
 
 import PatientListPage from './pages/PatientListPage';
 import PatientDetailPage from './pages/PatientDetailPage';
@@ -60,7 +61,7 @@ function DashboardRedirect() {
     case 'ADMIN': return <Navigate to="/admin/dashboard" replace />;
     case 'DOCTOR': return <Navigate to="/doctor/dashboard" replace />;
     case 'NURSE': return <Navigate to="/staff/dashboard" replace />;
-    case 'PATIENT': return <div>Patient Portal Coming Soon</div>;
+    case 'PATIENT': return <Navigate to="/patient/dashboard" replace />;
     default:
       console.warn('Unknown role:', role);
       return <div>Unknown Role: {user.role}</div>;
@@ -101,6 +102,12 @@ function App() {
         <Route path="/staff/dashboard" element={
           <ProtectedRoute roles={['NURSE']}>
             <StaffDashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/patient/dashboard" element={
+          <ProtectedRoute roles={['PATIENT']}>
+            <PatientDashboard />
           </ProtectedRoute>
         } />
 
