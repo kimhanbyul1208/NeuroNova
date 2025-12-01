@@ -40,6 +40,9 @@ npm run dev
 비밀번호: (Backend에서 생성한 계정)
 ```
 
+04_ test_accounts.md
+참고
+
 ---
 
 ## Flutter App (환자용) 실행
