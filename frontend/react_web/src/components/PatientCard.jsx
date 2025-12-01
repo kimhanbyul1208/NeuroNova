@@ -20,11 +20,17 @@ import { useNavigate } from 'react-router-dom';
  * @param {Object} props
  * @param {Object} props.patient - 환자 정보 객체
  */
-const PatientCard = ({ patient }) => {
+const PatientCard = ({ patient, onDelete }) => {
   const navigate = useNavigate();
 
   const handleViewDetail = () => {
     navigate(`/patients/${patient.id}`);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('정말로 이 환자를 삭제하시겠습니까?')) {
+      onDelete(patient.id);
+    }
   };
 
   // 성별 표시
@@ -94,10 +100,15 @@ const PatientCard = ({ patient }) => {
         </Box>
       </CardContent>
 
-      <CardActions>
+      <CardActions sx={{ justifyContent: 'space-between' }}>
         <Button size="small" onClick={handleViewDetail}>
           상세보기
         </Button>
+        {onDelete && (
+          <Button size="small" color="error" onClick={handleDelete}>
+            삭제
+          </Button>
+        )}
       </CardActions>
     </Card>
   );

@@ -23,6 +23,9 @@ import NotificationCenterPage from './pages/NotificationCenterPage';
 import CDSSPage from './pages/CDSSPage';
 import DataManagementPage from './pages/DataManagementPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
+import FormsPage from './pages/nurse/FormsPage';
 
 // Protected Route Component
 function ProtectedRoute({ children, roles = [] }) {
@@ -81,19 +84,6 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={
           isAuthenticated ? <Navigate to="/dashboard" replace /> : <HomePage />
-        } />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/about" element={<AboutPage />} />
-
-        {/* Dashboard Routing */}
-        <Route path="/dashboard" element={<DashboardRedirect />} />
-
-        {/* Role-Based Dashboards */}
-        <Route path="/admin/dashboard" element={
-          <ProtectedRoute roles={['ADMIN']}>
-            <AdminDashboard />
-          </ProtectedRoute>
         } />
 
         <Route path="/doctor/dashboard" element={
@@ -178,6 +168,12 @@ function App() {
         <Route path="/doctor/data-management" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <DataManagementPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/forms" element={
+          <ProtectedRoute roles={['NURSE', 'DOCTOR', 'ADMIN']}>
+            <FormsPage />
           </ProtectedRoute>
         } />
       </Routes>
