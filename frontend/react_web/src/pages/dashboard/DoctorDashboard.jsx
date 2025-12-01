@@ -238,18 +238,19 @@ const styles = {
     container: {
         display: 'flex',
         minHeight: '100vh',
-        backgroundColor: '#121212', // Dark background
-        color: '#ffffff',
+        backgroundColor: '#f5f6fa', // Light background
+        color: '#2f3542', // Dark text
         fontFamily: "'Inter', sans-serif",
     },
     sidebar: {
         width: '80px',
-        backgroundColor: '#1e1e2e',
+        backgroundColor: '#ffffff', // White sidebar
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         padding: '2rem 0',
-        borderRight: '1px solid rgba(255,255,255,0.05)',
+        borderRight: '1px solid #e1e1e1',
+        boxShadow: '2px 0 10px rgba(0,0,0,0.05)',
     },
     logoIcon: {
         width: '40px',
@@ -262,6 +263,7 @@ const styles = {
         fontWeight: 'bold',
         fontSize: '1.2rem',
         marginBottom: '3rem',
+        color: 'white',
     },
     navItems: {
         display: 'flex',
@@ -278,12 +280,12 @@ const styles = {
         justifyContent: 'center',
         cursor: 'pointer',
         fontSize: '1.2rem',
-        color: '#8395a7',
+        color: '#a4b0be',
         transition: 'all 0.2s',
-        ':hover': { backgroundColor: 'rgba(255,255,255,0.1)', color: 'white' }
+        ':hover': { backgroundColor: '#f1f2f6', color: '#57606f' }
     },
     activeNavItem: {
-        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
         color: '#667eea',
     },
     userAvatar: {
@@ -296,6 +298,7 @@ const styles = {
         justifyContent: 'center',
         fontWeight: 'bold',
         cursor: 'pointer',
+        color: 'white',
     },
     mainContent: {
         flex: 1,
@@ -312,15 +315,14 @@ const styles = {
         fontSize: '2rem',
         fontWeight: '700',
         margin: 0,
-        background: 'linear-gradient(to right, #ffffff, #a5b1c2)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
+        color: '#2f3542',
     },
     nameHighlight: {
         fontWeight: '300',
+        color: '#57606f',
     },
     dateDisplay: {
-        color: '#8395a7',
+        color: '#747d8c',
         margin: '0.5rem 0 0 0',
         fontSize: '0.95rem',
     },
@@ -332,20 +334,22 @@ const styles = {
     searchBar: {
         display: 'flex',
         alignItems: 'center',
-        backgroundColor: '#1e1e2e',
+        backgroundColor: '#ffffff',
         padding: '0.6rem 1rem',
         borderRadius: '12px',
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: '1px solid #e1e1e1',
         width: '250px',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
     },
     searchIcon: {
         marginRight: '0.5rem',
         opacity: 0.5,
+        color: '#2f3542',
     },
     searchInput: {
         background: 'none',
         border: 'none',
-        color: 'white',
+        color: '#2f3542',
         width: '100%',
         outline: 'none',
         fontSize: '0.9rem',
@@ -355,8 +359,10 @@ const styles = {
         fontSize: '1.2rem',
         cursor: 'pointer',
         padding: '0.5rem',
-        backgroundColor: '#1e1e2e',
+        backgroundColor: '#ffffff',
         borderRadius: '10px',
+        border: '1px solid #e1e1e1',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.02)',
     },
     badge: {
         position: 'absolute',
@@ -380,13 +386,14 @@ const styles = {
         gap: '1.5rem',
     },
     statCard: {
-        backgroundColor: '#1e1e2e',
+        backgroundColor: '#ffffff',
         padding: '1.5rem',
         borderRadius: '16px',
         display: 'flex',
         alignItems: 'center',
         gap: '1rem',
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: '1px solid #e1e1e1',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
         transition: 'transform 0.2s',
         cursor: 'pointer',
     },
@@ -402,11 +409,11 @@ const styles = {
     statValue: {
         fontSize: '1.5rem',
         fontWeight: '700',
-        color: 'white',
+        color: '#2f3542',
     },
     statTitle: {
         fontSize: '0.85rem',
-        color: '#8395a7',
+        color: '#747d8c',
         marginTop: '0.2rem',
     },
     contentRow: {
@@ -416,10 +423,11 @@ const styles = {
         minHeight: '400px',
     },
     largeCard: {
-        backgroundColor: '#1e1e2e',
+        backgroundColor: '#ffffff',
         borderRadius: '20px',
         padding: '1.5rem',
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: '1px solid #e1e1e1',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
         display: 'flex',
         flexDirection: 'column',
     },
@@ -433,7 +441,7 @@ const styles = {
         fontSize: '1.1rem',
         fontWeight: '600',
         margin: 0,
-        color: '#f5f6fa',
+        color: '#2f3542',
     },
     viewAllBtn: {
         background: 'none',
@@ -461,18 +469,18 @@ const styles = {
     timeText: {
         fontSize: '0.9rem',
         fontWeight: '600',
-        color: '#a5b1c2',
+        color: '#747d8c',
         marginBottom: '0.5rem',
     },
     timelineLine: {
         width: '2px',
         flex: 1,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: '#f1f2f6',
         borderRadius: '1px',
     },
     appointmentCard: {
         flex: 1,
-        backgroundColor: 'rgba(255,255,255,0.03)',
+        backgroundColor: '#f8f9fa',
         borderRadius: '12px',
         padding: '1rem',
         display: 'flex',
@@ -480,6 +488,7 @@ const styles = {
         justifyContent: 'space-between',
         transition: 'background-color 0.2s',
         cursor: 'pointer',
+        border: '1px solid #f1f2f6',
     },
     patientInfo: {
         display: 'flex',
@@ -489,10 +498,11 @@ const styles = {
     patientName: {
         fontWeight: '600',
         fontSize: '1rem',
+        color: '#2f3542',
     },
     patientMeta: {
         fontSize: '0.85rem',
-        color: '#8395a7',
+        color: '#747d8c',
     },
     statusTag: {
         padding: '0.3rem 0.8rem',
@@ -503,7 +513,7 @@ const styles = {
     actionIconBtn: {
         background: 'none',
         border: 'none',
-        color: '#8395a7',
+        color: '#a4b0be',
         cursor: 'pointer',
         fontSize: '1.2rem',
     },
@@ -513,10 +523,11 @@ const styles = {
         gap: '1.5rem',
     },
     card: {
-        backgroundColor: '#1e1e2e',
+        backgroundColor: '#ffffff',
         borderRadius: '20px',
         padding: '1.5rem',
-        border: '1px solid rgba(255,255,255,0.05)',
+        border: '1px solid #e1e1e1',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
     },
     quickActionsGrid: {
         display: 'grid',
@@ -525,8 +536,8 @@ const styles = {
         marginTop: '1rem',
     },
     quickActionButton: {
-        backgroundColor: 'rgba(255,255,255,0.03)',
-        border: 'none',
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #f1f2f6',
         borderRadius: '12px',
         padding: '1rem',
         display: 'flex',
@@ -545,9 +556,10 @@ const styles = {
         justifyContent: 'center',
         fontSize: '1.2rem',
         marginBottom: '0.2rem',
+        color: 'white',
     },
     actionBtnLabel: {
-        color: '#dcdde1',
+        color: '#57606f',
         fontSize: '0.85rem',
         fontWeight: '500',
     },
@@ -573,12 +585,12 @@ const styles = {
     },
     alertMessage: {
         fontSize: '0.9rem',
-        color: '#f5f6fa',
+        color: '#2f3542',
         marginBottom: '0.2rem',
     },
     alertMeta: {
         fontSize: '0.8rem',
-        color: '#8395a7',
+        color: '#747d8c',
     },
 };
 
