@@ -10,6 +10,7 @@
 
 | Username | Password | Email | Role | Phone |
 |----------|----------|-------|------|-------|
+admin, admin1234
 | `admin1` | `admin123` | admin1@neuronova.com | ADMIN | 010-1000-0001 |
 | `admin2` | `admin123` | admin2@neuronova.com | ADMIN | 010-1000-0002 |
 | `admin3` | `admin123` | admin3@neuronova.com | ADMIN | 010-1000-0003 |

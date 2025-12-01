@@ -31,13 +31,14 @@ const RegisterPage = () => {
     password_confirm: '',
     first_name: '',
     last_name: '',
-    role: 'doctor',
+    role: 'PATIENT',
     phone_number: '',
     department: '',
     license_number: '',
   });
 
   const roles = [
+    { value: 'PATIENT', label: '환자' },
     { value: 'DOCTOR', label: '의사' },
     { value: 'NURSE', label: '간호사' },
     { value: 'ADMIN', label: '관리자' },
@@ -87,12 +88,47 @@ const RegisterPage = () => {
       }, 2000);
     } catch (err) {
       if (err.response?.data) {
-        const errorMessages = Object.values(err.response.data).flat().join(' ');
-        setError(errorMessages || '회원가입에 실패했습니다.');
+        // Handle DRF validation errors which can be object or array
+        const data = err.response.data;
+        let message = '회원가입에 실패했습니다.';
+
+        const fieldNames = {
+          username: '사용자명',
+          email: '이메일',
+          password: '비밀번호',
+          password_confirm: '비밀번호 확인',
+          first_name: '이름',
+          last_name: '성',
+          role: '직책',
+          phone_number: '전화번호',
+          department: '부서',
+          license_number: '면허번호'
+        };
+
+        if (typeof data === 'object') {
+          const messages = [];
+          for (const key in data) {
+            let errorContent = Array.isArray(data[key]) ? data[key].join(' ') : data[key];
+
+            // User requested specific format for role error
+            if (key === 'role' && errorContent.includes('유효하지 않은 선택')) {
+              messages.push('"직책"이 유효하지 않은 선택(choice)입니다.');
+              continue;
+            }
+
+            const fieldName = fieldNames[key] || key;
+            messages.push(`${fieldName}: ${errorContent}`);
+          }
+          message = messages.join('\n');
+        } else if (typeof data === 'string') {
+          message = data;
+        }
+
+        setError(message);
       } else if (err.code === 'ERR_NETWORK') {
         setError('서버와의 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.');
       } else {
-        setError('회원가입에 실패했습니다.');
+        setError('회원가입 중 알 수 없는 오류가 발생했습니다.');
       }
     } finally {
       setLoading(false);
@@ -240,28 +276,31 @@ const RegisterPage = () => {
               />
             </Grid>
 
-            {/* 부서 */}
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="부서"
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                placeholder="신경외과"
-              />
-            </Grid>
+            {/* 부서 & 면허번호 - 의료진 전용 */}
+            {(formData.role === 'DOCTOR' || formData.role === 'NURSE') && (
+              <>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="부서"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange}
+                    placeholder="신경외과"
+                  />
+                </Grid>
 
-            {/* 면허번호 */}
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="면허번호"
-                name="license_number"
-                value={formData.license_number}
-                onChange={handleChange}
-              />
-            </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="면허번호"
+                    name="license_number"
+                    value={formData.license_number}
+                    onChange={handleChange}
+                  />
+                </Grid>
+              </>
+            )}
           </Grid>
 
           <Button
