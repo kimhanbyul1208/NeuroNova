@@ -1,0 +1,302 @@
+[
+  {
+    "id": "protein_01",
+    "name": "C-반응성 단백질 (CRP)",
+    "nameEn": "C-Reactive Protein",
+    "uniprotId": "P02741",
+    "category": "염증 마커",
+    "normalRange": "0-10 mg/L",
+    "description": "급성기 단백질, 염증 시 상승",
+    "function": "면역 반응 조절 및 염증 감지"
+  },
+  {
+    "id": "protein_02",
+    "name": "인터루킨-6 (IL-6)",
+    "nameEn": "Interleukin-6",
+    "uniprotId": "P05231",
+    "category": "사이토카인",
+    "normalRange": "0-7 pg/mL",
+    "description": "전염증성 사이토카인",
+    "function": "면역 반응 및 염증 조절"
+  },
+  {
+    "id": "protein_03",
+    "name": "종양 괴사 인자 알파 (TNF-α)",
+    "nameEn": "Tumor Necrosis Factor Alpha",
+    "uniprotId": "P01375",
+    "category": "사이토카인",
+    "normalRange": "0-20 pg/mL",
+    "description": "염증 및 면역 반응 조절",
+    "function": "세포 사멸 및 염증 유도"
+  },
+  {
+    "id": "protein_04",
+    "name": "D-이량체 (D-Dimer)",
+    "nameEn": "D-Dimer",
+    "uniprotId": "P02671",
+    "category": "응고 마커",
+    "normalRange": "<500 ng/mL",
+    "description": "혈전 형성 지표",
+    "function": "피브린 분해 산물"
+  },
+  {
+    "id": "protein_05",
+    "name": "페리틴 (Ferritin)",
+    "nameEn": "Ferritin",
+    "uniprotId": "P02794",
+    "category": "철 저장 단백질",
+    "normalRange": "30-400 ng/mL",
+    "description": "철 저장 및 염증 마커",
+    "function": "철 저장 및 조절"
+  },
+  {
+    "id": "protein_06",
+    "name": "인터루킨-1β (IL-1β)",
+    "nameEn": "Interleukin-1 Beta",
+    "uniprotId": "P01584",
+    "category": "사이토카인",
+    "normalRange": "0-5 pg/mL",
+    "description": "염증 반응 개시",
+    "function": "발열 및 염증 유도"
+  },
+  {
+    "id": "protein_07",
+    "name": "인터루킨-8 (IL-8)",
+    "nameEn": "Interleukin-8",
+    "uniprotId": "P10145",
+    "category": "사이토카인",
+    "normalRange": "0-62 pg/mL",
+    "description": "호중구 활성화",
+    "function": "백혈구 유인 및 활성화"
+  },
+  {
+    "id": "protein_08",
+    "name": "인터루킨-10 (IL-10)",
+    "nameEn": "Interleukin-10",
+    "uniprotId": "P22301",
+    "category": "사이토카인",
+    "normalRange": "0-9.1 pg/mL",
+    "description": "항염증성 사이토카인",
+    "function": "염증 반응 억제"
+  },
+  {
+    "id": "protein_09",
+    "name": "프로칼시토닌 (PCT)",
+    "nameEn": "Procalcitonin",
+    "uniprotId": "P01258",
+    "category": "염증 마커",
+    "normalRange": "<0.5 ng/mL",
+    "description": "세균 감염 마커",
+    "function": "세균 감염 진단"
+  },
+  {
+    "id": "protein_10",
+    "name": "락테이트 탈수소효소 (LDH)",
+    "nameEn": "Lactate Dehydrogenase",
+    "uniprotId": "P00338",
+    "category": "효소",
+    "normalRange": "140-280 U/L",
+    "description": "세포 손상 지표",
+    "function": "에너지 대사"
+  },
+  {
+    "id": "protein_11",
+    "name": "알부민 (Albumin)",
+    "nameEn": "Albumin",
+    "uniprotId": "P02768",
+    "category": "구조 단백질",
+    "normalRange": "3.5-5.5 g/dL",
+    "description": "혈장 단백질",
+    "function": "삼투압 유지 및 물질 운반"
+  },
+  {
+    "id": "protein_12",
+    "name": "크레아틴 키나제 (CK)",
+    "nameEn": "Creatine Kinase",
+    "uniprotId": "P06732",
+    "category": "효소",
+    "normalRange": "22-198 U/L",
+    "description": "근육 손상 지표",
+    "function": "에너지 대사"
+  },
+  {
+    "id": "protein_13",
+    "name": "트로포닌 I (Troponin I)",
+    "nameEn": "Troponin I",
+    "uniprotId": "P19429",
+    "category": "구조 단백질",
+    "normalRange": "<0.04 ng/mL",
+    "description": "심근 손상 마커",
+    "function": "근육 수축 조절"
+  },
+  {
+    "id": "protein_14",
+    "name": "B형 나트륨이뇨 펩타이드 (BNP)",
+    "nameEn": "B-type Natriuretic Peptide",
+    "uniprotId": "P16860",
+    "category": "호르몬",
+    "normalRange": "<100 pg/mL",
+    "description": "심부전 마커",
+    "function": "나트륨 배설 및 혈압 조절"
+  },
+  {
+    "id": "protein_15",
+    "name": "인터페론 감마 (IFN-γ)",
+    "nameEn": "Interferon Gamma",
+    "uniprotId": "P01579",
+    "category": "사이토카인",
+    "normalRange": "0-25 pg/mL",
+    "description": "면역 활성화",
+    "function": "항바이러스 면역 반응"
+  },
+  {
+    "id": "protein_16",
+    "name": "혈청 아밀로이드 A (SAA)",
+    "nameEn": "Serum Amyloid A",
+    "uniprotId": "P0DJI8",
+    "category": "염증 마커",
+    "normalRange": "<10 mg/L",
+    "description": "급성기 반응 단백질",
+    "function": "염증 반응"
+  },
+  {
+    "id": "protein_17",
+    "name": "아스파르테이트 아미노전이효소 (AST)",
+    "nameEn": "Aspartate Aminotransferase",
+    "uniprotId": "P17174",
+    "category": "효소",
+    "normalRange": "10-40 U/L",
+    "description": "간 손상 지표",
+    "function": "아미노산 대사"
+  },
+  {
+    "id": "protein_18",
+    "name": "알라닌 아미노전이효소 (ALT)",
+    "nameEn": "Alanine Aminotransferase",
+    "uniprotId": "P24298",
+    "category": "효소",
+    "normalRange": "7-56 U/L",
+    "description": "간 특이적 효소",
+    "function": "아미노산 대사"
+  },
+  {
+    "id": "protein_19",
+    "name": "면역글로불린 G (IgG)",
+    "nameEn": "Immunoglobulin G",
+    "uniprotId": "P01857",
+    "category": "면역 단백질",
+    "normalRange": "700-1600 mg/dL",
+    "description": "주요 항체",
+    "function": "장기 면역 반응"
+  },
+  {
+    "id": "protein_20",
+    "name": "면역글로불린 M (IgM)",
+    "nameEn": "Immunoglobulin M",
+    "uniprotId": "P01871",
+    "category": "면역 단백질",
+    "normalRange": "40-230 mg/dL",
+    "description": "초기 면역 반응",
+    "function": "급성 감염 대응"
+  },
+  {
+    "id": "protein_21",
+    "name": "요소 질소 (BUN)",
+    "nameEn": "Blood Urea Nitrogen",
+    "uniprotId": "P00966",
+    "category": "대사 마커",
+    "normalRange": "7-20 mg/dL",
+    "description": "신장 기능 지표",
+    "function": "단백질 대사 산물"
+  },
+  {
+    "id": "protein_22",
+    "name": "크레아티닌 (Creatinine)",
+    "nameEn": "Creatinine",
+    "uniprotId": "P00735",
+    "category": "대사 마커",
+    "normalRange": "0.7-1.3 mg/dL",
+    "description": "신장 기능 마커",
+    "function": "근육 대사 산물"
+  },
+  {
+    "id": "protein_23",
+    "name": "글루코스 (Glucose)",
+    "nameEn": "Glucose",
+    "uniprotId": "P04406",
+    "category": "대사 마커",
+    "normalRange": "70-100 mg/dL",
+    "description": "혈당 수치",
+    "function": "에너지 공급원"
+  },
+  {
+    "id": "protein_24",
+    "name": "헤모글로빈 (Hemoglobin)",
+    "nameEn": "Hemoglobin",
+    "uniprotId": "P68871",
+    "category": "구조 단백질",
+    "normalRange": "13.5-17.5 g/dL",
+    "description": "산소 운반 단백질",
+    "function": "산소 운반"
+  },
+  {
+    "id": "protein_25",
+    "name": "백혈구 수 (WBC)",
+    "nameEn": "White Blood Cell Count",
+    "uniprotId": "CELL_COUNT",
+    "category": "면역 마커",
+    "normalRange": "4000-11000 /μL",
+    "description": "면역 세포 수",
+    "function": "감염 대응"
+  },
+  {
+    "id": "protein_26",
+    "name": "호중구 비율 (Neutrophil %)",
+    "nameEn": "Neutrophil Percentage",
+    "uniprotId": "CELL_DIFF",
+    "category": "면역 마커",
+    "normalRange": "40-70%",
+    "description": "세균 감염 지표",
+    "function": "세균 제거"
+  },
+  {
+    "id": "protein_27",
+    "name": "림프구 비율 (Lymphocyte %)",
+    "nameEn": "Lymphocyte Percentage",
+    "uniprotId": "CELL_DIFF",
+    "category": "면역 마커",
+    "normalRange": "20-40%",
+    "description": "바이러스 감염 지표",
+    "function": "바이러스 제거"
+  },
+  {
+    "id": "protein_28",
+    "name": "혈소판 수 (Platelet)",
+    "nameEn": "Platelet Count",
+    "uniprotId": "CELL_COUNT",
+    "category": "응고 마커",
+    "normalRange": "150000-400000 /μL",
+    "description": "혈액 응고 세포",
+    "function": "지혈"
+  },
+  {
+    "id": "protein_29",
+    "name": "적혈구 침강 속도 (ESR)",
+    "nameEn": "Erythrocyte Sedimentation Rate",
+    "uniprotId": "LAB_TEST",
+    "category": "염증 마커",
+    "normalRange": "0-22 mm/hr",
+    "description": "염증 정도 반영",
+    "function": "비특이적 염증 지표"
+  },
+  {
+    "id": "protein_30",
+    "name": "프로트롬빈 시간 (PT)",
+    "nameEn": "Prothrombin Time",
+    "uniprotId": "P00734",
+    "category": "응고 마커",
+    "normalRange": "11-13.5 초",
+    "description": "혈액 응고 시간",
+    "function": "응고 기능 평가"
+  }
+]
