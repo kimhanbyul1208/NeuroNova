@@ -10,3 +10,9 @@ export { default as AssignDoctorModal } from './AssignDoctorModal';
 export { default as NavBar } from './NavBar';
 export { default as ProteinViewer } from './ProteinViewer';
 export { default as ErrorBoundary } from './ErrorBoundary';
+
+// 바이오마커 분석 컴포넌트
+export { default as BiomarkerClassificationCard } from './BiomarkerClassificationCard';
+export { default as ProteinButtonGrid } from './ProteinButtonGrid';
+export { default as ProteinDetailModal } from './ProteinDetailModal';
+

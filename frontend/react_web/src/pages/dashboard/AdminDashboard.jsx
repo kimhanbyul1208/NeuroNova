@@ -67,6 +67,18 @@ const AdminDashboard = () => {
                     </button>
                     <button
                         style={styles.actionButton}
+                        onClick={() => navigate('/about')}
+                    >
+                        About Us
+                    </button>
+                    <button
+                        style={{ ...styles.actionButton, backgroundColor: '#ede7f6', borderColor: '#7c4dff', color: '#5e35b1', fontWeight: '600' }}
+                        onClick={() => navigate('/about-ai')}
+                    >
+                        🤖 About AI
+                    </button>
+                    <button
+                        style={styles.actionButton}
                         onClick={() => alert('Audit Logs feature coming soon!')}
                     >
                         View Audit Logs

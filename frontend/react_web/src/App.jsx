@@ -25,6 +25,7 @@ import DataManagementPage from './pages/DataManagementPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
+import AboutAIPage from './pages/admin/AboutAIPage';
 import FormsPage from './pages/nurse/FormsPage';
 import MedicalRecordsPage from './pages/MedicalRecordsPage';
 
@@ -86,6 +87,19 @@ function App() {
         <Route path="/" element={
           isAuthenticated ? <Navigate to="/dashboard" replace /> : <HomePage />
         } />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/about" element={<AboutPage />} />
+
+        {/* Dashboard Redirect */}
+        <Route path="/dashboard" element={<DashboardRedirect />} />
+
+        {/* Role-based Dashboards */}
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
 
         <Route path="/doctor/dashboard" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
@@ -102,6 +116,25 @@ function App() {
         <Route path="/patient/dashboard" element={
           <ProtectedRoute roles={['PATIENT', 'ADMIN']}>
             <PatientDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* Admin Routes */}
+        <Route path="/admin/users" element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <UserManagementPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/settings" element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <AdminSettingsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/about-ai" element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <AboutAIPage />
           </ProtectedRoute>
         } />
 
@@ -167,8 +200,18 @@ function App() {
         } />
 
         <Route path="/doctor/cdss" element={
+          <Navigate to="/doctor/biomarker-analysis" replace />
+        } />
+
+        <Route path="/doctor/biomarker-analysis" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
-            <CDSSPage />
+            <BiomarkerAnalysisPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/doctor/protein-viewer" element={
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
+            <ProteinViewerPage />
           </ProtectedRoute>
         } />
 
