@@ -1,6 +1,4 @@
-/**
- * Register Page - 회원가입 (의료진용)
- */
+// Register Page - 의료진 회원가입
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -45,10 +43,8 @@ const RegisterPage = () => {
   ];
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -56,42 +52,43 @@ const RegisterPage = () => {
     setError('');
     setSuccess(false);
 
-    // Validation
+    // Basic validation
     if (formData.password !== formData.password_confirm) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
     }
-
     if (formData.password.length < 8) {
       setError('비밀번호는 최소 8자 이상이어야 합니다.');
       return;
     }
+    const phoneRegex = /^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$/;
+    if (!phoneRegex.test(formData.phone_number)) {
+      setError('전화번호 형식이 올바르지 않습니다. 예: 010-1234-5678');
+      return;
+    }
 
     setLoading(true);
-
     try {
-      // Use axiosClient and correct endpoint
-      const response = await axiosClient.post(API_ENDPOINTS.REGISTER, {
+      const payload = {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        password_confirm: formData.password_confirm,
         first_name: formData.first_name,
         last_name: formData.last_name,
         role: formData.role,
         phone_number: formData.phone_number,
-      });
-
+      };
+      if (formData.role === 'DOCTOR' || formData.role === 'NURSE') {
+        payload.department = formData.department;
+        payload.license_number = formData.license_number;
+      }
+      await axiosClient.post(API_ENDPOINTS.REGISTER, payload);
       setSuccess(true);
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       if (err.response?.data) {
-        // Handle DRF validation errors which can be object or array
         const data = err.response.data;
         let message = '회원가입에 실패했습니다.';
-
         const fieldNames = {
           username: '사용자명',
           email: '이메일',
@@ -102,28 +99,28 @@ const RegisterPage = () => {
           role: '직책',
           phone_number: '전화번호',
           department: '부서',
-          license_number: '면허번호'
+          license_number: '면허번호',
         };
-
         if (typeof data === 'object') {
           const messages = [];
+          if (data.non_field_errors) {
+            const nf = Array.isArray(data.non_field_errors) ? data.non_field_errors.join(' ') : data.non_field_errors;
+            messages.push(nf);
+          }
           for (const key in data) {
-            let errorContent = Array.isArray(data[key]) ? data[key].join(' ') : data[key];
-
-            // User requested specific format for role error
-            if (key === 'role' && errorContent.includes('유효하지 않은 선택')) {
+            if (key === 'non_field_errors') continue;
+            let errContent = Array.isArray(data[key]) ? data[key].join(' ') : data[key];
+            if (key === 'role' && errContent.includes('유효하지 않은 선택')) {
               messages.push('"직책"이 유효하지 않은 선택(choice)입니다.');
               continue;
             }
-
             const fieldName = fieldNames[key] || key;
-            messages.push(`${fieldName}: ${errorContent}`);
+            messages.push(`${fieldName}: ${errContent}`);
           }
           message = messages.join('\n');
         } else if (typeof data === 'string') {
           message = data;
         }
-
         setError(message);
       } else if (err.code === 'ERR_NETWORK') {
         setError('서버와의 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.');
@@ -147,19 +144,16 @@ const RegisterPage = () => {
             의료진 회원가입
           </Typography>
         </Box>
-
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
-
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
             회원가입이 완료되었습니다! 로그인 페이지로 이동합니다...
           </Alert>
         )}
-
         <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             {/* 사용자명 */}
@@ -174,7 +168,6 @@ const RegisterPage = () => {
                 autoComplete="username"
               />
             </Grid>
-
             {/* 이메일 */}
             <Grid item xs={12}>
               <TextField
@@ -188,7 +181,6 @@ const RegisterPage = () => {
                 autoComplete="email"
               />
             </Grid>
-
             {/* 성 */}
             <Grid item xs={6}>
               <TextField
@@ -201,7 +193,6 @@ const RegisterPage = () => {
                 autoComplete="family-name"
               />
             </Grid>
-
             {/* 이름 */}
             <Grid item xs={6}>
               <TextField
@@ -214,7 +205,6 @@ const RegisterPage = () => {
                 autoComplete="given-name"
               />
             </Grid>
-
             {/* 비밀번호 */}
             <Grid item xs={12}>
               <TextField
@@ -229,7 +219,6 @@ const RegisterPage = () => {
                 helperText="최소 8자 이상"
               />
             </Grid>
-
             {/* 비밀번호 확인 */}
             <Grid item xs={12}>
               <TextField
@@ -243,7 +232,6 @@ const RegisterPage = () => {
                 autoComplete="new-password"
               />
             </Grid>
-
             {/* 직책 */}
             <Grid item xs={12}>
               <TextField
@@ -262,7 +250,6 @@ const RegisterPage = () => {
                 ))}
               </TextField>
             </Grid>
-
             {/* 전화번호 */}
             <Grid item xs={12}>
               <TextField
@@ -275,7 +262,6 @@ const RegisterPage = () => {
                 placeholder="010-1234-5678"
               />
             </Grid>
-
             {/* 부서 & 면허번호 - 의료진 전용 */}
             {(formData.role === 'DOCTOR' || formData.role === 'NURSE') && (
               <>
@@ -289,7 +275,6 @@ const RegisterPage = () => {
                     placeholder="신경외과"
                   />
                 </Grid>
-
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
@@ -302,7 +287,6 @@ const RegisterPage = () => {
               </>
             )}
           </Grid>
-
           <Button
             type="submit"
             fullWidth
@@ -313,7 +297,6 @@ const RegisterPage = () => {
           >
             {loading ? '가입 중...' : '회원가입'}
           </Button>
-
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2">
               이미 계정이 있으신가요?{' '}
