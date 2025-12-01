@@ -16,6 +16,21 @@
 
 **권한**: 시스템 관리자 (is_staff=True, is_superuser=True)
 
+Admin 디버깅 뷰 구현 완료 🛠️
+관리자 대시보드에서 다른 역할의 화면으로 바로 이동할 수 있는 기능을 추가했습니다.
+
+🛠️ 구현 내역
+권한 확장: App.jsx를 수정하여 ADMIN 권한을 가진 사용자가 /doctor/dashboard, /staff/dashboard, /patient/dashboard 등 모든 대시보드 경로에 접근할 수 있도록 허용했습니다.
+Debug Views 섹션 추가: AdminDashboard.jsx 하단에 주황색 테두리로 구분된 Debug Views 섹션을 추가했습니다.
+👨‍⚕️ View as Doctor: 의사 대시보드로 이동
+👩‍⚕️ View as Nurse: 간호사 대시보드로 이동
+🏥 View as Patient: 환자 대시보드로 이동
+🚀 테스트 방법
+Admin 계정(admin1)으로 로그인합니다.
+대시보드 스크롤을 내려 하단의 Debug Views 섹션을 확인합니다.
+각 버튼을 클릭하여 해당 역할의 대시보드로 정상적으로 이동하는지 확인합니다.
+각 대시보드에서 뒤로가기 또는 로그아웃 등을 통해 다시 Admin 대시보드로 돌아올 수 있습니다.
+
 ---
 
 ## 👨‍⚕️ Doctor Accounts (의사)

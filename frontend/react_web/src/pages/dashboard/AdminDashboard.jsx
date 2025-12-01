@@ -85,6 +85,34 @@ const AdminDashboard = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Debug Views Section */}
+            <div style={{ ...styles.section, marginTop: '2rem', borderTop: '4px solid #ff9800' }}>
+                <h2 style={styles.sectionTitle}>🛠️ Debug Views (Admin Only)</h2>
+                <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+                    Access other role-specific dashboards for debugging and support purposes.
+                </p>
+                <div style={styles.actionGrid}>
+                    <button
+                        style={styles.debugButton}
+                        onClick={() => navigate('/doctor/dashboard')}
+                    >
+                        👨‍⚕️ View as Doctor
+                    </button>
+                    <button
+                        style={styles.debugButton}
+                        onClick={() => navigate('/staff/dashboard')}
+                    >
+                        👩‍⚕️ View as Nurse
+                    </button>
+                    <button
+                        style={styles.debugButton}
+                        onClick={() => navigate('/patient/dashboard')}
+                    >
+                        🏥 View as Patient
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
@@ -178,6 +206,20 @@ const styles = {
         transition: 'all 0.2s',
         ':hover': {
             backgroundColor: '#e0e0e0',
+        }
+    },
+    debugButton: {
+        padding: '1rem',
+        backgroundColor: '#fff3e0',
+        border: '1px solid #ffb74d',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontSize: '1rem',
+        fontWeight: '600',
+        color: '#e65100',
+        transition: 'all 0.2s',
+        ':hover': {
+            backgroundColor: '#ffe0b2',
         }
     }
 };
