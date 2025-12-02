@@ -203,17 +203,6 @@ function App() {
           <Navigate to="/doctor/biomarker-analysis" replace />
         } />
 
-        <Route path="/doctor/biomarker-analysis" element={
-          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
-            <BiomarkerAnalysisPage />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/doctor/protein-viewer" element={
-          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
-            <ProteinViewerPage />
-          </ProtectedRoute>
-        } />
 
         <Route path="/doctor/data-management" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
