@@ -1,0 +1,26 @@
+{
+  "num_task1_classes": 2,
+  "num_task2_classes": 4,
+  "num_task3_classes": 6,
+  "task1_labels": {
+    "Host": 0,
+    "Pathogen": 1
+  },
+  "task2_labels": {
+    "None": 0,
+    "Common_Cold": 1,
+    "Influenza": 2,
+    "COVID-19": 3
+  },
+  "task3_labels": {
+    "Hemagglutinin": 0,
+    "Host_Protein": 1,
+    "Neuraminidase": 2,
+    "Nucleocapsid": 3,
+    "Other": 4,
+    "Spike": 5
+  },
+  "train_size": 3779,
+  "val_size": 805,
+  "test_size": 767
+}
