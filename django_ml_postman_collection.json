@@ -1,0 +1,249 @@
+{
+    "info": {
+        "_postman_id": "django-ml-proxy-api",
+        "name": "NeuroNova Django ML API",
+        "description": "Django API Collection for ML Proxy & Prediction Management (7 Key APIs)",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Predict (Proxy)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"doctor_name\": \"Dr. Kim\",\n    \"patient_name\": \"John Doe\",\n    \"sequence\": \"MKTIIALSYIFCLVFADYKDDDDK\",\n    \"seq_type\": \"protein\",\n    \"task3_threshold\": 0.5\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{base_url}}/ml/v1/predict/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "ml",
+                        "v1",
+                        "predict",
+                        ""
+                    ]
+                },
+                "description": "Forwards prediction request to Flask ML server and logs the result."
+            },
+            "response": []
+        },
+        {
+            "name": "2. System Status",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/ml/v1/status/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "ml",
+                        "v1",
+                        "status",
+                        ""
+                    ]
+                },
+                "description": "Checks the status of the connected Flask ML server."
+            },
+            "response": []
+        },
+        {
+            "name": "3. Model Info",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/ml/v1/model-info/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "ml",
+                        "v1",
+                        "model-info",
+                        ""
+                    ]
+                },
+                "description": "Retrieves current model version and metadata."
+            },
+            "response": []
+        },
+        {
+            "name": "4. Retrain Model",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{base_url}}/ml/v1/retrain/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "ml",
+                        "v1",
+                        "retrain",
+                        ""
+                    ]
+                },
+                "description": "Triggers model retraining process."
+            },
+            "response": []
+        },
+        {
+            "name": "5. Inference History",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/ml/v1/history/?doctor=Dr. Kim",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "ml",
+                        "v1",
+                        "history",
+                        ""
+                    ],
+                    "query": [
+                        {
+                            "key": "doctor",
+                            "value": "Dr. Kim",
+                            "description": "Filter by doctor name"
+                        },
+                        {
+                            "key": "patient",
+                            "value": "",
+                            "description": "Filter by patient name",
+                            "disabled": true
+                        }
+                    ]
+                },
+                "description": "Retrieves logged inference history."
+            },
+            "response": []
+        },
+        {
+            "name": "6. Pending Reviews",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/api/v1/custom/predictions/pending_review/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "custom",
+                        "predictions",
+                        "pending_review",
+                        ""
+                    ]
+                },
+                "description": "Get predictions that require doctor's review."
+            },
+            "response": []
+        },
+        {
+            "name": "7. Confirm Prediction",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"doctor_feedback\": \"Correct\",\n    \"doctor_note\": \"Patient shows clear symptoms matching the prediction.\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/v1/custom/predictions/:id/confirm_prediction/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "custom",
+                        "predictions",
+                        ":id",
+                        "confirm_prediction",
+                        ""
+                    ],
+                    "variable": [
+                        {
+                            "key": "id",
+                            "value": "1"
+                        }
+                    ]
+                },
+                "description": "Confirm a prediction with doctor's feedback."
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000",
+            "type": "string"
+        },
+        {
+            "key": "access_token",
+            "value": "YOUR_ACCESS_TOKEN_HERE",
+            "type": "string"
+        }
+    ]
+}

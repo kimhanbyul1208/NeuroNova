@@ -44,6 +44,12 @@ export const API_ENDPOINTS = {
 
   // Notifications
   NOTIFICATIONS: `/api/${API_CONFIG.API_VERSION}/notifications/`,
+
+  // ML Proxy (Django -> Flask)
+  ML_PREDICT: '/ml/v1/predict/',
+  ML_STATUS: '/ml/v1/status/',
+  ML_MODEL_INFO: '/ml/v1/model-info/',
+  ML_HISTORY: '/ml/v1/history/',
 };
 
 // App Configuration

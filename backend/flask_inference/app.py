@@ -36,5 +36,4 @@ if __name__ == "__main__":
         print(f"[WARN] 초기 모델 로드 실패: {e}")
 
     app = create_app()
-    # 로컬 전용: Django에서만 접근 가능하도록 127.0.0.1로 바인딩
-    app.run(host="127.0.0.1", port=PORT, debug=False)
+    app.run(host="0.0.0.0", port=PORT, debug=True)

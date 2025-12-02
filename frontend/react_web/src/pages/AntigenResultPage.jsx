@@ -38,47 +38,38 @@ import { useAuth } from '../auth/AuthContext';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 import ProteinViewer from '../components/ProteinViewer';
+import { LoadingSpinner, ErrorAlert } from '../components';
 
-// Mock Prediction Logic (since backend is not ready)
-const mockPredict = (inputs) => {
-    return inputs.map((input, index) => {
-        // Randomly assign categories for demo
-        const rand = Math.random();
-        let category = 'NORMAL';
-        let proteinType = 'Unknown Protein';
-
-        if (rand > 0.8) category = 'COVID';
-        else if (rand > 0.6) category = 'FLU';
-        else if (rand > 0.4) category = 'COLD';
-
-        if (input.type === 'PROTEIN') proteinType = 'Spike Protein';
-        else if (input.type === 'DNA') proteinType = 'Viral DNA Fragment';
-        else proteinType = 'Viral RNA Sequence';
-
-        return {
-            id: index + 1,
-            inputValue: input.value,
-            inputType: input.type,
-            task1: category === 'NORMAL' ? '정상' : '항원 감지',
-            task2: category,
-            task3: proteinType,
-            pdbId: '1UBQ' // Demo PDB ID
-        };
-    });
-};
+// 예시 데이터 (test_data.pkl 기반)
+const EXAMPLE_SEQUENCES = [
+    {
+        type: 'PROTEIN',
+        value: 'MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNF',
+        description: 'SARS-CoV-2 Spike Protein'
+    },
+    {
+        type: 'PROTEIN',
+        value: 'MSDNGPQNQRNAPRITFGGPSDSTGSNQNGERSGARSKQRRPQGLPNNTASWFTALTQHGKEDLKFPRGQGVPINTNSSPDDQIGYYRRATRRIRGGDGKMKDLSPRWYFYYLGTGPEAGLPYGANKDGIIWVATEGALNTPKDHIGTRNPANNAAIVLQLPQGTTLPKGFYAEGSRGGSQASSRSSSRSRNSSRNSTPGSSRGTSPARMAGNGGDAALALLLLDRLNQLESKMSGKGQQQQGQTVTKKSAAEASKKPRQKRTATKAYNVTQAFGRRGPEQTQGNFGDQELIRQGTDYKHWPQIAQFAPSASAFFGMSRIGMEVTPSGTWLTYTGAIKLDDKDPNFKDQVILLNKHIDAYKTFPPTEPKKDKKKKADETQALPQRQKKQQTVTLLPAADLDDFSKQLQQSMSSADSTQA',
+        description: 'Influenza A Nucleocapsid'
+    },
+    {
+        type: 'PROTEIN',
+        value: 'MKTIIALSYIFCLVLGQDLPGNDNSTATLCLGHHAVPNGTLVKTITDDQIEVTNATELVQSSSTGKICNNPHRILDGIDCTLIDALLGDPHCDVFQNETWDLFVERSKAFSNCYPYDVPDYASLRSLVASSGTLEFITEGFTWTGVTQNGGSNACKRGPGSGFFSRLNWLTKSGSTYPVLNVTMPNNDNFDKLYIWGIHHPSTNQEQTSLYVQASGRVTVSTRRSQQTIIPNIGSRPWVRGLSSRISIYWTIVKPGDVLVINSNGNLIAPRGYFKMRTGKSSIMRSDAPIDTCISECITPNGSIPNDKPFQNVNKITYGACPKYVKQNTLKLATGMRNVPEKQT',
+        description: 'Influenza A Hemagglutinin'
+    }
+];
 
 const CATEGORY_COLORS = {
-    COVID: '#dc2626', // Red
-    FLU: '#ea580c',   // Orange
-    COLD: '#d97706',  // Amber
-    NORMAL: '#16a34a' // Green
+    Pathogen: '#dc2626',
+    'Non-Pathogen': '#16a34a'
 };
 
-const CATEGORY_LABELS = {
-    COVID: '코로나',
-    FLU: '독감',
-    COLD: '감기',
-    NORMAL: '정상'
+const PROTEIN_TYPE_COLORS = {
+    Nucleocapsid: '#dc2626',
+    Hemagglutinin: '#ea580c',
+    Neuraminidase: '#d97706',
+    Host_Protein: '#16a34a',
+    Other: '#6b7280'
 };
 
 const AntigenResultPage = () => {
@@ -87,9 +78,10 @@ const AntigenResultPage = () => {
     const { user } = useAuth();
 
     const [patient, setPatient] = useState(null);
-    const [inputs, setInputs] = useState([{ type: 'DNA', value: '' }]);
+    const [inputs, setInputs] = useState([{ type: 'PROTEIN', value: '' }]);
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     // Popup State
     const [openPopup, setOpenPopup] = useState(false);
@@ -122,19 +114,118 @@ const AntigenResultPage = () => {
         setInputs(newInputs);
     };
 
+    // 예시 데이터 로드
+    const handleLoadExample = () => {
+        setInputs(EXAMPLE_SEQUENCES.map(ex => ({
+            type: ex.type,
+            value: ex.value
+        })));
+        setError(null);
+    };
+
+    // 실제 API 호출
     const handlePredict = async () => {
         setLoading(true);
-        // Simulate API delay
-        setTimeout(() => {
-            const predictions = mockPredict(inputs);
+        setError(null);
 
-            // Sort: COVID -> FLU -> COLD -> NORMAL
-            const priority = { 'COVID': 0, 'FLU': 1, 'COLD': 2, 'NORMAL': 3 };
-            predictions.sort((a, b) => priority[a.task2] - priority[b.task2]);
+        try {
+            // 입력 검증
+            const validInputs = inputs.filter(input => input.value.trim() !== '');
+            if (validInputs.length === 0) {
+                setError('최소 하나 이상의 서열을 입력해주세요.');
+                setLoading(false);
+                return;
+            }
 
-            setResults(predictions);
+            // API 요청 데이터 구성
+            const requestData = {
+                doctor_name: user?.username || 'Unknown Doctor',
+                patient_name: patient ? `${patient.last_name}${patient.first_name}` : 'Unknown Patient',
+                items: validInputs.map((input, index) => ({
+                    id: `sample_${index + 1}`,
+                    sequence: input.value,
+                    seq_type: input.type.toLowerCase()
+                })),
+                task3_threshold: 0.5
+            };
+
+            console.log('API Request:', requestData);
+
+            // Django ML Proxy로 요청
+            const response = await axiosClient.post(API_ENDPOINTS.ML_PREDICT, requestData);
+
+            console.log('API Response:', response.data);
+
+            // 응답 데이터 파싱
+            if (response.data.ok && response.data.results) {
+                // 배치 응답
+                const predictions = response.data.results.map((result, index) => {
+                    if (!result.ok) {
+                        return {
+                            id: index + 1,
+                            inputValue: validInputs[index]?.value || '',
+                            inputType: validInputs[index]?.type || '',
+                            error: result.error || 'Unknown error',
+                            task1: 'Error',
+                            task2: 'Error',
+                            task3: 'Error',
+                            pdbId: null
+                        };
+                    }
+
+                    const pred = result.prediction || {};
+                    const task1 = pred.task1 || {};
+                    const task2 = pred.task2 || {};
+                    const task3 = pred.task3 || {};
+                    const structure = result.task3_structure || {};
+
+                    return {
+                        id: index + 1,
+                        inputValue: validInputs[index]?.value || '',
+                        inputType: validInputs[index]?.type || '',
+                        task1Label: task1.prediction || 'Unknown',
+                        task1Confidence: task1.confidence || 0,
+                        task2Label: task2.prediction || 'Unknown',
+                        task2Confidence: task2.confidence || 0,
+                        task3TopPredictions: task3.top_predictions || [],
+                        proteinName: structure.protein_name || 'Unknown',
+                        pdbId: structure.preferred_3d || null,
+                        translatedSequence: result.translation?.protein_sequence || ''
+                    };
+                });
+
+                setResults(predictions);
+            } else if (response.data.ok && response.data.prediction) {
+                // 단일 응답
+                const pred = response.data.prediction || {};
+                const task1 = pred.task1 || {};
+                const task2 = pred.task2 || {};
+                const task3 = pred.task3 || {};
+                const structure = response.data.task3_structure || {};
+
+                setResults([{
+                    id: 1,
+                    inputValue: validInputs[0]?.value || '',
+                    inputType: validInputs[0]?.type || '',
+                    task1Label: task1.prediction || 'Unknown',
+                    task1Confidence: task1.confidence || 0,
+                    task2Label: task2.prediction || 'Unknown',
+                    task2Confidence: task2.confidence || 0,
+                    task3TopPredictions: task3.top_predictions || [],
+                    proteinName: structure.protein_name || 'Unknown',
+                    pdbId: structure.preferred_3d || null,
+                    translatedSequence: response.data.translation?.protein_sequence || ''
+                }]);
+            } else {
+                throw new Error('예상치 못한 응답 형식입니다.');
+            }
+
+        } catch (err) {
+            console.error('Prediction Error:', err);
+            setError(err.response?.data?.error || err.message || '예측 중 오류가 발생했습니다.');
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     const handleOpenPopup = (result) => {
@@ -182,6 +273,12 @@ const AntigenResultPage = () => {
                                 환자: {patient?.last_name}{patient?.first_name} ({patient?.pid})
                             </Typography>
 
+                            {error && (
+                                <Alert severity="error" sx={{ mb: 2 }}>
+                                    {error}
+                                </Alert>
+                            )}
+
                             <Stack spacing={2}>
                                 {inputs.map((input, index) => (
                                     <Box key={index} sx={{ display: 'flex', gap: 1 }}>
@@ -198,9 +295,11 @@ const AntigenResultPage = () => {
                                         <TextField
                                             fullWidth
                                             size="small"
-                                            placeholder="값 입력"
+                                            placeholder="단백질 서열 입력 (예: MFVFLVLL...)"
                                             value={input.value}
                                             onChange={(e) => handleInputChange(index, 'value', e.target.value)}
+                                            multiline
+                                            maxRows={2}
                                         />
                                         {inputs.length > 1 && (
                                             <IconButton onClick={() => handleRemoveInput(index)} color="error">
@@ -211,19 +310,30 @@ const AntigenResultPage = () => {
                                 ))}
                             </Stack>
 
-                            <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-                                <Button startIcon={<AddIcon />} onClick={handleAddInput} fullWidth variant="outlined">
-                                    항목 추가
-                                </Button>
+                            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 <Button
-                                    startIcon={<ScienceIcon />}
-                                    onClick={handlePredict}
+                                    startIcon={<AddIcon />}
+                                    onClick={handleLoadExample}
                                     fullWidth
-                                    variant="contained"
-                                    disabled={loading}
+                                    variant="outlined"
+                                    color="secondary"
                                 >
-                                    {loading ? '분석 중...' : '예측 실행'}
+                                    예시 데이터 로드
                                 </Button>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <Button startIcon={<AddIcon />} onClick={handleAddInput} fullWidth variant="outlined">
+                                        항목 추가
+                                    </Button>
+                                    <Button
+                                        startIcon={<ScienceIcon />}
+                                        onClick={handlePredict}
+                                        fullWidth
+                                        variant="contained"
+                                        disabled={loading}
+                                    >
+                                        {loading ? '분석 중...' : 'AI 예측 실행'}
+                                    </Button>
+                                </Box>
                             </Box>
                         </Paper>
                     </Grid>
@@ -237,63 +347,93 @@ const AntigenResultPage = () => {
 
                             {results.length === 0 ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', color: 'text.secondary' }}>
-                                    데이터를 입력하고 예측을 실행하세요.
+                                    <Stack alignItems="center" spacing={2}>
+                                        <ScienceIcon sx={{ fontSize: 60, opacity: 0.3 }} />
+                                        <Typography>데이터를 입력하고 예측을 실행하세요.</Typography>
+                                        <Typography variant="caption">예시 데이터를 로드하면 빠르게 시작할 수 있습니다.</Typography>
+                                    </Stack>
                                 </Box>
                             ) : (
                                 <Stack spacing={2}>
-                                    {results.map((result) => (
-                                        <Card
-                                            key={result.id}
-                                            variant="outlined"
-                                            sx={{
-                                                borderColor: CATEGORY_COLORS[result.task2],
-                                                borderLeftWidth: 6,
-                                                transition: 'transform 0.2s',
-                                                '&:hover': { transform: 'translateY(-2px)', boxShadow: 2 }
-                                            }}
-                                        >
-                                            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Box>
-                                                        <Typography variant="subtitle2" color="text.secondary">
-                                                            #{result.id} [{result.inputType}]
-                                                        </Typography>
-                                                        <Typography variant="body1" fontWeight={600} noWrap sx={{ maxWidth: '200px' }}>
-                                                            {result.inputValue}
-                                                        </Typography>
-                                                    </Box>
-                                                    <Box sx={{ textAlign: 'right' }}>
-                                                        <Chip
-                                                            label={result.task1}
-                                                            size="small"
-                                                            sx={{ mr: 1, bgcolor: '#f3f4f6' }}
-                                                        />
-                                                        <Chip
-                                                            label={CATEGORY_LABELS[result.task2]}
-                                                            sx={{
-                                                                bgcolor: CATEGORY_COLORS[result.task2],
-                                                                color: 'white',
-                                                                fontWeight: 'bold'
-                                                            }}
-                                                        />
-                                                    </Box>
-                                                </Box>
-                                                <Divider sx={{ my: 1.5 }} />
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Typography variant="body2">
-                                                        <strong>단백질 분류:</strong> {result.task3}
-                                                    </Typography>
-                                                    <Button
-                                                        size="small"
-                                                        endIcon={<VisibilityIcon />}
-                                                        onClick={() => handleOpenPopup(result)}
-                                                    >
-                                                        더보기
-                                                    </Button>
-                                                </Box>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                                    {results.map((result) => {
+                                        const isError = result.error;
+                                        const task1Color = CATEGORY_COLORS[result.task1Label] || '#6b7280';
+                                        const task2Color = PROTEIN_TYPE_COLORS[result.task2Label] || '#6b7280';
+
+                                        return (
+                                            <Card
+                                                key={result.id}
+                                                variant="outlined"
+                                                sx={{
+                                                    borderColor: isError ? '#f44336' : task1Color,
+                                                    borderLeftWidth: 6,
+                                                    transition: 'transform 0.2s',
+                                                    '&:hover': { transform: 'translateY(-2px)', boxShadow: 2 }
+                                                }}
+                                            >
+                                                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                                    {isError ? (
+                                                        <Alert severity="error">
+                                                            <Typography variant="subtitle2">샘플 #{result.id} 오류</Typography>
+                                                            <Typography variant="body2">{result.error}</Typography>
+                                                        </Alert>
+                                                    ) : (
+                                                        <>
+                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                <Box>
+                                                                    <Typography variant="subtitle2" color="text.secondary">
+                                                                        샘플 #{result.id} [{result.inputType}]
+                                                                    </Typography>
+                                                                    <Typography variant="body2" fontWeight={600} noWrap sx={{ maxWidth: '300px' }}>
+                                                                        {result.inputValue.substring(0, 50)}...
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Box sx={{ textAlign: 'right' }}>
+                                                                    <Chip
+                                                                        label={`${result.task1Label} (${(result.task1Confidence * 100).toFixed(1)}%)`}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            mr: 1,
+                                                                            bgcolor: task1Color,
+                                                                            color: 'white'
+                                                                        }}
+                                                                    />
+                                                                    <Chip
+                                                                        label={`${result.task2Label} (${(result.task2Confidence * 100).toFixed(1)}%)`}
+                                                                        sx={{
+                                                                            bgcolor: task2Color,
+                                                                            color: 'white',
+                                                                            fontWeight: 'bold'
+                                                                        }}
+                                                                    />
+                                                                </Box>
+                                                            </Box>
+                                                            <Divider sx={{ my: 1.5 }} />
+                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                <Box>
+                                                                    <Typography variant="body2">
+                                                                        <strong>상위 예측:</strong> {result.proteinName}
+                                                                    </Typography>
+                                                                    {result.task3TopPredictions.length > 0 && (
+                                                                        <Typography variant="caption" color="text.secondary">
+                                                                            1위: {result.task3TopPredictions[0][0]} ({(result.task3TopPredictions[0][1] * 100).toFixed(1)}%)
+                                                                        </Typography>
+                                                                    )}
+                                                                </Box>
+                                                                <Button
+                                                                    size="small"
+                                                                    endIcon={<VisibilityIcon />}
+                                                                    onClick={() => handleOpenPopup(result)}
+                                                                >
+                                                                    상세보기
+                                                                </Button>
+                                                            </Box>
+                                                        </>
+                                                    )}
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
                                 </Stack>
                             )}
                         </Paper>
@@ -301,46 +441,79 @@ const AntigenResultPage = () => {
                 </Grid>
 
                 {/* Detail Popup */}
-                <Dialog open={openPopup} onClose={() => setOpenPopup(false)} maxWidth="md" fullWidth>
+                <Dialog open={openPopup} onClose={() => setOpenPopup(false)} maxWidth="lg" fullWidth>
                     <DialogTitle>
-                        상세 분석 결과
+                        AI 예측 상세 결과
                         <Typography variant="subtitle2" color="text.secondary">
-                            {selectedResult?.task3} ({selectedResult?.task2})
+                            샘플 #{selectedResult?.id} - {selectedResult?.proteinName}
                         </Typography>
                     </DialogTitle>
                     <DialogContent dividers>
                         <Grid container spacing={3}>
                             <Grid item xs={12} md={6}>
-                                <Typography variant="subtitle1" gutterBottom fontWeight={600}>3D 구조 시각화</Typography>
-                                <Box sx={{ height: '300px', border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
-                                    <ProteinViewer pdbId={selectedResult?.pdbId} height="100%" />
-                                </Box>
+                                <Typography variant="subtitle1" gutterBottom fontWeight={600}>3D 단백질 구조</Typography>
+                                {selectedResult?.pdbId ? (
+                                    <Box sx={{ height: '350px', border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
+                                        <ProteinViewer pdbId={selectedResult?.pdbId} height="100%" />
+                                    </Box>
+                                ) : (
+                                    <Box sx={{ height: '350px', border: '1px solid #eee', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Typography color="text.secondary">3D 구조 정보 없음</Typography>
+                                    </Box>
+                                )}
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <Typography variant="subtitle1" gutterBottom fontWeight={600}>분석 상세</Typography>
+                                <Typography variant="subtitle1" gutterBottom fontWeight={600}>분석 결과</Typography>
                                 <List dense>
                                     <ListItem>
-                                        <ListItemText primary="입력 서열" secondary={selectedResult?.inputValue} />
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemText primary="1차 분류" secondary={selectedResult?.task1} />
-                                    </ListItem>
-                                    <ListItem>
                                         <ListItemText
-                                            primary="2차 분류 (질병)"
-                                            secondary={
-                                                <span style={{ color: CATEGORY_COLORS[selectedResult?.task2], fontWeight: 'bold' }}>
-                                                    {CATEGORY_LABELS[selectedResult?.task2]}
-                                                </span>
-                                            }
+                                            primary="입력 타입"
+                                            secondary={selectedResult?.inputType}
                                         />
                                     </ListItem>
                                     <ListItem>
-                                        <ListItemText primary="3차 분류 (단백질)" secondary={selectedResult?.task3} />
+                                        <ListItemText
+                                            primary="입력 서열 (처음 100자)"
+                                            secondary={selectedResult?.inputValue?.substring(0, 100) + '...'}
+                                        />
+                                    </ListItem>
+                                    <Divider sx={{ my: 1 }} />
+                                    <ListItem>
+                                        <ListItemText
+                                            primary={`Task 1: ${selectedResult?.task1Label}`}
+                                            secondary={`신뢰도: ${((selectedResult?.task1Confidence || 0) * 100).toFixed(2)}%`}
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemText
+                                            primary={`Task 2: ${selectedResult?.task2Label}`}
+                                            secondary={`신뢰도: ${((selectedResult?.task2Confidence || 0) * 100).toFixed(2)}%`}
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemText
+                                            primary="Task 3: 상위 예측"
+                                            secondary={
+                                                <Box component="span">
+                                                    {selectedResult?.task3TopPredictions?.slice(0, 3).map(([label, prob], idx) => (
+                                                        <Typography key={idx} variant="caption" display="block">
+                                                            {idx + 1}. {label}: {(prob * 100).toFixed(2)}%
+                                                        </Typography>
+                                                    ))}
+                                                </Box>
+                                            }
+                                        />
                                     </ListItem>
                                 </List>
+                                {selectedResult?.pdbId && (
+                                    <Alert severity="success" sx={{ mt: 2 }}>
+                                        <strong>3D 구조 확인됨</strong><br />
+                                        PDB ID: {selectedResult.pdbId}
+                                    </Alert>
+                                )}
                                 <Alert severity="info" sx={{ mt: 2 }}>
-                                    AI 모델이 해당 서열을 <strong>{CATEGORY_LABELS[selectedResult?.task2]}</strong>와 연관된 <strong>{selectedResult?.task3}</strong>로 식별했습니다.
+                                    AI 모델이 해당 서열을 <strong>{selectedResult?.task1Label}</strong>로 분류하고,
+                                    <strong> {selectedResult?.task2Label}</strong> 타입으로 식별했습니다.
                                 </Alert>
                             </Grid>
                         </Grid>
