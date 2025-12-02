@@ -21,7 +21,12 @@
       "Bash(node --version:*)",
       "Bash(timeout 5 bash:*)",
       "Bash(curl:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(cmd.exe /c \"npm run dev\")",
+      "Bash(npm.cmd run dev:*)",
+      "Bash(/c/Program Files/nodejs/npm.cmd run dev)",
+      "Bash(wsl --list:*)"
     ],
     "deny": [],
     "ask": []
