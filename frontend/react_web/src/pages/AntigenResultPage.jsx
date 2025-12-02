@@ -157,7 +157,7 @@ const AntigenResultPage = () => {
             console.log('API Response:', response.data);
 
             // 응답 데이터 파싱
-            if (response.data.ok && response.data.results) {
+            if (response.data.ok && (response.data.batch || response.data.results)) {
                 // 배치 응답
                 const predictions = response.data.results.map((result, index) => {
                     if (!result.ok) {
