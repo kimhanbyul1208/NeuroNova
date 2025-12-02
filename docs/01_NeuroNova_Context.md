@@ -23,6 +23,23 @@ AI 어시스턴트는 이 컨텍스트를 바탕으로 코드를 생성하고 �
          ↓
   [MySQL + Redis]
 
+======
+
+[Flutter App]       [React Web]
+       ↓                 ↓
+                 [Nginx]
+       ┌───────────┴───────────┐
+       │                       │
+[Gunicorn - Django]     [Gunicorn - Flask AI]
+       │                       │
+       └───────────┬───────────┘
+                   ↓
+            [MySQL + Redis]
+                   ↓
+           [Orthanc DICOM 서버]
+
+======
+
 
 * **Frontend:**
     * **Web (React):** 의료진용. 대시보드, 환자 관리, 데이터 분석, Orthanc DICOM 뷰어 통합.
