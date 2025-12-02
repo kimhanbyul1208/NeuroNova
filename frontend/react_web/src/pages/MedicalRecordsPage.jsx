@@ -12,11 +12,9 @@ import {
     Chip,
     Box
 } from '@mui/material';
-// import { LoadingSpinner, ErrorAlert } from '../../components';
-import { LoadingSpinner, ErrorAlert } from "@/components";
-// import axiosClient from '../../api/axios';
-import axiosClient from "@/api/axios";
-import { API_ENDPOINTS } from '@/utils/config';
+import { LoadingSpinner, ErrorAlert } from '../components';
+import axiosClient from '../api/axios';
+import { API_ENDPOINTS } from '../utils/config';
 
 const MedicalRecordsPage = () => {
     const [records, setRecords] = useState([]);
