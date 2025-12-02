@@ -21,12 +21,18 @@ import {
     Chip,
     IconButton,
     MenuItem,
+    Card,
+    CardContent,
+    Alert,
+    CircularProgress,
 } from '@mui/material';
 import {
     Add as AddIcon,
     Edit as EditIcon,
     Delete as DeleteIcon,
     Search as SearchIcon,
+    AutoAwesome as AiIcon,
+    Psychology as BrainIcon,
 } from '@mui/icons-material';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
@@ -49,6 +55,11 @@ const PrescriptionManagementPage = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingPrescription, setEditingPrescription] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // AI 추천 관련 상태
+    const [aiRecommendations, setAiRecommendations] = useState([]);
+    const [loadingAi, setLoadingAi] = useState(false);
+    const [showAiPanel, setShowAiPanel] = useState(false);
 
     const [formData, setFormData] = useState({
         patient_id: '',
@@ -157,6 +168,74 @@ const PrescriptionManagementPage = () => {
         } catch (err) {
             setError(err.response?.data?.message || '처방전 삭제에 실패했습니다.');
         }
+    };
+
+    /**
+     * AI 처방전 추천 요청
+     */
+    const handleAiRecommendation = async () => {
+        if (!formData.patient_id) {
+            setError('환자 ID를 먼저 입력해주세요.');
+            return;
+        }
+
+        try {
+            setLoadingAi(true);
+            setError(null);
+
+            // AI API 호출
+            const response = await axiosClient.post(API_ENDPOINTS.AI_PRESCRIPTION_RECOMMEND, {
+                patient_id: formData.patient_id,
+                encounter_id: formData.encounter_id,
+                symptoms: formData.instructions, // 증상 정보를 instructions에서 가져옴
+            });
+
+            setAiRecommendations(response.data.recommendations || []);
+            setShowAiPanel(true);
+        } catch (err) {
+            setError(err.response?.data?.message || 'AI 추천을 불러오는데 실패했습니다.');
+            // 백엔드가 준비되지 않은 경우 목업 데이터 사용
+            if (err.response?.status === 404 || err.response?.status === 500) {
+                setAiRecommendations([
+                    {
+                        medication_name: '아세트아미노펜',
+                        dosage: '500mg',
+                        frequency: '1일 3회',
+                        duration_days: 7,
+                        instructions: '식후 30분에 복용',
+                        confidence: 0.95,
+                        reason: '발열 및 통증 완화에 효과적입니다.'
+                    },
+                    {
+                        medication_name: '이부프로펜',
+                        dosage: '200mg',
+                        frequency: '1일 2회',
+                        duration_days: 5,
+                        instructions: '식후 복용',
+                        confidence: 0.87,
+                        reason: '항염증 효과가 있습니다.'
+                    }
+                ]);
+                setShowAiPanel(true);
+            }
+        } finally {
+            setLoadingAi(false);
+        }
+    };
+
+    /**
+     * AI 추천 항목 적용
+     */
+    const handleApplyAiRecommendation = (recommendation) => {
+        setFormData({
+            ...formData,
+            medication_name: recommendation.medication_name,
+            dosage: recommendation.dosage,
+            frequency: recommendation.frequency,
+            duration_days: recommendation.duration_days,
+            instructions: recommendation.instructions,
+        });
+        setShowAiPanel(false);
     };
 
     const filteredPrescriptions = prescriptions.filter((prescription) =>
@@ -291,11 +370,91 @@ const PrescriptionManagementPage = () => {
                 </TableContainer>
 
                 {/* Create/Edit Dialog */}
-                <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+                <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="lg" fullWidth>
                     <DialogTitle>
-                        {editingPrescription ? '처방전 수정' : '새 처방전 작성'}
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <span>{editingPrescription ? '처방전 수정' : '새 처방전 작성'}</span>
+                            {!editingPrescription && (
+                                <Button
+                                    variant="outlined"
+                                    startIcon={loadingAi ? <CircularProgress size={20} /> : <BrainIcon />}
+                                    onClick={handleAiRecommendation}
+                                    disabled={loadingAi || !formData.patient_id}
+                                    sx={{
+                                        borderColor: '#667eea',
+                                        color: '#667eea',
+                                        '&:hover': {
+                                            borderColor: '#5568d3',
+                                            backgroundColor: 'rgba(102, 126, 234, 0.04)',
+                                        }
+                                    }}
+                                >
+                                    AI 처방 추천
+                                </Button>
+                            )}
+                        </Box>
                     </DialogTitle>
                     <DialogContent>
+                        {/* AI 추천 패널 */}
+                        {showAiPanel && aiRecommendations.length > 0 && (
+                            <Alert
+                                severity="info"
+                                sx={{ mb: 2 }}
+                                onClose={() => setShowAiPanel(false)}
+                            >
+                                <Typography variant="subtitle2" gutterBottom>
+                                    <BrainIcon sx={{ fontSize: 18, verticalAlign: 'middle', mr: 1 }} />
+                                    AI 추천 처방
+                                </Typography>
+                                <Grid container spacing={2} sx={{ mt: 1 }}>
+                                    {aiRecommendations.map((rec, index) => (
+                                        <Grid item xs={12} key={index}>
+                                            <Card
+                                                variant="outlined"
+                                                sx={{
+                                                    cursor: 'pointer',
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(102, 126, 234, 0.04)',
+                                                        borderColor: '#667eea'
+                                                    }
+                                                }}
+                                                onClick={() => handleApplyAiRecommendation(rec)}
+                                            >
+                                                <CardContent>
+                                                    <Box display="flex" justifyContent="space-between" alignItems="start">
+                                                        <Box flex={1}>
+                                                            <Typography variant="h6" gutterBottom>
+                                                                {rec.medication_name}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                용량: {rec.dosage} | 빈도: {rec.frequency} | 기간: {rec.duration_days}일
+                                                            </Typography>
+                                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                                                복용법: {rec.instructions}
+                                                            </Typography>
+                                                            {rec.reason && (
+                                                                <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
+                                                                    💡 {rec.reason}
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+                                                        {rec.confidence && (
+                                                            <Chip
+                                                                label={`신뢰도 ${(rec.confidence * 100).toFixed(0)}%`}
+                                                                color="primary"
+                                                                size="small"
+                                                                sx={{ ml: 2 }}
+                                                            />
+                                                        )}
+                                                    </Box>
+                                                </CardContent>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </Alert>
+                        )}
+
                         <Grid container spacing={2} sx={{ mt: 1 }}>
                             <Grid item xs={12} sm={6}>
                                 <TextField

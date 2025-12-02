@@ -10,7 +10,7 @@ import {
 import axiosClient from '../../api/axios';
 import { API_ENDPOINTS } from '../../utils/config';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import '../../DashboardPage.css';
+import '../DashboardPage.css';
 
 const StaffDashboard = () => {
     const { user } = useAuth();
