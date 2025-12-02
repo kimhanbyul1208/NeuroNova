@@ -51,7 +51,13 @@ const PatientDetailPage = () => {
         ]);
 
         // Helper to handle pagination
-        const getResults = (data) => Array.isArray(data) ? data : data.results || [];
+        const getResults = (data) => {
+          console.log('API Data:', data);
+          if (!data) return [];
+          if (Array.isArray(data)) return data;
+          if (data.results && Array.isArray(data.results)) return data.results;
+          return [];
+        };
 
         setPatient(patientRes.data);
         setEncounters(getResults(encountersRes.data));
