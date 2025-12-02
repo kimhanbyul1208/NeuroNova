@@ -134,18 +134,6 @@ const AppointmentManagementPage = () => {
   return (
     <DashboardLayout role={user?.role} activePage="appointments" title="Appointment Management">
       <div className="page-container">
-        {/* 헤더 */}
-        <div className="page-header">
-          <Box>
-            <h1 className="page-title">
-              예약 관리
-            </h1>
-            <p className="page-subtitle">
-              환자 예약을 승인하고 관리합니다.
-            </p>
-          </Box>
-        </div>
-
         {/* 에러 표시 */}
         {error && (
           <Alert severity="error" sx={{ marginBottom: 2 }}>
@@ -154,6 +142,9 @@ const AppointmentManagementPage = () => {
             <Button onClick={fetchAppointments} sx={{ marginTop: 1 }}>재시도</Button>
           </Alert>
         )}
+        <p className="page-subtitle">
+          환자 예약을 승인하고 관리합니다.
+        </p>
 
         {/* 탭 메뉴 */}
         {!error && (
