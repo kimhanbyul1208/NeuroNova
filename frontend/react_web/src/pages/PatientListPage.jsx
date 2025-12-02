@@ -10,7 +10,16 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Stack
+  Stack,
+  Grid,
+  FormControl,
+  FormLabel,  
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  MenuItem ,
+  InputLabel ,
+  Select ,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
@@ -41,7 +50,8 @@ const PatientListPage = () => {
     pid: '',
     phone: '',
     gender: 'M',
-    date_of_birth: ''
+    date_of_birth: '',
+    // todo : 담당의 넘길거면 추가 하고 코드 수정
   });
   const patientsPerPage = 9;
 
@@ -90,6 +100,13 @@ const PatientListPage = () => {
       alert('환자 추가에 실패했습니다.');
     }
   };
+
+  // 의사 더미 데이터
+  const doctors = [
+    { id: 1, name: "김철수", department: "내과" },
+    { id: 2, name: "이영희", department: "정형외과" },
+    { id: 3, name: "박민수", department: "피부과" },
+  ];
 
   useEffect(() => {
     fetchPatients();
@@ -144,12 +161,7 @@ const PatientListPage = () => {
       )}
 
       <div className="page-container">
-        {/* 검색 바 & 환자추가 */}
-        <Box sx={{ marginTop: 1 }}>
-          <Typography variant="body2" color="text.secondary" class="cntPatient">
-            총 {filteredPatients.length}명의 환자
-          </Typography>
-        </Box>
+        {/* 검색 바 & 환자추가 버튼 */}
         <div className="search-actions">
           <div className="search-bar-container">
             <TextField
@@ -180,16 +192,23 @@ const PatientListPage = () => {
           </div>
         </div>
         
-        <div>
-          <Box>
-            <h3 className="patient-title">
-              환자 목록
-            </h3>
+        
+        <div className="patient-header">
+          <div className="patient-header-left">
+            <Box>
+              <h3 className="patient-title">환자 목록</h3>
+            </Box>
+            <p className="patient-subtitle">
+              등록된 환자를 조회하고 관리합니다.
+            </p>
+          </div>
+
+          <Box sx={{ marginTop: 1 }} className="patient-header-right">
+            <p className="cntPatient">
+              총 {filteredPatients.length}명의 환자
+            </p>
           </Box>
-          <p className="patient-subtitle">
-            등록된 환자를 조회하고 관리합니다.
-          </p>
-        </div>
+      </div>
         {/* 환자 목록 */}
         {!error && filteredPatients.length === 0 && (
           <Box sx={{ textAlign: 'center', padding: 4 }}>
@@ -227,7 +246,123 @@ const PatientListPage = () => {
           </>
         )}
         {/* 환자 추가 다이얼로그 */}
-        <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
+        <Dialog 
+  open={openAddDialog} 
+  onClose={() => setOpenAddDialog(false)} 
+  fullWidth
+  maxWidth="sm"
+>
+  <DialogTitle sx={{ fontWeight: 700 }}>
+    새 환자 추가
+  </DialogTitle>
+  <div></div>
+  <DialogContent sx={{ pt: 1 }}>
+    <Grid container spacing={2}>
+  <Grid item xs={12} sm={6}>
+    <TextField
+      fullWidth
+      label="성 (Last Name)"      
+      value={newPatient.last_name}
+      onChange={(e) =>
+        setNewPatient({ ...newPatient, last_name: e.target.value })
+      }
+    />
+  </Grid>
+
+  <Grid item xs={12} sm={6}>
+    <TextField
+      fullWidth
+      label="이름 (First Name)"
+      value={newPatient.first_name}
+      onChange={(e) =>
+        setNewPatient({ ...newPatient, first_name: e.target.value })
+      }
+    />
+  </Grid>
+
+  <Grid item xs={12}>
+    <TextField
+      fullWidth
+      label="생년월일"
+      type="date"
+      value={newPatient.date_of_birth}
+      onChange={(e) =>
+        setNewPatient({ ...newPatient, date_of_birth: e.target.value })
+      }
+      InputLabelProps={{ shrink: true }}
+    />
+  </Grid>
+
+  <Grid item xs={12} sm={6}>
+    <TextField
+      fullWidth
+      label="환자 번호 (PID)"
+      value={newPatient.pid}
+      onChange={(e) =>
+        setNewPatient({ ...newPatient, pid: e.target.value })
+      }
+    />
+  </Grid>
+
+  <Grid item xs={12} sm={6}>
+    <TextField
+      fullWidth
+      label="전화번호"
+      value={newPatient.phone}
+      onChange={(e) =>
+        setNewPatient({ ...newPatient, phone: e.target.value })
+      }
+    />
+  </Grid>
+
+  <Grid item xs={12}>
+    <FormControl fullWidth>
+      <InputLabel id="doctor-label">담당 의사 선택</InputLabel>
+      <Select
+        labelId="doctor-label"
+        label="담당 의사 선택"
+        value={newPatient.doctorId}
+        // onChange={(e) =>
+        //   setNewPatient({ ...newPatient, doctorId: e.target.value })
+        // }
+      >
+        {doctors.map((doc) => (
+          <MenuItem key={doc.id} value={doc.id}>
+            {doc.name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </Grid>
+
+  <Grid item xs={12}>
+    <FormControl component="fieldset">
+      <FormLabel>성별</FormLabel>
+      <RadioGroup
+        row
+        value={newPatient.gender}
+        onChange={(e) =>
+          setNewPatient({ ...newPatient, gender: e.target.value })
+        }
+      >
+        <FormControlLabel value="M" control={<Radio />} label="남성" />
+        <FormControlLabel value="F" control={<Radio />} label="여성" />
+      </RadioGroup>
+    </FormControl>
+  </Grid>
+</Grid>
+
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2 }}>
+    <Button onClick={() => setOpenAddDialog(false)}>취소</Button>
+    <Button variant="contained" color="primary" onClick={handleAddPatient}>
+      추가
+    </Button>
+  </DialogActions>
+</Dialog>
+
+        {/* <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
           <DialogTitle>새 환자 추가</DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ marginTop: 1, minWidth: 300 }}>
@@ -280,7 +415,7 @@ const PatientListPage = () => {
             <Button onClick={() => setOpenAddDialog(false)}>취소</Button>
             <Button onClick={handleAddPatient} variant="contained">추가</Button>
           </DialogActions>
-        </Dialog>
+        </Dialog> */}
       </div>
     </DashboardLayout>
   );

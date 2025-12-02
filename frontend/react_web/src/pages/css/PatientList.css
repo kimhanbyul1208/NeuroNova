@@ -41,21 +41,28 @@
   margin-bottom: 1.5rem;
 }
 
-.patient-title {
-  font-size: 1.25rem;   /* h3 기본보다 조금 작게 */
-  font-weight: 600;     /* 살짝 굵게 */
-  margin: 0;            /* 헤더 간격 영향 없게 */
-  color: #2f3542;       /* 본문과 어울리는 색상 */
-}
 
-.patient-subtitle {
-  font-size: 0.9rem;    /* 작은 설명 글자 크기 */
-  color: #747d8c;       /* 회색 톤 */
-  margin: 0.25rem 0 0;  /* 위쪽 살짝 간격 */
-}
 
 .cntPatient{
-    text-align: right;
-    padding-right: 13%;
+    padding-left: 1%;
+    font-size: 1.09rem;
+    margin-bottom: 0.25rem;
 }
     
+.patient-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.patient-header-right {
+  text-align: right;
+  white-space: nowrap; /* 줄바꿈 방지 */
+  min-width: fit-content;
+  padding-right: 1%;
+}
+
+.patient-header-left {
+  flex: 0 1 auto; /* grow 하지 않게 */
+}
