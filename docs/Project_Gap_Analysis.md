@@ -1,9 +1,5 @@
 # 🚨 프로젝트 갭 분석 (Gap Analysis)
 
-> **작성일**: 2025-12-01
-> **목적**: "이 프로젝트에 정말 결점이 없는가?"라는 질문에 대한 심층 분석 보고서
-
----
 
 ## 1️⃣ 아키텍처 연결성 (Connectivity)
 
@@ -21,7 +17,6 @@
   - **상태 관리**: React는 `Context/Redux` 등을 쓸 것으로 보이나, Flutter는 `setState` 위주로 보임. 복잡한 앱 상태 관리(Provider/Riverpod/Bloc) 도입 고려 필요.
 
 ---
-
 ## 2️⃣ 보안 (Security) 결점
 
 - **CORS**: `settings.py`에 `CORS_ORIGIN_ALLOW_ALL = True`로 설정됨.
