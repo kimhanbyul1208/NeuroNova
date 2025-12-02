@@ -1,0 +1,65 @@
+/* Dashboard Page Styles */
+
+/* Main Container */
+.dashboard-container {
+  padding: 2rem;
+}
+
+/* Header Section (Unique) */
+#dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.user-info-text {
+  margin-right: 1rem;
+}
+
+/* Stats Grid (Common Layout) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+/* Stat Card (Common Component) */
+.stat-card {
+  border: 1px solid #ccc;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+/* Recent Results Section (Unique) */
+#recent-results-section {
+  margin-top: 2rem;
+}
+
+/* Results Table (Common Component) */
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.table-header-row {
+  border-bottom: 2px solid #ccc;
+}
+
+.table-header-cell {
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.table-body-row {
+  border-bottom: 1px solid #eee;
+}
+
+.table-body-cell {
+  padding: 0.75rem;
+}
