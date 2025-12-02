@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import axiosClient from '../../api/axios';
 import { API_ENDPOINTS } from '../../utils/config';
-import '../../DashboardPage.css';
+import '../DashboardPage.css';
 
 const DoctorDashboard = () => {
     const { user } = useAuth();
