@@ -197,7 +197,7 @@ const PatientDetailPage = () => {
               </Paper>
             ) : (
               <Grid container spacing={2}>
-                {appointments.map((appointment) => (
+                {Array.isArray(appointments) && appointments.map((appointment) => (
                   <Grid item xs={12} md={6} key={appointment.id}>
                     <AppointmentCard appointment={appointment} />
                   </Grid>
@@ -217,7 +217,7 @@ const PatientDetailPage = () => {
                 </Typography>
               </Paper>
             ) : (
-              encounters.map((encounter) => (
+              Array.isArray(encounters) && encounters.map((encounter) => (
                 <Paper key={encounter.id} sx={{ padding: 3, marginBottom: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                     <Typography variant="h6">
@@ -259,7 +259,7 @@ const PatientDetailPage = () => {
               </Paper>
             ) : (
               <Grid container spacing={2}>
-                {predictions.map((prediction) => (
+                {Array.isArray(predictions) && predictions.map((prediction) => (
                   <Grid item xs={12} md={6} key={prediction.id}>
                     <DiagnosisResultCard result={prediction} />
                   </Grid>
