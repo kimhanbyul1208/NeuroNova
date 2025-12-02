@@ -1,0 +1,279 @@
+/* CDSSPage.css */
+
+.cdss-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+    margin-bottom: 32px;
+}
+
+.cdss-header {
+    margin-bottom: 32px;
+}
+
+.cdss-header-subtitle {
+    font-size: 1rem;
+    color: #718096;
+}
+
+.cdss-tabs-container {
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+}
+
+.cdss-tabs {
+    display: flex;
+    gap: 0;
+}
+
+.cdss-tab {
+    padding: 12px 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #718096;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.cdss-tab:hover {
+    color: #2d3748;
+    background-color: rgba(66, 153, 225, 0.04);
+}
+
+.cdss-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.cdss-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+}
+
+.cdss-grid-item-4 {
+    grid-column: span 12;
+}
+
+.cdss-grid-item-8 {
+    grid-column: span 12;
+}
+
+@media (min-width: 900px) {
+    .cdss-grid-item-4 {
+        grid-column: span 4;
+    }
+
+    .cdss-grid-item-8 {
+        grid-column: span 8;
+    }
+}
+
+.cdss-paper {
+    padding: 24px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.cdss-paper.full-height {
+    height: 100%;
+}
+
+.cdss-paper.viewer-panel {
+    padding: 16px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.cdss-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1a202c;
+}
+
+.cdss-form-control {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.cdss-form-label {
+    display: block;
+    font-size: 0.875rem;
+    color: #718096;
+    margin-bottom: 8px;
+}
+
+.cdss-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cdss-select:hover {
+    border-color: #2563eb;
+}
+
+.cdss-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.cdss-loading-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    color: #2563eb;
+}
+
+.cdss-loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(37, 99, 235, 0.3);
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.cdss-loading-text {
+    font-size: 0.875rem;
+}
+
+.cdss-alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.cdss-alert.error {
+    background-color: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+}
+
+.cdss-alert.success {
+    background-color: #d1fae5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    margin-top: 16px;
+}
+
+.cdss-controls-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: #2d3748;
+}
+
+.cdss-button-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.cdss-icon-button {
+    padding: 8px;
+    border: 1px solid #eee;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    position: relative;
+}
+
+.cdss-icon-button:hover {
+    background-color: #f7fafc;
+    border-color: #2563eb;
+}
+
+.cdss-icon-button.active {
+    background-color: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.cdss-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1a202c;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    margin-bottom: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.cdss-icon-button:hover .cdss-tooltip {
+    opacity: 1;
+}
+
+.cdss-viewer-container {
+    flex: 1;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.cdss-viewer-container.dark-bg {
+    background-color: black;
+}
+
+.cdss-viewer-container.light-bg {
+    background-color: white;
+}
+
+.cdss-viewer-caption {
+    margin-top: 8px;
+    display: block;
+    text-align: center;
+    color: #666;
+    font-size: 0.75rem;
+}
+
+.cdss-organ-viewer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.cdss-organ-viewer-inner {
+    width: 100%;
+    height: 100%;
+}
+
+.cdss-loading-message {
+    font-size: 1rem;
+    color: #718096;
+}

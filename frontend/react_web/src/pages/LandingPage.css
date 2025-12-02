@@ -1,0 +1,233 @@
+/* LandingPage.css */
+
+.landing-page {
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+.landing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* Hero Section */
+.landing-hero {
+    padding-top: 96px;
+    padding-bottom: 64px;
+    text-align: center;
+}
+
+.landing-title {
+    font-size: 3.75rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    background: linear-gradient(45deg, #2196F3 30%, #21CBF3 90%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.landing-subtitle {
+    font-size: 1.5rem;
+    color: #718096;
+    margin-top: 16px;
+    margin-bottom: 32px;
+}
+
+.landing-description {
+    font-size: 1rem;
+    color: #718096;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.landing-buttons {
+    margin-top: 32px;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.landing-button {
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+.landing-button.primary {
+    background-color: #2563eb;
+    color: white;
+}
+
+.landing-button.primary:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.landing-button.outlined {
+    background-color: white;
+    color: #2563eb;
+    border: 2px solid #2563eb;
+}
+
+.landing-button.outlined:hover {
+    background-color: #eff6ff;
+}
+
+/* Features Section */
+.landing-features {
+    padding-top: 64px;
+    padding-bottom: 64px;
+}
+
+.landing-features-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 48px;
+    color: #1a202c;
+}
+
+.landing-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 32px;
+}
+
+@media (min-width: 640px) {
+    .landing-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 900px) {
+    .landing-features-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.landing-feature-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.landing-feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.landing-feature-icon {
+    margin-bottom: 16px;
+    font-size: 48px;
+    color: #2563eb;
+}
+
+.landing-feature-icon svg {
+    width: 48px;
+    height: 48px;
+}
+
+.landing-feature-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1a202c;
+}
+
+.landing-feature-description {
+    font-size: 0.875rem;
+    color: #718096;
+    line-height: 1.5;
+}
+
+/* CTA Section */
+.landing-cta {
+    padding: 64px 32px;
+    text-align: center;
+    background-color: #2563eb;
+    color: white;
+    border-radius: 8px;
+    margin: 64px 0;
+}
+
+.landing-cta-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.landing-cta-description {
+    font-size: 1rem;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.landing-cta-button {
+    margin-top: 16px;
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.landing-cta-button:hover {
+    background-color: #6d28d9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Footer */
+.landing-footer {
+    padding: 32px 0;
+    text-align: center;
+    border-top: 1px solid #e2e8f0;
+}
+
+.landing-footer-text {
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.landing-footer-links {
+    margin-top: 16px;
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+}
+
+.landing-footer-link {
+    color: #718096;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+}
+
+.landing-footer-link:hover {
+    color: #2563eb;
+}

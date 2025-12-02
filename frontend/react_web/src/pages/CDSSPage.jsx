@@ -1,26 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-    Container,
-    Typography,
-    Box,
-    Paper,
-    Grid,
-    Alert,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Tabs,
-    Tab,
-    Stack,
-    IconButton,
-    Tooltip,
-    CircularProgress
-} from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
 import * as $3Dmol from '3dmol/build/3Dmol.js';
 import View3D from "@egjs/react-view3d";
 import "@egjs/react-view3d/css/view3d.min.css";
+import './CDSSPage.css';
 
 // Icons
 const SpinIcon = () => <span>🔄</span>;
@@ -208,144 +191,159 @@ const CDSSPage = () => {
 
     return (
         <DashboardLayout role="DOCTOR" activePage="cdss" title="AI Protein Analysis (CDSS)">
-            <Container maxWidth="lg" sx={{ mt: 0, mb: 4, padding: 0 }}>
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="body1" color="text.secondary">
+            <div className="cdss-container">
+                <div className="cdss-header">
+                    <p className="cdss-header-subtitle">
                         Advanced analysis of protein structures using AlphaFold predictions and 3D visualization.
-                    </Typography>
-                </Box>
+                    </p>
+                </div>
 
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                    <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)}>
-                        <Tab label="Protein Analysis (AlphaFold)" />
-                        <Tab label="Organ Viewer (3D)" />
-                    </Tabs>
-                </Box>
+                <div className="cdss-tabs-container">
+                    <div className="cdss-tabs">
+                        <button
+                            className={`cdss-tab ${activeTab === 0 ? 'active' : ''}`}
+                            onClick={() => setActiveTab(0)}
+                        >
+                            Protein Analysis (AlphaFold)
+                        </button>
+                        <button
+                            className={`cdss-tab ${activeTab === 1 ? 'active' : ''}`}
+                            onClick={() => setActiveTab(1)}
+                        >
+                            Organ Viewer (3D)
+                        </button>
+                    </div>
+                </div>
 
                 {activeTab === 0 && (
-                    <Grid container spacing={3}>
+                    <div className="cdss-grid">
                         {/* Control Panel */}
-                        <Grid item xs={12} md={4}>
-                            <Paper sx={{ p: 3, height: '100%', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                        <div className="cdss-grid-item-4">
+                            <div className="cdss-paper full-height">
+                                <h2 className="cdss-section-title">
                                     Configuration
-                                </Typography>
+                                </h2>
 
-                                <FormControl fullWidth size="small" sx={{ mb: 3 }}>
-                                    <InputLabel>Select Protein</InputLabel>
-                                    <Select
+                                <div className="cdss-form-control">
+                                    <label className="cdss-form-label">Select Protein</label>
+                                    <select
+                                        className="cdss-select"
                                         value={selectedProteinIndex}
-                                        label="Select Protein"
-                                        onChange={(e) => setSelectedProteinIndex(e.target.value)}
+                                        onChange={(e) => setSelectedProteinIndex(Number(e.target.value))}
                                     >
                                         {proteins.map((p, idx) => (
-                                            <MenuItem key={p.uniprotId} value={idx}>
+                                            <option key={p.uniprotId} value={idx}>
                                                 {p.name} ({p.uniprotId})
-                                            </MenuItem>
+                                            </option>
                                         ))}
-                                    </Select>
-                                </FormControl>
+                                    </select>
+                                </div>
 
                                 {loading && (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, color: 'primary.main' }}>
-                                        <CircularProgress size={20} />
-                                        <Typography variant="body2">Fetching AlphaFold structure...</Typography>
-                                    </Box>
+                                    <div className="cdss-loading-container">
+                                        <div className="cdss-loading-spinner"></div>
+                                        <span className="cdss-loading-text">Fetching AlphaFold structure...</span>
+                                    </div>
                                 )}
-                                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                                {error && <div className="cdss-alert error">{error}</div>}
 
-                                <Typography variant="subtitle2" gutterBottom sx={{ mt: 3, fontWeight: 600 }}>
+                                <div className="cdss-controls-title">
                                     Viewer Controls
-                                </Typography>
-                                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
-                                    <Tooltip title="Reset View">
-                                        <IconButton onClick={handleResetView} sx={{ border: '1px solid #eee' }}><ResetIcon /></IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Toggle Spin">
-                                        <IconButton onClick={handleToggleSpin} color={spinning ? "primary" : "default"} sx={{ border: '1px solid #eee' }}><SpinIcon /></IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Toggle Style">
-                                        <IconButton onClick={handleToggleStyle} sx={{ border: '1px solid #eee' }}><StyleIcon /></IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Toggle Background">
-                                        <IconButton onClick={handleToggleBg} sx={{ border: '1px solid #eee' }}><BgIcon /></IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Save Image">
-                                        <IconButton onClick={handleSaveImage} sx={{ border: '1px solid #eee' }}><SaveIcon /></IconButton>
-                                    </Tooltip>
-                                </Stack>
+                                </div>
+                                <div className="cdss-button-row">
+                                    <button className="cdss-icon-button" onClick={handleResetView}>
+                                        <ResetIcon />
+                                        <span className="cdss-tooltip">Reset View</span>
+                                    </button>
+                                    <button
+                                        className={`cdss-icon-button ${spinning ? 'active' : ''}`}
+                                        onClick={handleToggleSpin}
+                                    >
+                                        <SpinIcon />
+                                        <span className="cdss-tooltip">Toggle Spin</span>
+                                    </button>
+                                    <button className="cdss-icon-button" onClick={handleToggleStyle}>
+                                        <StyleIcon />
+                                        <span className="cdss-tooltip">Toggle Style</span>
+                                    </button>
+                                    <button className="cdss-icon-button" onClick={handleToggleBg}>
+                                        <BgIcon />
+                                        <span className="cdss-tooltip">Toggle Background</span>
+                                    </button>
+                                    <button className="cdss-icon-button" onClick={handleSaveImage}>
+                                        <SaveIcon />
+                                        <span className="cdss-tooltip">Save Image</span>
+                                    </button>
+                                </div>
 
-                                <Alert severity="success" sx={{ mt: 2, borderRadius: '8px' }}>
+                                <div className="cdss-alert success">
                                     <strong>AI Prediction Info:</strong><br />
                                     Source: AlphaFold DB<br />
                                     Confidence: High (pLDDT &gt; 90)<br />
                                     Binding Sites: Predicted
-                                </Alert>
-                            </Paper>
-                        </Grid>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Viewer Panel */}
-                        <Grid item xs={12} md={8}>
-                            <Paper sx={{ p: 2, height: '600px', display: 'flex', flexDirection: 'column', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                        <div className="cdss-grid-item-8">
+                            <div className="cdss-paper viewer-panel">
+                                <h2 className="cdss-section-title">
                                     3D Structure Viewer
-                                </Typography>
-                                <Box
+                                </h2>
+                                <div
                                     ref={viewerContainerRef}
-                                    sx={{
-                                        flex: 1,
-                                        border: '1px solid #eee',
-                                        borderRadius: '12px',
-                                        overflow: 'hidden',
-                                        position: 'relative',
-                                        bgcolor: darkBg ? 'black' : 'white'
-                                    }}
+                                    className={`cdss-viewer-container ${darkBg ? 'dark-bg' : 'light-bg'}`}
                                 />
-                                <Typography variant="caption" sx={{ mt: 1, display: 'block', textAlign: 'center', color: '#666' }}>
+                                <span className="cdss-viewer-caption">
                                     Use mouse to rotate (Left), zoom (Scroll), and translate (Right).
-                                </Typography>
-                            </Paper>
-                        </Grid>
-                    </Grid>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {activeTab === 1 && (
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={4}>
-                            <Paper sx={{ p: 3, height: '100%', borderRadius: '16px' }}>
-                                <Typography variant="h6" gutterBottom>Organ Selection</Typography>
-                                <FormControl fullWidth size="small">
-                                    <InputLabel>Select Organ</InputLabel>
-                                    <Select
+                    <div className="cdss-grid">
+                        <div className="cdss-grid-item-4">
+                            <div className="cdss-paper full-height">
+                                <h2 className="cdss-section-title">Organ Selection</h2>
+                                <div className="cdss-form-control">
+                                    <label className="cdss-form-label">Select Organ</label>
+                                    <select
+                                        className="cdss-select"
                                         value={selectedOrganIndex}
-                                        label="Select Organ"
-                                        onChange={(e) => setSelectedOrganIndex(e.target.value)}
+                                        onChange={(e) => setSelectedOrganIndex(Number(e.target.value))}
                                     >
                                         {organs.map((o, idx) => (
-                                            <MenuItem key={o.id} value={idx}>
+                                            <option key={o.id} value={idx}>
                                                 {o.name}
-                                            </MenuItem>
+                                            </option>
                                         ))}
-                                    </Select>
-                                </FormControl>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={12} md={8}>
-                            <Paper sx={{ p: 2, height: '600px', borderRadius: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="cdss-grid-item-8">
+                            <div className="cdss-paper viewer-panel">
                                 {selectedOrgan ? (
-                                    <View3D
-                                        key={selectedOrgan.id}
-                                        src={selectedOrgan.modelPath}
-                                        style={{ width: '100%', height: '100%' }}
-                                    />
+                                    <div className="cdss-organ-viewer">
+                                        <View3D
+                                            key={selectedOrgan.id}
+                                            src={selectedOrgan.modelPath}
+                                            className="cdss-organ-viewer-inner"
+                                        />
+                                    </div>
                                 ) : (
-                                    <Typography>Loading Organ Data...</Typography>
+                                    <div className="cdss-organ-viewer">
+                                        <span className="cdss-loading-message">Loading Organ Data...</span>
+                                    </div>
                                 )}
-                            </Paper>
-                        </Grid>
-                    </Grid>
+                            </div>
+                        </div>
+                    </div>
                 )}
-            </Container>
+            </div>
         </DashboardLayout>
     );
 };

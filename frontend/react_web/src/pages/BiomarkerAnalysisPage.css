@@ -1,0 +1,258 @@
+/* BiomarkerAnalysisPage.css */
+
+.biomarker-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0;
+    margin-bottom: 32px;
+}
+
+.biomarker-header {
+    margin-bottom: 32px;
+}
+
+.biomarker-header-title {
+    font-size: 2.125rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1a202c;
+}
+
+.biomarker-header-subtitle {
+    font-size: 1rem;
+    color: #718096;
+}
+
+.biomarker-tabs-container {
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+}
+
+.biomarker-tabs {
+    display: flex;
+    gap: 0;
+}
+
+.biomarker-tab {
+    padding: 12px 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #718096;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.biomarker-tab:hover {
+    color: #2d3748;
+    background-color: rgba(66, 153, 225, 0.04);
+}
+
+.biomarker-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.biomarker-tab svg {
+    width: 20px;
+    height: 20px;
+}
+
+.biomarker-alert {
+    padding: 16px;
+    background-color: #ebf8ff;
+    border: 1px solid #90cdf4;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.biomarker-alert strong {
+    font-weight: 700;
+}
+
+.biomarker-paper {
+    padding: 24px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+}
+
+.biomarker-button-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.biomarker-button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+}
+
+.biomarker-button.outlined {
+    background: white;
+    border: 1px solid #cbd5e0;
+    color: #2d3748;
+}
+
+.biomarker-button.outlined:hover {
+    background-color: #f7fafc;
+    border-color: #2563eb;
+}
+
+.biomarker-button.contained {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+}
+
+.biomarker-button.contained:hover {
+    background-color: #1d4ed8;
+}
+
+.biomarker-button.contained:disabled {
+    background-color: #cbd5e0;
+    cursor: not-allowed;
+}
+
+.biomarker-button.full-width {
+    width: 100%;
+    justify-content: center;
+}
+
+.biomarker-button.large {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+}
+
+.biomarker-loading {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.biomarker-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+}
+
+.biomarker-grid-item-5 {
+    grid-column: span 12;
+}
+
+.biomarker-grid-item-7 {
+    grid-column: span 12;
+}
+
+@media (min-width: 1200px) {
+    .biomarker-grid-item-5 {
+        grid-column: span 5;
+    }
+
+    .biomarker-grid-item-7 {
+        grid-column: span 7;
+    }
+}
+
+.biomarker-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1a202c;
+}
+
+.biomarker-section-subtitle {
+    font-size: 0.875rem;
+    color: #718096;
+    margin-bottom: 16px;
+}
+
+.biomarker-feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.biomarker-feature-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.biomarker-feature-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.biomarker-feature-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.biomarker-feature-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+.biomarker-progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.biomarker-progress-fill {
+    height: 100%;
+    background-color: #2563eb;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.biomarker-prescription-button {
+    margin-top: 16px;
+    padding: 12px 24px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.biomarker-prescription-button:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.biomarker-paper.full-height {
+    height: 100%;
+}

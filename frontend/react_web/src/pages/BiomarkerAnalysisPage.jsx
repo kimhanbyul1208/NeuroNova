@@ -6,6 +6,7 @@ import ProteinButtonGrid from '../components/ProteinButtonGrid';
 import ProteinDetailModal from '../components/ProteinDetailModal';
 import XAIVisualization from '../components/XAIVisualization';
 import './DashboardPage.css';
+import './BiomarkerAnalysisPage.css';
 
 /**
  * 바이오마커 분석 페이지
@@ -126,67 +127,104 @@ const BiomarkerAnalysisPage = () => {
 
     return (
         <DashboardLayout role="DOCTOR" activePage="biomarker" title="바이오마커 AI 진단">
-            <Container maxWidth="xl" sx={{ mt: 0, mb: 4, padding: 0 }}>
+            <div className="biomarker-container">
                 {/* 헤더 */}
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" gutterBottom fontWeight={700}>
+                <div className="biomarker-header">
+                    <h1 className="biomarker-header-title">
                         30개 바이오마커 AI 분석
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    </h1>
+                    <p className="biomarker-header-subtitle">
                         30개 단백질 바이오마커를 분석하여 코로나, 독감, 감기, 정상 중 하나로 분류합니다.
-                    </Typography>
-                </Box>
+                    </p>
+                </div>
 
                 {/* 탭 */}
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                    <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)}>
-                        <Tab label="데이터 입력" icon={<UploadFileIcon />} iconPosition="start" />
-                        <Tab label="분석 결과" icon={<AnalyticsIcon />} iconPosition="start" />
-                        <Tab label="XAI 설명" />
-                    </Tabs>
-                </Box>
+                <div className="biomarker-tabs-container">
+                    <div className="biomarker-tabs">
+                        <button
+                            className={`biomarker-tab ${activeTab === 0 ? 'active' : ''}`}
+                            onClick={() => setActiveTab(0)}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="12" y1="18" x2="12" y2="12"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
+                            </svg>
+                            데이터 입력
+                        </button>
+                        <button
+                            className={`biomarker-tab ${activeTab === 1 ? 'active' : ''}`}
+                            onClick={() => setActiveTab(1)}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                            분석 결과
+                        </button>
+                        <button
+                            className={`biomarker-tab ${activeTab === 2 ? 'active' : ''}`}
+                            onClick={() => setActiveTab(2)}
+                        >
+                            XAI 설명
+                        </button>
+                    </div>
+                </div>
 
                 {/* 탭 1: 데이터 입력 */}
                 {activeTab === 0 && (
-                    <Box>
-                        <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+                    <div>
+                        <div className="biomarker-alert">
                             <strong>안내:</strong> 30개 바이오마커 데이터를 입력하거나 CSV 파일을 업로드하세요.
                             현재는 샘플 데이터가 자동으로 입력되어 있습니다.
-                        </Alert>
+                        </div>
 
-                        <Paper sx={{ p: 3, mb: 3, borderRadius: 3 }}>
-                            <Stack direction="row" spacing={2} mb={3}>
-                                <Button
-                                    variant="outlined"
-                                    startIcon={<UploadFileIcon />}
-                                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                                >
+                        <div className="biomarker-paper">
+                            <div className="biomarker-button-row">
+                                <button className="biomarker-button outlined">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                                    </svg>
                                     CSV 파일 업로드
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    startIcon={<AnalyticsIcon />}
+                                </button>
+                                <button
+                                    className="biomarker-button contained"
                                     onClick={handleAnalyze}
                                     disabled={loading}
-                                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
                                 >
-                                    {loading ? <CircularProgress size={24} /> : 'AI 분석 실행'}
-                                </Button>
-                            </Stack>
+                                    {loading ? (
+                                        <div className="biomarker-loading"></div>
+                                    ) : (
+                                        <>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                                            </svg>
+                                            AI 분석 실행
+                                        </>
+                                    )}
+                                </button>
+                            </div>
 
                             <ProteinButtonGrid
                                 proteins={biomarkers}
                                 onProteinClick={handleProteinClick}
                                 proteinValues={proteinValues}
                             />
-                        </Paper>
-                    </Box>
+                        </div>
+                    </div>
                 )}
 
                 {/* 탭 2: 분석 결과 */}
                 {activeTab === 1 && (
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} lg={5}>
+                    <div className="biomarker-grid">
+                        <div className="biomarker-grid-item-5">
                             <BiomarkerClassificationCard
                                 category={analysisResult.category}
                                 confidence={analysisResult.confidence}
@@ -194,79 +232,61 @@ const BiomarkerAnalysisPage = () => {
                                 onViewDetails={handleViewDetails}
                                 onDownloadReport={handleDownloadReport}
                             />
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                fullWidth
-                                size="large"
-                                sx={{ mt: 2, borderRadius: 3, py: 1.5, fontWeight: 700, fontSize: '1.1rem' }}
+                            <button
+                                className="biomarker-prescription-button"
                                 onClick={handleGeneratePrescription}
                             >
                                 💊 처방전 생성 (Generate Prescription)
-                            </Button>
-                        </Grid>
-                        <Grid item xs={12} lg={7}>
-                            <Paper sx={{ p: 3, borderRadius: 3, height: '100%' }}>
-                                <Typography variant="h6" gutterBottom fontWeight={600}>
+                            </button>
+                        </div>
+                        <div className="biomarker-grid-item-7">
+                            <div className="biomarker-paper full-height">
+                                <h2 className="biomarker-section-title">
                                     주요 바이오마커
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" paragraph>
+                                </h2>
+                                <p className="biomarker-section-subtitle">
                                     진단에 가장 큰 영향을 준 바이오마커들입니다.
-                                </Typography>
+                                </p>
 
-                                <Stack spacing={2}>
+                                <div className="biomarker-feature-list">
                                     {Object.entries(analysisResult.xai.feature_importance)
                                         .sort((a, b) => b[1] - a[1])
                                         .slice(0, 8)
                                         .map(([name, importance]) => (
-                                            <Box key={name}>
-                                                <Stack direction="row" justifyContent="space-between" mb={0.5}>
-                                                    <Typography variant="body2" fontWeight={600}>
+                                            <div key={name} className="biomarker-feature-item">
+                                                <div className="biomarker-feature-header">
+                                                    <span className="biomarker-feature-name">
                                                         {name}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="primary.main" fontWeight={700}>
+                                                    </span>
+                                                    <span className="biomarker-feature-value">
                                                         {Math.round(importance * 100)}%
-                                                    </Typography>
-                                                </Stack>
-                                                <Box
-                                                    sx={{
-                                                        width: '100%',
-                                                        height: 8,
-                                                        bgcolor: '#f3f4f6',
-                                                        borderRadius: 1,
-                                                        overflow: 'hidden',
-                                                    }}
-                                                >
-                                                    <Box
-                                                        sx={{
-                                                            width: `${importance * 100}%`,
-                                                            height: '100%',
-                                                            bgcolor: 'primary.main',
-                                                            borderRadius: 1,
-                                                            transition: 'width 0.6s ease',
-                                                        }}
+                                                    </span>
+                                                </div>
+                                                <div className="biomarker-progress-bar">
+                                                    <div
+                                                        className="biomarker-progress-fill"
+                                                        style={{ width: `${importance * 100}%` }}
                                                     />
-                                                </Box>
-                                            </Box>
+                                                </div>
+                                            </div>
                                         ))}
-                                </Stack>
+                                </div>
 
-                                <Button
-                                    variant="outlined"
-                                    fullWidth
+                                <button
+                                    className="biomarker-button outlined full-width"
                                     onClick={() => setActiveTab(2)}
-                                    sx={{ mt: 3, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                                    style={{ marginTop: '24px' }}
                                 >
                                     전체 XAI 설명 보기
-                                </Button>
-                            </Paper>
-                        </Grid>
-                    </Grid>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {/* 탭 3: XAI 설명 */}
                 {activeTab === 2 && (
-                    <Box>
+                    <div>
                         <XAIVisualization
                             predictionResult={{
                                 prediction_class: analysisResult.category,
@@ -277,9 +297,9 @@ const BiomarkerAnalysisPage = () => {
                                 model_version: '2.0.1',
                             }}
                         />
-                    </Box>
+                    </div>
                 )}
-            </Container>
+            </div>
 
             {/* 단백질 상세 모달 */}
             <ProteinDetailModal

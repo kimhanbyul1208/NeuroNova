@@ -1,27 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import {
-    Container,
-    Typography,
-    Box,
-    Paper,
-    Grid,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Tabs,
-    Tab,
-    Stack,
-    IconButton,
-    Tooltip,
-    CircularProgress,
-    Alert
-} from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
 import * as $3Dmol from '3dmol/build/3Dmol.js';
 import View3D from "@egjs/react-view3d";
 import "@egjs/react-view3d/css/view3d.min.css";
+import './CDSSPage.css';
 
 // 아이콘
 const SpinIcon = () => <span>🔄</span>;
@@ -225,151 +208,166 @@ const ProteinViewerPage = () => {
 
     return (
         <DashboardLayout role="DOCTOR" activePage="protein-viewer" title="단백질 3D 뷰어">
-            <Container maxWidth="xl" sx={{ mt: 0, mb: 4, padding: 0 }}>
+            <div className="cdss-container">
                 {/* 헤더 */}
-                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" gutterBottom fontWeight={700}>
+                <div className="biomarker-header">
+                    <h1 className="biomarker-header-title">
                         단백질 3D 구조 시각화
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    </h1>
+                    <p className="cdss-header-subtitle">
                         AlphaFold 예측을 사용한 단백질 구조 및 장기 3D 시각화
-                    </Typography>
-                </Box>
+                    </p>
+                </div>
 
                 {/* 탭 */}
-                <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-                    <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)}>
-                        <Tab label="단백질 구조 (AlphaFold)" />
-                        <Tab label="장기 3D 모델" />
-                    </Tabs>
-                </Box>
+                <div className="cdss-tabs-container">
+                    <div className="cdss-tabs">
+                        <button
+                            className={`cdss-tab ${activeTab === 0 ? 'active' : ''}`}
+                            onClick={() => setActiveTab(0)}
+                        >
+                            단백질 구조 (AlphaFold)
+                        </button>
+                        <button
+                            className={`cdss-tab ${activeTab === 1 ? 'active' : ''}`}
+                            onClick={() => setActiveTab(1)}
+                        >
+                            장기 3D 모델
+                        </button>
+                    </div>
+                </div>
 
                 {/* 탭 1: 단백질 구조 */}
                 {activeTab === 0 && (
-                    <Grid container spacing={3}>
+                    <div className="cdss-grid">
                         {/* 컨트롤 패널 */}
-                        <Grid item xs={12} md={4}>
-                            <Paper sx={{ p: 3, height: '100%', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                        <div className="cdss-grid-item-4">
+                            <div className="cdss-paper full-height">
+                                <h2 className="cdss-section-title">
                                     구조 선택 및 제어
-                                </Typography>
+                                </h2>
 
-                                <FormControl fullWidth size="small" sx={{ mb: 3 }}>
-                                    <InputLabel>단백질 선택</InputLabel>
-                                    <Select
+                                <div className="cdss-form-control">
+                                    <label className="cdss-form-label">단백질 선택</label>
+                                    <select
+                                        className="cdss-select"
                                         value={selectedProteinIndex}
-                                        label="단백질 선택"
-                                        onChange={(e) => setSelectedProteinIndex(e.target.value)}
+                                        onChange={(e) => setSelectedProteinIndex(Number(e.target.value))}
                                     >
                                         {proteins.map((p, idx) => (
-                                            <MenuItem key={p.uniprotId} value={idx}>
+                                            <option key={p.uniprotId} value={idx}>
                                                 {p.name} ({p.uniprotId})
-                                            </MenuItem>
+                                            </option>
                                         ))}
-                                    </Select>
-                                </FormControl>
+                                    </select>
+                                </div>
 
                                 {loading && (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, color: 'primary.main' }}>
-                                        <CircularProgress size={20} />
-                                        <Typography variant="body2">AlphaFold 구조 가져오는 중...</Typography>
-                                    </Box>
+                                    <div className="cdss-loading-container">
+                                        <div className="cdss-loading-spinner"></div>
+                                        <span className="cdss-loading-text">AlphaFold 구조 가져오는 중...</span>
+                                    </div>
                                 )}
-                                {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                                {error && <div className="cdss-alert error">{error}</div>}
 
-                                <Typography variant="subtitle2" gutterBottom sx={{ mt: 3, fontWeight: 600 }}>
+                                <div className="cdss-controls-title">
                                     뷰어 컨트롤
-                                </Typography>
-                                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
-                                    <Tooltip title="뷰 초기화">
-                                        <IconButton onClick={handleResetView} sx={{ border: '1px solid #eee' }}><ResetIcon /></IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="회전 토글">
-                                        <IconButton onClick={handleToggleSpin} color={spinning ? "primary" : "default"} sx={{ border: '1px solid #eee' }}><SpinIcon /></IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="스타일 전환">
-                                        <IconButton onClick={handleToggleStyle} sx={{ border: '1px solid #eee' }}><StyleIcon /></IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="배경 전환">
-                                        <IconButton onClick={handleToggleBg} sx={{ border: '1px solid #eee' }}><BgIcon /></IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="이미지 저장">
-                                        <IconButton onClick={handleSaveImage} sx={{ border: '1px solid #eee' }}><SaveIcon /></IconButton>
-                                    </Tooltip>
-                                </Stack>
+                                </div>
+                                <div className="cdss-button-row">
+                                    <button className="cdss-icon-button" onClick={handleResetView}>
+                                        <ResetIcon />
+                                        <span className="cdss-tooltip">뷰 초기화</span>
+                                    </button>
+                                    <button
+                                        className={`cdss-icon-button ${spinning ? 'active' : ''}`}
+                                        onClick={handleToggleSpin}
+                                    >
+                                        <SpinIcon />
+                                        <span className="cdss-tooltip">회전 토글</span>
+                                    </button>
+                                    <button className="cdss-icon-button" onClick={handleToggleStyle}>
+                                        <StyleIcon />
+                                        <span className="cdss-tooltip">스타일 전환</span>
+                                    </button>
+                                    <button className="cdss-icon-button" onClick={handleToggleBg}>
+                                        <BgIcon />
+                                        <span className="cdss-tooltip">배경 전환</span>
+                                    </button>
+                                    <button className="cdss-icon-button" onClick={handleSaveImage}>
+                                        <SaveIcon />
+                                        <span className="cdss-tooltip">이미지 저장</span>
+                                    </button>
+                                </div>
 
-                                <Alert severity="success" sx={{ mt: 2, borderRadius: '8px' }}>
+                                <div className="cdss-alert success">
                                     <strong>AI 예측 정보:</strong><br />
                                     출처: AlphaFold DB<br />
                                     신뢰도: 높음 (pLDDT &gt; 90)<br />
                                     결합 부위: 예측됨
-                                </Alert>
-                            </Paper>
-                        </Grid>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* 뷰어 패널 */}
-                        <Grid item xs={12} md={8}>
-                            <Paper sx={{ p: 2, height: '600px', display: 'flex', flexDirection: 'column', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                        <div className="cdss-grid-item-8">
+                            <div className="cdss-paper viewer-panel">
+                                <h2 className="cdss-section-title">
                                     3D 구조 뷰어
-                                </Typography>
-                                <Box
+                                </h2>
+                                <div
                                     ref={viewerContainerRef}
-                                    sx={{
-                                        flex: 1,
-                                        border: '1px solid #eee',
-                                        borderRadius: '12px',
-                                        overflow: 'hidden',
-                                        position: 'relative',
-                                        bgcolor: darkBg ? 'black' : 'white'
-                                    }}
+                                    className={`cdss-viewer-container ${darkBg ? 'dark-bg' : 'light-bg'}`}
                                 />
-                                <Typography variant="caption" sx={{ mt: 1, display: 'block', textAlign: 'center', color: '#666' }}>
+                                <span className="cdss-viewer-caption">
                                     마우스로 회전(왼쪽 클릭), 확대/축소(스크롤), 이동(오른쪽 클릭)
-                                </Typography>
-                            </Paper>
-                        </Grid>
-                    </Grid>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {/* 탭 2: 장기 뷰어 */}
                 {activeTab === 1 && (
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={4}>
-                            <Paper sx={{ p: 3, height: '100%', borderRadius: '16px' }}>
-                                <Typography variant="h6" gutterBottom>장기 선택</Typography>
-                                <FormControl fullWidth size="small">
-                                    <InputLabel>장기 선택</InputLabel>
-                                    <Select
+                    <div className="cdss-grid">
+                        <div className="cdss-grid-item-4">
+                            <div className="cdss-paper full-height">
+                                <h2 className="cdss-section-title">장기 선택</h2>
+                                <div className="cdss-form-control">
+                                    <label className="cdss-form-label">장기 선택</label>
+                                    <select
+                                        className="cdss-select"
                                         value={selectedOrganIndex}
-                                        label="장기 선택"
-                                        onChange={(e) => setSelectedOrganIndex(e.target.value)}
+                                        onChange={(e) => setSelectedOrganIndex(Number(e.target.value))}
                                     >
                                         {organs.map((o, idx) => (
-                                            <MenuItem key={o.id} value={idx}>
+                                            <option key={o.id} value={idx}>
                                                 {o.name}
-                                            </MenuItem>
+                                            </option>
                                         ))}
-                                    </Select>
-                                </FormControl>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={12} md={8}>
-                            <Paper sx={{ p: 2, height: '600px', borderRadius: '16px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="cdss-grid-item-8">
+                            <div className="cdss-paper viewer-panel">
                                 {selectedOrgan ? (
-                                    <View3D
-                                        key={selectedOrgan.id}
-                                        src={selectedOrgan.modelPath}
-                                        style={{ width: '100%', height: '100%' }}
-                                    />
+                                    <div className="cdss-organ-viewer">
+                                        <View3D
+                                            key={selectedOrgan.id}
+                                            src={selectedOrgan.modelPath}
+                                            className="cdss-organ-viewer-inner"
+                                        />
+                                    </div>
                                 ) : (
-                                    <Typography>장기 데이터 로딩 중...</Typography>
+                                    <div className="cdss-organ-viewer">
+                                        <span className="cdss-loading-message">장기 데이터 로딩 중...</span>
+                                    </div>
                                 )}
-                            </Paper>
-                        </Grid>
-                    </Grid>
+                            </div>
+                        </div>
+                    </div>
                 )}
-            </Container>
+            </div>
         </DashboardLayout>
     );
 };

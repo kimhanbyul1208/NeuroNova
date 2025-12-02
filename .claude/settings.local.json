@@ -32,7 +32,8 @@
       "Bash(powershell.exe -Command \"npm run dev\")",
       "Bash(powershell.exe -Command \"Get-Command node | Select-Object -ExpandProperty Source\")",
       "Bash(powershell.exe -Command \"Start-Process powershell -ArgumentList ''-NoExit'', ''-Command'', ''npm run dev''\")",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
