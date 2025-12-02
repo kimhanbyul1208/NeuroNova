@@ -20,6 +20,7 @@ import { API_ENDPOINTS } from '../utils/config';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../auth/AuthContext';
 import './DashboardPage.css';
+import './css/PatientList.css';
 
 /**
  * 환자 목록 페이지
@@ -133,59 +134,62 @@ const PatientListPage = () => {
 
   return (
     <DashboardLayout role={user?.role} activePage="patients" title="Patient Management">
+      {/* 에러 표시 */}
+      {error && (
+        <ErrorAlert
+          message={error}
+          title="오류 발생"
+          onRetry={fetchPatients}
+        />
+      )}
+
       <div className="page-container">
-        {/* 헤더 */}
-        <div className="page-header">
+        {/* 검색 바 & 환자추가 */}
+        <Box sx={{ marginTop: 1 }}>
+          <Typography variant="body2" color="text.secondary" class="cntPatient">
+            총 {filteredPatients.length}명의 환자
+          </Typography>
+        </Box>
+        <div className="search-actions">
+          <div className="search-bar-container">
+            <TextField
+              fullWidth
+              placeholder="환자 이름, 환자번호, 전화번호로 검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+                disableUnderline: true,
+              }}
+              variant="standard"
+            />
+          </div>
+
+          <div className="add-btn-container">
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenAddDialog(true)}
+            >
+              환자 추가
+            </Button>
+          </div>
+        </div>
+        
+        <div>
           <Box>
-            <h1 className="page-title">
+            <h3 className="patient-title">
               환자 목록
-            </h1>
-            <p className="page-subtitle">
-              등록된 환자를 조회하고 관리합니다.
-            </p>
+            </h3>
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenAddDialog(true)}
-          >
-            환자 추가
-          </Button>
+          <p className="patient-subtitle">
+            등록된 환자를 조회하고 관리합니다.
+          </p>
         </div>
-
-        {/* 검색 바 */}
-        <div className="search-bar-container">
-          <TextField
-            fullWidth
-            placeholder="환자 이름, 환자번호, 전화번호로 검색..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-              disableUnderline: true,
-            }}
-            variant="standard"
-          />
-          <Box sx={{ marginTop: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              총 {filteredPatients.length}명의 환자
-            </Typography>
-          </Box>
-        </div>
-
-        {/* 에러 표시 */}
-        {error && (
-          <ErrorAlert
-            message={error}
-            title="오류 발생"
-            onRetry={fetchPatients}
-          />
-        )}
-
         {/* 환자 목록 */}
         {!error && filteredPatients.length === 0 && (
           <Box sx={{ textAlign: 'center', padding: 4 }}>
@@ -199,7 +203,12 @@ const PatientListPage = () => {
           <>
             <div className="patient-grid">
               {currentPatients.map((patient) => (
-                <PatientCard key={patient.id} patient={patient} onDelete={handleDeletePatient} />
+                <PatientCard 
+                  key={patient.id} 
+                  patient={patient} 
+                  onDelete={handleDeletePatient} 
+                  className="patient-card"
+                />
               ))}
             </div>
 
