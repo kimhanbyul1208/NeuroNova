@@ -13,6 +13,7 @@ import PatientDashboard from './pages/dashboard/PatientDashboard';
 
 import PatientListPage from './pages/PatientListPage';
 import PatientDetailPage from './pages/PatientDetailPage';
+import PatientPrescriptionDetailPage from './pages/PatientPrescriptionDetailPage';
 import AppointmentManagementPage from './pages/AppointmentManagementPage';
 import DicomViewerPage from './pages/DicomViewerPage';
 import DiagnosisDetailPage from './pages/DiagnosisDetailPage';
@@ -31,6 +32,8 @@ import MedicalRecordsPage from './pages/MedicalRecordsPage';
 
 import BiomarkerAnalysisPage from './pages/BiomarkerAnalysisPage';
 import ProteinViewerPage from './pages/ProteinViewerPage';
+import AntigenTestPage from './pages/AntigenTestPage';
+import AntigenResultPage from './pages/AntigenResultPage';
 
 // Protected Route Component
 function ProtectedRoute({ children, roles = [] }) {
@@ -160,6 +163,12 @@ function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/patients/:patientId/prescriptions/:date" element={
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN', 'NURSE']}>
+            <PatientPrescriptionDetailPage />
+          </ProtectedRoute>
+        } />
+
         <Route path="/appointments" element={
           <ProtectedRoute>
             <AppointmentManagementPage />
@@ -215,6 +224,18 @@ function App() {
         <Route path="/doctor/protein-viewer" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <ProteinViewerPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/antigen-test" element={
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
+            <AntigenTestPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/antigen-test/:patientId" element={
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
+            <AntigenResultPage />
           </ProtectedRoute>
         } />
 
