@@ -1,16 +1,22 @@
 [Unit]
-Description=Gunicorn daemon for Flask AI
+Description=Gunicorn daemon for Flask AI (로컬 전용)
 After=network.target
 
 [Service]
 User=ubuntu
 Group=www-data
 WorkingDirectory=/home/ubuntu/NeuroNova/backend/flask_inference
+Environment="PATH=/home/ubuntu/NeuroNova/backend/flask_inference/venv/bin"
 ExecStart=/home/ubuntu/NeuroNova/backend/flask_inference/venv/bin/gunicorn \
           --access-logfile - \
+          --error-logfile - \
           --workers 2 \
-          --bind 127.0.0.1:5000 \
+          --bind 127.0.0.1:9000 \
+          --timeout 300 \
           app:app
+
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

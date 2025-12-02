@@ -27,6 +27,9 @@ urlpatterns: List = [
     path(f'api/{settings.API_VERSION}/custom/', include('apps.custom.urls')),
     path(f'api/{settings.API_VERSION}/notifications/', include('apps.notifications.urls')),
     path(f'api/{settings.API_VERSION}/', include('apps.core.urls')),  # Orthanc integration
+
+    # ML Proxy
+    path('ml/', include('apps.ml_proxy.urls')),
 ]
 
 # Serve media files in development

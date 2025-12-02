@@ -15,12 +15,30 @@
 ## 시스템 아키텍처
 
 ```
-[Flutter App, React Web]
-        ↓
-   [Nginx - Gunicorn]
-        ↓
-    [Django] ←→ [Flask (AI), MySQL, Orthanc (DICOM)]
+[Flutter App]      [React Web]
+      ↓                 ↓
+              [Nginx:80]
+                 │
+                 ├── / : React 정적 파일 서빙
+                 │
+                 └── /api/, /admin/, /ml/ : Django 프록시
+                                               ↓
+                                    [Django:8000 (Gunicorn)]
+                                               │
+                                               ├── Django 앱 처리
+                                               │
+                                               └── /ml/* → Flask 프록시
+                                                            ↓
+                                               [Flask:127.0.0.1:9000 (Gunicorn)]
+                                                     (로컬 전용, 외부 접근 불가)
+                 ↓
+          [MySQL + Redis]
 ```
+
+### 보안 특징
+✅ **Flask 로컬 전용**: Flask는 127.0.0.1:9000에서만 동작 (외부 접근 차단)
+✅ **Django 보안 계층**: Django가 Flask로 프록시하여 인증/로깅 제공
+✅ **Nginx 단일 진입점**: Nginx는 Django만 프록시 (Flask 직접 노출 안 됨)
 
 ## 기술 스택
 

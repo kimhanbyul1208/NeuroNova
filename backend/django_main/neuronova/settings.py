@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'apps.emr',
     'apps.custom',
     'apps.notifications',
+    'apps.ml_proxy',
 ]
 
 MIDDLEWARE = [
@@ -217,7 +218,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 # External Services
-FLASK_INFERENCE_URL = config('FLASK_INFERENCE_URL', default='http://localhost:5000')
+# Flask ML 서버는 로컬 전용 (Django에서만 접근)
+FLASK_INFERENCE_URL = config('FLASK_INFERENCE_URL', default='http://127.0.0.1:9000')
 FLASK_API_KEY = config('FLASK_API_KEY', default='')
 
 ORTHANC_URL = config('ORTHANC_URL', default='http://localhost:8042')
