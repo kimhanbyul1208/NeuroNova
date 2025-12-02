@@ -1,13 +1,13 @@
 {
     "info": {
         "_postman_id": "django-ml-proxy-api",
-        "name": "NeuroNova Django ML API",
-        "description": "Django API Collection for ML Proxy & Prediction Management (7 Key APIs)",
+        "name": "NeuroNova Django ML API (Updated)",
+        "description": "Django ML API Collection - 7 Key APIs with Batch Support\n\nUpdated: 2025-12-02\nFlask ML Server: http://127.0.0.1:9000\nDjango Proxy: http://localhost:8000",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
         {
-            "name": "1. Predict (Proxy)",
+            "name": "1. Predict (Single Sequence)",
             "request": {
                 "method": "POST",
                 "header": [
@@ -19,7 +19,7 @@
                 ],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n    \"doctor_name\": \"Dr. Kim\",\n    \"patient_name\": \"John Doe\",\n    \"sequence\": \"MKTIIALSYIFCLVFADYKDDDDK\",\n    \"seq_type\": \"protein\",\n    \"task3_threshold\": 0.5\n}",
+                    "raw": "{\n    \"doctor_name\": \"Dr. Kim\",\n    \"patient_name\": \"John Doe\",\n    \"sequence\": \"MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNF\",\n    \"seq_type\": \"protein\",\n    \"task3_threshold\": 0.5,\n    \"organism_hint\": \"SARS-CoV-2\"\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -38,12 +38,48 @@
                         ""
                     ]
                 },
-                "description": "Forwards prediction request to Flask ML server and logs the result."
+                "description": "Single sequence prediction (SARS-CoV-2 Spike Protein example)\n\nResponse includes:\n- Task 1: Pathogen/Non-Pathogen classification\n- Task 2: Protein type (COVID-19/Influenza/Common_Cold/None)\n- Task 3: Top predictions with probabilities\n- 3D structure info (PDB ID if available)"
             },
             "response": []
         },
         {
-            "name": "2. System Status",
+            "name": "2. Predict (Batch - Multiple Sequences)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"doctor_name\": \"Dr. Kim\",\n    \"patient_name\": \"Jane Smith\",\n    \"items\": [\n        {\n            \"id\": \"sample_1\",\n            \"sequence\": \"MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNF\",\n            \"seq_type\": \"protein\"\n        },\n        {\n            \"id\": \"sample_2\",\n            \"sequence\": \"MSDNGPQNQRNAPRITFGGPSDSTGSNQNGERSGARSKQRRPQGLPNNTASWFTALTQHGKEDLKFPRGQGVPINTNSSPDDQIGYYRRATRRIRGGDGKMKDLSPRWYFYYLGTGPEAGLPYGANKDGIIWVATEGALNTPKDHIGTRNPANNAAIVLQLPQGTTLPKGFYAEGSRGGSQASSRSSSRSRNSSRNSTPGSSRGTSPARMAGNGGDAALALLLLDRLNQLESKMSGKGQQQQGQTVTKKSAAEASKKPRQKRTATKAYNVTQAFGRRGPEQTQGNFGDQELIRQGTDYKHWPQIAQFAPSASAFFGMSRIGMEVTPSGTWLTYTGAIKLDDKDPNFKDQVILLNKHIDAYKTFPPTEPKKDKKKKADETQALPQRQKKQQTVTLLPAADLDDFSKQLQQSMSSADSTQA\",\n            \"seq_type\": \"protein\"\n        },\n        {\n            \"id\": \"sample_3\",\n            \"sequence\": \"MKTIIALSYIFCLVLGQDLPGNDNSTATLCLGHHAVPNGTLVKTITDDQIEVTNATELVQSSSTGKICNNPHRILDGIDCTLIDALLGDPHCDVFQNETWDLFVERSKAFSNCYPYDVPDYASLRSLVASSGTLEFITEGFTWTGVTQNGGSNACKRGPGSGFFSRLNWLTKSGSTYPVLNVTMPNNDNFDKLYIWGIHHPSTNQEQTSLYVQASGRVTVSTRRSQQTIIPNIGSRPWVRGLSSRISIYWTIVKPGDVLVINSNGNLIAPRGYFKMRTGKSSIMRSDAPIDTCISECITPNGSIPNDKPFQNVNKITYGACPKYVKQNTLKLATGMRNVPEKQT\",\n            \"seq_type\": \"protein\"\n        }\n    ],\n    \"task3_threshold\": 0.5\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{base_url}}/ml/v1/predict/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "ml",
+                        "v1",
+                        "predict",
+                        ""
+                    ]
+                },
+                "description": "Batch prediction with multiple protein sequences\n\nIncludes:\n- SARS-CoV-2 Spike Protein\n- Influenza A Nucleocapsid\n- Influenza A Hemagglutinin\n\nReturns array of results with batch: true flag"
+            },
+            "response": []
+        },
+        {
+            "name": "3. System Status (Health Check)",
             "request": {
                 "method": "GET",
                 "header": [],
@@ -59,12 +95,12 @@
                         ""
                     ]
                 },
-                "description": "Checks the status of the connected Flask ML server."
+                "description": "Checks Flask ML server status\n\nReturns:\n- ok: true/false\n- status: \"alive\"\n- model_version: Model name (e.g., facebook/esm2_t33_650M_UR50D)"
             },
             "response": []
         },
         {
-            "name": "3. Model Info",
+            "name": "4. Model Schema (API Format)",
             "request": {
                 "method": "GET",
                 "header": [],
@@ -80,12 +116,12 @@
                         ""
                     ]
                 },
-                "description": "Retrieves current model version and metadata."
+                "description": "Get API schema and example request format\n\nReturns example JSON structure for predict requests"
             },
             "response": []
         },
         {
-            "name": "4. Retrain Model",
+            "name": "5. Reload Model",
             "request": {
                 "method": "POST",
                 "header": [
@@ -116,12 +152,33 @@
                         ""
                     ]
                 },
-                "description": "Triggers model retraining process."
+                "description": "Reload the ML model from disk\n\nUseful after model updates or fine-tuning"
             },
             "response": []
         },
         {
-            "name": "5. Inference History",
+            "name": "6. Inference History (All)",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{base_url}}/ml/v1/history/",
+                    "host": [
+                        "{{base_url}}"
+                    ],
+                    "path": [
+                        "ml",
+                        "v1",
+                        "history",
+                        ""
+                    ]
+                },
+                "description": "Get all logged inference history\n\nReturns:\n- count: Total number of records\n- results: Array of inference logs with input/output data"
+            },
+            "response": []
+        },
+        {
+            "name": "7. Inference History (Filtered by Doctor)",
             "request": {
                 "method": "GET",
                 "header": [],
@@ -144,55 +201,21 @@
                         },
                         {
                             "key": "patient",
-                            "value": "",
-                            "description": "Filter by patient name",
+                            "value": "John Doe",
+                            "description": "Filter by patient name (optional)",
                             "disabled": true
                         }
                     ]
                 },
-                "description": "Retrieves logged inference history."
+                "description": "Filter inference history by doctor and/or patient\n\nQuery parameters:\n- doctor: Doctor name (optional)\n- patient: Patient name (optional)"
             },
             "response": []
         },
         {
-            "name": "6. Pending Reviews",
-            "request": {
-                "method": "GET",
-                "header": [
-                    {
-                        "key": "Authorization",
-                        "value": "Bearer {{access_token}}",
-                        "type": "text"
-                    }
-                ],
-                "url": {
-                    "raw": "{{base_url}}/api/v1/custom/predictions/pending_review/",
-                    "host": [
-                        "{{base_url}}"
-                    ],
-                    "path": [
-                        "api",
-                        "v1",
-                        "custom",
-                        "predictions",
-                        "pending_review",
-                        ""
-                    ]
-                },
-                "description": "Get predictions that require doctor's review."
-            },
-            "response": []
-        },
-        {
-            "name": "7. Confirm Prediction",
+            "name": "8. DNA Sequence Translation",
             "request": {
                 "method": "POST",
                 "header": [
-                    {
-                        "key": "Authorization",
-                        "value": "Bearer {{access_token}}",
-                        "type": "text"
-                    },
                     {
                         "key": "Content-Type",
                         "value": "application/json",
@@ -201,7 +224,7 @@
                 ],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n    \"doctor_feedback\": \"Correct\",\n    \"doctor_note\": \"Patient shows clear symptoms matching the prediction.\"\n}",
+                    "raw": "{\n    \"doctor_name\": \"Dr. Park\",\n    \"patient_name\": \"Test Patient\",\n    \"sequence\": \"ATGGCTGCAGATGGTGCAATGCCA\",\n    \"seq_type\": \"dna\",\n    \"frame\": 0,\n    \"task3_threshold\": 0.5\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -209,27 +232,18 @@
                     }
                 },
                 "url": {
-                    "raw": "{{base_url}}/api/v1/custom/predictions/:id/confirm_prediction/",
+                    "raw": "{{base_url}}/ml/v1/predict/",
                     "host": [
                         "{{base_url}}"
                     ],
                     "path": [
-                        "api",
+                        "ml",
                         "v1",
-                        "custom",
-                        "predictions",
-                        ":id",
-                        "confirm_prediction",
+                        "predict",
                         ""
-                    ],
-                    "variable": [
-                        {
-                            "key": "id",
-                            "value": "1"
-                        }
                     ]
                 },
-                "description": "Confirm a prediction with doctor's feedback."
+                "description": "DNA sequence prediction with automatic translation to protein\n\nSeq types supported:\n- protein: Direct protein sequence\n- dna: DNA sequence (will be translated)\n- rna: RNA sequence (will be translated)\n\nParameters:\n- frame: Reading frame (0, 1, 2)\n- stop_at_stop: Stop at first stop codon (true/false)"
             },
             "response": []
         }
@@ -241,9 +255,10 @@
             "type": "string"
         },
         {
-            "key": "access_token",
-            "value": "YOUR_ACCESS_TOKEN_HERE",
-            "type": "string"
+            "key": "flask_url",
+            "value": "http://127.0.0.1:9000",
+            "type": "string",
+            "description": "Direct Flask ML server URL (bypasses Django proxy)"
         }
     ]
 }

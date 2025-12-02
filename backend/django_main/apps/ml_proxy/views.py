@@ -48,7 +48,7 @@ def predict_proxy(request):
             )
 
         # Flask ML 서버로 요청 전달
-        flask_url = f"{FLASK_ML_SERVER_URL}/api/v1/predict"
+        flask_url = f"{FLASK_ML_SERVER_URL}/api/predict"
 
         try:
             response = requests.post(
@@ -108,7 +108,7 @@ def status_proxy(request):
     Flask ML 서버의 상태를 조회합니다. (단순 프록시)
     """
     try:
-        flask_url = f"{FLASK_ML_SERVER_URL}/api/v1/status"
+        flask_url = f"{FLASK_ML_SERVER_URL}/api/health"
         response = requests.get(flask_url, timeout=10)
         return JsonResponse(response.json(), status=response.status_code)
     except Exception as e:
@@ -126,7 +126,7 @@ def model_info_proxy(request):
     Flask ML 서버의 모델 정보를 조회합니다. (단순 프록시)
     """
     try:
-        flask_url = f"{FLASK_ML_SERVER_URL}/api/v1/model-info"
+        flask_url = f"{FLASK_ML_SERVER_URL}/api/schema"
         response = requests.get(flask_url, timeout=10)
         return JsonResponse(response.json(), status=response.status_code)
     except Exception as e:
@@ -151,7 +151,7 @@ def retrain_proxy(request):
         except json.JSONDecodeError:
             request_data = {}
 
-        flask_url = f"{FLASK_ML_SERVER_URL}/api/v1/retrain"
+        flask_url = f"{FLASK_ML_SERVER_URL}/api/reload_model"
         response = requests.post(
             flask_url,
             json=request_data,
