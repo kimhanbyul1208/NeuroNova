@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Container,
     Typography,
@@ -53,6 +54,8 @@ const ProteinViewerPage = () => {
     const [styleMode, setStyleMode] = useState('cartoon');
     const [darkBg, setDarkBg] = useState(false);
 
+    const location = useLocation();
+
     // Load proteins.json
     useEffect(() => {
         fetch('/proteins.json')
@@ -63,13 +66,23 @@ const ProteinViewerPage = () => {
             .then(data => {
                 if (Array.isArray(data)) {
                     setProteins(data);
+
+                    // Check for deep link
+                    if (location.state?.proteinId) {
+                        const idx = data.findIndex(p => p.id === location.state.proteinId);
+                        if (idx !== -1) {
+                            setSelectedProteinIndex(idx);
+                            return;
+                        }
+                    }
+
                     if (data.length > 0) {
                         setSelectedProteinIndex(0);
                     }
                 }
             })
             .catch(err => console.error("Failed to load proteins.json:", err));
-    }, []);
+    }, [location.state]);
 
     // Initialize 3Dmol Viewer
     useEffect(() => {

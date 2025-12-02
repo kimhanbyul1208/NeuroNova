@@ -144,6 +144,12 @@ const DoctorDashboard = () => {
                                     onClick={() => navigate('/doctor/cdss')}
                                 />
                                 <ActionButton
+                                    icon="🧊"
+                                    label="Protein 3D"
+                                    color="#ff9f43"
+                                    onClick={() => navigate('/doctor/protein-viewer')}
+                                />
+                                <ActionButton
                                     icon="💊"
                                     label="Prescribe"
                                     color="#ff9a9e"

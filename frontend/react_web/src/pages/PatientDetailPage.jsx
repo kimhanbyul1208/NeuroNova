@@ -50,10 +50,13 @@ const PatientDetailPage = () => {
           axiosClient.get(`${API_ENDPOINTS.PREDICTIONS}?patient_id=${id}`)
         ]);
 
+        // Helper to handle pagination
+        const getResults = (data) => Array.isArray(data) ? data : data.results || [];
+
         setPatient(patientRes.data);
-        setEncounters(encountersRes.data || []);
-        setAppointments(appointmentsRes.data || []);
-        setPredictions(predictionsRes.data || []);
+        setEncounters(getResults(encountersRes.data));
+        setAppointments(getResults(appointmentsRes.data));
+        setPredictions(getResults(predictionsRes.data));
       } catch (err) {
         setError(err.response?.data?.message || '환자 정보를 불러오는데 실패했습니다.');
         console.error('Error fetching patient data:', err);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Dialog,
     DialogTitle,
@@ -34,6 +35,8 @@ const ProteinDetailModal = ({
     value,
     shapValue
 }) => {
+    const navigate = useNavigate();
+
     if (!protein) return null;
 
     const categoryColor = PROTEIN_CATEGORY_COLORS[protein.category] || '#666';
@@ -280,6 +283,10 @@ const ProteinDetailModal = ({
                 </Button>
                 <Button
                     variant="contained"
+                    onClick={() => {
+                        onClose();
+                        navigate('/doctor/protein-viewer', { state: { proteinId: protein.id } });
+                    }}
                     sx={{
                         borderRadius: 2,
                         px: 3,

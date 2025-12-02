@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Container,
     Paper,
@@ -61,9 +61,25 @@ const PrescriptionManagementPage = () => {
         status: 'ACTIVE',
     });
 
+    const location = useLocation();
+
     useEffect(() => {
         fetchPrescriptions();
     }, []);
+
+    useEffect(() => {
+        if (location.state) {
+            setFormData(prev => ({
+                ...prev,
+                ...location.state
+            }));
+            setEditingPrescription(null); // Ensure it's treated as new
+            setDialogOpen(true);
+
+            // Clear state to prevent reopening on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     const fetchPrescriptions = async () => {
         try {
