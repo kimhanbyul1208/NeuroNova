@@ -6,11 +6,17 @@ After=network.target
 User=ubuntu
 Group=www-data
 WorkingDirectory=/home/ubuntu/NeuroNova/backend/django_main
+Environment="PATH=/home/ubuntu/NeuroNova/backend/django_main/venv/bin"
 ExecStart=/home/ubuntu/NeuroNova/backend/django_main/venv/bin/gunicorn \
           --access-logfile - \
+          --error-logfile - \
           --workers 3 \
           --bind 127.0.0.1:8000 \
+          --timeout 120 \
           neuronova.wsgi:application
+
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

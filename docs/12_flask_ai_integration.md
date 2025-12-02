@@ -57,10 +57,21 @@ NeuroNova AI 추론 엔진은 뇌종양 진단을 위한 3가지 AI 모델을 �
 #### 2.2.1 통신 구조
 
 ```
-[Django Backend] ←→ [Flask AI Server] ←→ [GPU/ML Models]
-      ↓                     ↓                    ↓
-  PostgreSQL           Celery Queue         ONNX Models
-  MySQL                Redis                PyTorch
+[Flutter App]      [React Web]
+      ↓                 ↓
+              [Nginx]
+                 │
+                 ├─────────────┐
+                 │             │
+      [Django (Gunicorn)]  [Flask AI (Gunicorn)]
+                 │             │
+                 │             ├─────→ [GPU/ML Models]
+                 │             │       (ONNX, PyTorch)
+                 │             │
+                 │             ├─────→ [Celery Queue]
+                 │                     (Redis)
+                 ↓
+          [MySQL + Redis]
 ```
 
 #### 2.2.2 배포 환경
