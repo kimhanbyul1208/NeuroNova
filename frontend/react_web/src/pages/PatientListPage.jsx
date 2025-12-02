@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
   TextField,
-  Grid,
   InputAdornment,
-  Paper,
   Pagination,
   Button,
   Dialog,
@@ -22,6 +19,7 @@ import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../auth/AuthContext';
+import './DashboardPage.css';
 
 /**
  * 환자 목록 페이지
@@ -135,16 +133,16 @@ const PatientListPage = () => {
 
   return (
     <DashboardLayout role={user?.role} activePage="patients" title="Patient Management">
-      <Container maxWidth="lg" sx={{ marginTop: 4, marginBottom: 4 }}>
+      <div className="page-container">
         {/* 헤더 */}
-        <Box sx={{ marginBottom: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="page-header">
           <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
+            <h1 className="page-title">
               환자 목록
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
+            </h1>
+            <p className="page-subtitle">
               등록된 환자를 조회하고 관리합니다.
-            </Typography>
+            </p>
           </Box>
           <Button
             variant="contained"
@@ -153,10 +151,10 @@ const PatientListPage = () => {
           >
             환자 추가
           </Button>
-        </Box>
+        </div>
 
         {/* 검색 바 */}
-        <Paper sx={{ padding: 2, marginBottom: 3 }}>
+        <div className="search-bar-container">
           <TextField
             fullWidth
             placeholder="환자 이름, 환자번호, 전화번호로 검색..."
@@ -168,14 +166,16 @@ const PatientListPage = () => {
                   <SearchIcon />
                 </InputAdornment>
               ),
+              disableUnderline: true,
             }}
+            variant="standard"
           />
           <Box sx={{ marginTop: 1 }}>
             <Typography variant="body2" color="text.secondary">
               총 {filteredPatients.length}명의 환자
             </Typography>
           </Box>
-        </Paper>
+        </div>
 
         {/* 에러 표시 */}
         {error && (
@@ -197,13 +197,11 @@ const PatientListPage = () => {
 
         {!error && currentPatients.length > 0 && (
           <>
-            <Grid container spacing={3}>
+            <div className="patient-grid">
               {currentPatients.map((patient) => (
-                <Grid item xs={12} sm={6} md={4} key={patient.id}>
-                  <PatientCard patient={patient} onDelete={handleDeletePatient} />
-                </Grid>
+                <PatientCard key={patient.id} patient={patient} onDelete={handleDeletePatient} />
               ))}
-            </Grid>
+            </div>
 
             {/* 페이지네이션 */}
             {totalPages > 1 && (
@@ -274,7 +272,7 @@ const PatientListPage = () => {
             <Button onClick={handleAddPatient} variant="contained">추가</Button>
           </DialogActions>
         </Dialog>
-      </Container>
+      </div>
     </DashboardLayout>
   );
 };

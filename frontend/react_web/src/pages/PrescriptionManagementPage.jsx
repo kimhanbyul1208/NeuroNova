@@ -33,6 +33,7 @@ import { API_ENDPOINTS } from '../utils/config';
 import { LoadingSpinner, ErrorAlert } from '../components';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../auth/AuthContext';
+import './DashboardPage.css';
 
 /**
  * Prescription Management Page
@@ -179,11 +180,11 @@ const PrescriptionManagementPage = () => {
 
     return (
         <DashboardLayout role={user?.role} activePage="prescriptions" title="Prescription Management">
-            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h4" component="h1">
+            <div className="page-container">
+                <div className="page-header">
+                    <h1 className="page-title">
                         처방전 관리
-                    </Typography>
+                    </h1>
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
@@ -191,11 +192,11 @@ const PrescriptionManagementPage = () => {
                     >
                         새 처방전
                     </Button>
-                </Box>
+                </div>
 
                 {error && <ErrorAlert message={error} onRetry={fetchPrescriptions} sx={{ mb: 3 }} />}
 
-                <Paper sx={{ p: 2, mb: 3 }}>
+                <div className="search-bar-container">
                     <TextField
                         fullWidth
                         placeholder="약물명 또는 환자명으로 검색..."
@@ -203,28 +204,30 @@ const PrescriptionManagementPage = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         InputProps={{
                             startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                            disableUnderline: true
                         }}
+                        variant="standard"
                     />
-                </Paper>
+                </div>
 
-                <TableContainer component={Paper}>
-                    <Table>
+                <TableContainer component={Paper} className="content-card">
+                    <Table className="results-table">
                         <TableHead>
-                            <TableRow>
-                                <TableCell>환자명</TableCell>
-                                <TableCell>약물명</TableCell>
-                                <TableCell>용량</TableCell>
-                                <TableCell>복용 빈도</TableCell>
-                                <TableCell>기간</TableCell>
-                                <TableCell>상태</TableCell>
-                                <TableCell>처방일</TableCell>
-                                <TableCell align="right">작업</TableCell>
+                            <TableRow className="table-header-row">
+                                <TableCell className="table-header-cell">환자명</TableCell>
+                                <TableCell className="table-header-cell">약물명</TableCell>
+                                <TableCell className="table-header-cell">용량</TableCell>
+                                <TableCell className="table-header-cell">복용 빈도</TableCell>
+                                <TableCell className="table-header-cell">기간</TableCell>
+                                <TableCell className="table-header-cell">상태</TableCell>
+                                <TableCell className="table-header-cell">처방일</TableCell>
+                                <TableCell className="table-header-cell" align="right">작업</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {filteredPrescriptions.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={8} align="center">
+                                <TableRow className="table-body-row">
+                                    <TableCell colSpan={8} align="center" className="table-body-cell">
                                         <Typography variant="body2" color="text.secondary">
                                             처방전이 없습니다.
                                         </Typography>
@@ -232,23 +235,23 @@ const PrescriptionManagementPage = () => {
                                 </TableRow>
                             ) : (
                                 filteredPrescriptions.map((prescription) => (
-                                    <TableRow key={prescription.id} hover>
-                                        <TableCell>{prescription.patient_name || '-'}</TableCell>
-                                        <TableCell>{prescription.medication_name}</TableCell>
-                                        <TableCell>{prescription.dosage}</TableCell>
-                                        <TableCell>{prescription.frequency}</TableCell>
-                                        <TableCell>{prescription.duration_days}일</TableCell>
-                                        <TableCell>
+                                    <TableRow key={prescription.id} hover className="table-body-row">
+                                        <TableCell className="table-body-cell">{prescription.patient_name || '-'}</TableCell>
+                                        <TableCell className="table-body-cell">{prescription.medication_name}</TableCell>
+                                        <TableCell className="table-body-cell">{prescription.dosage}</TableCell>
+                                        <TableCell className="table-body-cell">{prescription.frequency}</TableCell>
+                                        <TableCell className="table-body-cell">{prescription.duration_days}일</TableCell>
+                                        <TableCell className="table-body-cell">
                                             <Chip
                                                 label={getStatusLabel(prescription.status)}
                                                 color={getStatusColor(prescription.status)}
                                                 size="small"
                                             />
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="table-body-cell">
                                             {new Date(prescription.created_at).toLocaleDateString('ko-KR')}
                                         </TableCell>
-                                        <TableCell align="right">
+                                        <TableCell className="table-body-cell" align="right">
                                             <IconButton
                                                 size="small"
                                                 onClick={() => handleOpenDialog(prescription)}
@@ -369,7 +372,7 @@ const PrescriptionManagementPage = () => {
                         </Button>
                     </DialogActions>
                 </Dialog>
-            </Container>
+            </div>
         </DashboardLayout>
     );
 };

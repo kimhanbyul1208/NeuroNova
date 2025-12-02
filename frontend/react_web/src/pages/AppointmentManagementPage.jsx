@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
-  Paper,
   Tabs,
   Tab,
-  Grid,
   Snackbar,
   Alert,
   CircularProgress,
@@ -20,6 +17,7 @@ import axiosClient from '../api/axios';
 import { API_ENDPOINTS, APPOINTMENT_STATUS } from '../utils/config';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../auth/AuthContext';
+import './DashboardPage.css';
 
 /**
  * 예약 관리 페이지
@@ -135,16 +133,18 @@ const AppointmentManagementPage = () => {
 
   return (
     <DashboardLayout role={user?.role} activePage="appointments" title="Appointment Management">
-      <Container maxWidth="lg" sx={{ marginTop: 4, marginBottom: 4 }}>
+      <div className="page-container">
         {/* 헤더 */}
-        <Box sx={{ marginBottom: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            예약 관리
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            환자 예약을 승인하고 관리합니다.
-          </Typography>
-        </Box>
+        <div className="page-header">
+          <Box>
+            <h1 className="page-title">
+              예약 관리
+            </h1>
+            <p className="page-subtitle">
+              환자 예약을 승인하고 관리합니다.
+            </p>
+          </Box>
+        </div>
 
         {/* 에러 표시 */}
         {error && (
@@ -158,14 +158,14 @@ const AppointmentManagementPage = () => {
         {/* 탭 메뉴 */}
         {!error && (
           <>
-            <Paper sx={{ marginBottom: 2 }}>
+            <div className="tab-container">
               <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth">
                 <Tab label={`대기 중 (${pendingAppointments.length})`} />
                 <Tab label={`확정 (${confirmedAppointments.length})`} />
                 <Tab label={`완료 (${completedAppointments.length})`} />
                 <Tab label={`취소/미방문 (${cancelledAppointments.length})`} />
               </Tabs>
-            </Paper>
+            </div>
 
             {/* 탭 컨텐츠 */}
             <Box>
@@ -173,31 +173,27 @@ const AppointmentManagementPage = () => {
               {activeTab === 0 && (
                 <Box>
                   {pendingAppointments.length === 0 ? (
-                    <Paper sx={{ padding: 4, textAlign: 'center' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        대기 중인 예약이 없습니다.
-                      </Typography>
-                    </Paper>
+                    <div className="empty-state">
+                      대기 중인 예약이 없습니다.
+                    </div>
                   ) : (
-                    <Grid container spacing={2}>
+                    <div className="appointment-grid">
                       {pendingAppointments.map((appointment) => (
-                        <Grid item xs={12} md={6} key={appointment.id}>
-                          <Card>
-                            <CardContent>
-                              <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
-                              </Typography>
-                              <Chip label={appointment.status} size="small" sx={{ marginTop: 1 }} />
-                            </CardContent>
-                            <CardActions>
-                              <Button size="small" color="primary" onClick={() => handleApprove(appointment.id)}>승인</Button>
-                              <Button size="small" color="error" onClick={() => handleReject(appointment.id)}>거부</Button>
-                            </CardActions>
-                          </Card>
-                        </Grid>
+                        <Card key={appointment.id} className="content-card">
+                          <CardContent>
+                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                            </Typography>
+                            <Chip label={appointment.status} size="small" sx={{ marginTop: 1 }} />
+                          </CardContent>
+                          <CardActions>
+                            <Button size="small" color="primary" onClick={() => handleApprove(appointment.id)}>승인</Button>
+                            <Button size="small" color="error" onClick={() => handleReject(appointment.id)}>거부</Button>
+                          </CardActions>
+                        </Card>
                       ))}
-                    </Grid>
+                    </div>
                   )}
                 </Box>
               )}
@@ -206,27 +202,23 @@ const AppointmentManagementPage = () => {
               {activeTab === 1 && (
                 <Box>
                   {confirmedAppointments.length === 0 ? (
-                    <Paper sx={{ padding: 4, textAlign: 'center' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        확정된 예약이 없습니다.
-                      </Typography>
-                    </Paper>
+                    <div className="empty-state">
+                      확정된 예약이 없습니다.
+                    </div>
                   ) : (
-                    <Grid container spacing={2}>
+                    <div className="appointment-grid">
                       {confirmedAppointments.map((appointment) => (
-                        <Grid item xs={12} md={6} key={appointment.id}>
-                          <Card>
-                            <CardContent>
-                              <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
-                              </Typography>
-                              <Chip label={appointment.status} size="small" color="success" sx={{ marginTop: 1 }} />
-                            </CardContent>
-                          </Card>
-                        </Grid>
+                        <Card key={appointment.id} className="content-card">
+                          <CardContent>
+                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                            </Typography>
+                            <Chip label={appointment.status} size="small" color="success" sx={{ marginTop: 1 }} />
+                          </CardContent>
+                        </Card>
                       ))}
-                    </Grid>
+                    </div>
                   )}
                 </Box>
               )}
@@ -235,27 +227,23 @@ const AppointmentManagementPage = () => {
               {activeTab === 2 && (
                 <Box>
                   {completedAppointments.length === 0 ? (
-                    <Paper sx={{ padding: 4, textAlign: 'center' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        완료된 예약이 없습니다.
-                      </Typography>
-                    </Paper>
+                    <div className="empty-state">
+                      완료된 예약이 없습니다.
+                    </div>
                   ) : (
-                    <Grid container spacing={2}>
+                    <div className="appointment-grid">
                       {completedAppointments.map((appointment) => (
-                        <Grid item xs={12} md={6} key={appointment.id}>
-                          <Card>
-                            <CardContent>
-                              <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
-                              </Typography>
-                              <Chip label={appointment.status} size="small" color="default" sx={{ marginTop: 1 }} />
-                            </CardContent>
-                          </Card>
-                        </Grid>
+                        <Card key={appointment.id} className="content-card">
+                          <CardContent>
+                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                            </Typography>
+                            <Chip label={appointment.status} size="small" color="default" sx={{ marginTop: 1 }} />
+                          </CardContent>
+                        </Card>
                       ))}
-                    </Grid>
+                    </div>
                   )}
                 </Box>
               )}
@@ -264,27 +252,23 @@ const AppointmentManagementPage = () => {
               {activeTab === 3 && (
                 <Box>
                   {cancelledAppointments.length === 0 ? (
-                    <Paper sx={{ padding: 4, textAlign: 'center' }}>
-                      <Typography variant="body1" color="text.secondary">
-                        취소 또는 미방문 예약이 없습니다.
-                      </Typography>
-                    </Paper>
+                    <div className="empty-state">
+                      취소 또는 미방문 예약이 없습니다.
+                    </div>
                   ) : (
-                    <Grid container spacing={2}>
+                    <div className="appointment-grid">
                       {cancelledAppointments.map((appointment) => (
-                        <Grid item xs={12} md={6} key={appointment.id}>
-                          <Card>
-                            <CardContent>
-                              <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
-                              </Typography>
-                              <Chip label={appointment.status} size="small" color="error" sx={{ marginTop: 1 }} />
-                            </CardContent>
-                          </Card>
-                        </Grid>
+                        <Card key={appointment.id} className="content-card">
+                          <CardContent>
+                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                            </Typography>
+                            <Chip label={appointment.status} size="small" color="error" sx={{ marginTop: 1 }} />
+                          </CardContent>
+                        </Card>
                       ))}
-                    </Grid>
+                    </div>
                   )}
                 </Box>
               )}
@@ -303,7 +287,7 @@ const AppointmentManagementPage = () => {
             {snackbar.message}
           </Alert>
         </Snackbar>
-      </Container>
+      </div>
     </DashboardLayout>
   );
 };

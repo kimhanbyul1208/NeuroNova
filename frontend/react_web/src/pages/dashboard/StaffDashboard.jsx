@@ -10,6 +10,7 @@ import {
 import axiosClient from '../../api/axios';
 import { API_ENDPOINTS } from '../../utils/config';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import '../../DashboardPage.css';
 
 const StaffDashboard = () => {
     const { user } = useAuth();
@@ -59,12 +60,12 @@ const StaffDashboard = () => {
 
     return (
         <DashboardLayout role="NURSE" activePage="dashboard" title="Staff Dashboard">
-            <div style={styles.grid}>
+            <div className="dashboard-grid" style={{ gridTemplateColumns: '3fr 1fr', display: 'grid' }}>
                 {/* Patient Queue */}
-                <div style={styles.card}>
-                    <div style={styles.cardHeader}>
-                        <h2 style={styles.cardTitle}>Patient Queue (Today's Encounters)</h2>
-                        <button onClick={fetchQueue} style={styles.refreshButton}>Refresh</button>
+                <div className="stat-card">
+                    <div className="card-header-row">
+                        <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>Patient Queue (Today's Encounters)</h2>
+                        <button onClick={fetchQueue} className="refresh-button">Refresh</button>
                     </div>
 
                     {loading ? (
@@ -72,41 +73,41 @@ const StaffDashboard = () => {
                     ) : error ? (
                         <ErrorAlert message={error} />
                     ) : (
-                        <table style={styles.table}>
+                        <table className="results-table">
                             <thead>
-                                <tr>
-                                    <th style={styles.th}>Date/Time</th>
-                                    <th style={styles.th}>Patient</th>
-                                    <th style={styles.th}>Status</th>
-                                    <th style={styles.th}>Facility</th>
-                                    <th style={styles.th}>Action</th>
+                                <tr className="table-header-row">
+                                    <th className="table-header-cell">Date/Time</th>
+                                    <th className="table-header-cell">Patient</th>
+                                    <th className="table-header-cell">Status</th>
+                                    <th className="table-header-cell">Facility</th>
+                                    <th className="table-header-cell">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {queue.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="5" style={{ ...styles.td, textAlign: 'center' }}>대기 중인 환자가 없습니다.</td>
+                                    <tr className="table-body-row">
+                                        <td colSpan="5" className="table-body-cell" style={{ textAlign: 'center' }}>대기 중인 환자가 없습니다.</td>
                                     </tr>
                                 ) : (
                                     queue.map(encounter => (
-                                        <tr key={encounter.id} style={styles.tr}>
-                                            <td style={styles.td}>
+                                        <tr key={encounter.id} className="table-body-row">
+                                            <td className="table-body-cell">
                                                 {new Date(encounter.encounter_date).toLocaleString()}
                                             </td>
-                                            <td style={styles.td}>
-                                                <span style={styles.patientName}>
+                                            <td className="table-body-cell">
+                                                <span className="patient-name" style={{ fontWeight: '600', color: '#2f3542' }}>
                                                     {encounter.patient_name || encounter.patient || 'Unknown'}
                                                 </span>
                                             </td>
-                                            <td style={styles.td}>
-                                                <span style={{ ...styles.statusBadge, ...getStatusStyle(encounter.status) }}>
+                                            <td className="table-body-cell">
+                                                <span className="status-badge" style={getStatusStyle(encounter.status)}>
                                                     {encounter.status}
                                                 </span>
                                             </td>
-                                            <td style={styles.td}>{encounter.facility}</td>
-                                            <td style={styles.td}>
+                                            <td className="table-body-cell">{encounter.facility}</td>
+                                            <td className="table-body-cell">
                                                 <button
-                                                    style={styles.actionButton}
+                                                    className="assign-button"
                                                     onClick={() => {
                                                         const patientObj = typeof encounter.patient === 'object'
                                                             ? encounter.patient
@@ -126,24 +127,24 @@ const StaffDashboard = () => {
                 </div>
 
                 {/* Quick Tasks */}
-                <div style={styles.sidePanel}>
-                    <div style={styles.taskCard}>
-                        <h3 style={styles.taskTitle}>Quick Tasks</h3>
-                        <div style={styles.buttonGroup}>
+                <div className="side-panel">
+                    <div className="stat-card">
+                        <h3 className="card-title" style={{ fontSize: '1.1rem', color: '#2f3542', marginBottom: '1rem' }}>Quick Tasks</h3>
+                        <div className="button-group">
                             <button
-                                style={styles.primaryButton}
+                                className="primary-button"
                                 onClick={() => setRegisterModalOpen(true)}
                             >
                                 + Register New Patient
                             </button>
                             <button
-                                style={styles.secondaryButton}
+                                className="secondary-button"
                                 onClick={() => navigate('/forms')}
                             >
                                 Record Vitals
                             </button>
                             <button
-                                style={styles.secondaryButton}
+                                className="secondary-button"
                                 onClick={() => navigate('/forms')}
                             >
                                 Upload Documents
@@ -151,11 +152,11 @@ const StaffDashboard = () => {
                         </div>
                     </div>
 
-                    <div style={{ ...styles.taskCard, marginTop: '1.5rem' }}>
-                        <h3 style={styles.taskTitle}>Notifications</h3>
-                        <ul style={styles.notiList}>
-                            <li style={styles.notiItem}>Dr. Kim requested vitals for PT-2025-003</li>
-                            <li style={styles.notiItem}>New appointment request from Web</li>
+                    <div className="stat-card" style={{ marginTop: '1.5rem' }}>
+                        <h3 className="card-title" style={{ fontSize: '1.1rem', color: '#2f3542', marginBottom: '1rem' }}>Notifications</h3>
+                        <ul className="noti-list">
+                            <li className="noti-item">Dr. Kim requested vitals for PT-2025-003</li>
+                            <li className="noti-item">New appointment request from Web</li>
                         </ul>
                     </div>
                 </div>
@@ -184,135 +185,6 @@ const getStatusStyle = (status) => {
         case 'IN_PROGRESS': return { backgroundColor: '#e3f2fd', color: '#1565c0' };
         case 'COMPLETED': return { backgroundColor: '#e8f5e9', color: '#2e7d32' };
         default: return { backgroundColor: '#f5f5f5', color: '#616161' };
-    }
-};
-
-const styles = {
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: '3fr 1fr',
-        gap: '2rem',
-    },
-    card: {
-        backgroundColor: 'white',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-        border: '1px solid #e1e1e1',
-    },
-    cardHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1.5rem',
-    },
-    cardTitle: {
-        margin: 0,
-        fontSize: '1.2rem',
-        color: '#2f3542',
-        fontWeight: '600',
-    },
-    refreshButton: {
-        padding: '0.4rem 0.8rem',
-        backgroundColor: 'transparent',
-        border: '1px solid #ddd',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        color: '#666',
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-    },
-    th: {
-        textAlign: 'left',
-        padding: '1rem',
-        borderBottom: '2px solid #eee',
-        color: '#747d8c',
-        fontWeight: '600',
-        fontSize: '0.9rem',
-    },
-    tr: {
-        borderBottom: '1px solid #f5f5f5',
-    },
-    td: {
-        padding: '1rem',
-        verticalAlign: 'middle',
-        color: '#2f3542',
-    },
-    patientName: {
-        fontWeight: '600',
-        color: '#2f3542',
-    },
-    statusBadge: {
-        padding: '0.3rem 0.8rem',
-        borderRadius: '20px',
-        fontSize: '0.8rem',
-        fontWeight: '600',
-    },
-    actionButton: {
-        padding: '0.4rem 1rem',
-        backgroundColor: '#009688',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontSize: '0.9rem',
-    },
-    sidePanel: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    taskCard: {
-        backgroundColor: 'white',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-        border: '1px solid #e1e1e1',
-    },
-    taskTitle: {
-        margin: '0 0 1rem 0',
-        fontSize: '1.1rem',
-        color: '#2f3542',
-        fontWeight: '600',
-    },
-    buttonGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.8rem',
-    },
-    primaryButton: {
-        padding: '0.8rem',
-        backgroundColor: '#00796b',
-        color: 'white',
-        border: 'none',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontWeight: '600',
-        fontSize: '0.95rem',
-    },
-    secondaryButton: {
-        padding: '0.8rem',
-        backgroundColor: 'white',
-        color: '#00796b',
-        border: '1px solid #00796b',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontWeight: '600',
-    },
-    notiList: {
-        listStyle: 'none',
-        padding: 0,
-        margin: 0,
-    },
-    notiItem: {
-        padding: '0.8rem',
-        backgroundColor: '#fff8e1',
-        borderRadius: '6px',
-        marginBottom: '0.5rem',
-        fontSize: '0.9rem',
-        color: '#f57f17',
-        borderLeft: '3px solid #ffca28',
     }
 };
 

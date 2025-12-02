@@ -1,6 +1,9 @@
 # Frontend 개발 체크리스트
 
 ## 📋 완료 현황 요약
+aa.jsx의 공통된건 class이름 만들고 개별적인것은 id를 만들어서 
+스타일 요소를 css로 분리해줘 
+
 
 ### React Web (의료진용)
 - [x] 프로젝트 설정 (Vite + React)

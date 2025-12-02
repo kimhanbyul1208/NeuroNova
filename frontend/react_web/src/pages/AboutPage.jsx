@@ -3,15 +3,10 @@
  */
 import { useEffect, useRef } from 'react';
 import {
-  Container,
   Typography,
   Box,
-  Grid,
-  Card,
-  CardContent,
   Chip,
   Divider,
-  Paper,
 } from '@mui/material';
 import {
   Psychology,
@@ -25,6 +20,7 @@ import {
 import QRCode from 'qrcode';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../auth/AuthContext';
+import './DashboardPage.css';
 
 const AboutPage = () => {
   const { user } = useAuth();
@@ -89,28 +85,19 @@ const AboutPage = () => {
 
   return (
     <DashboardLayout role={user?.role} activePage="about" title="About Us">
-      <Container maxWidth="lg" sx={{ py: 6 }}>
+      <div className="page-container">
         {/* Header */}
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography
-            variant="h3"
-            fontWeight="bold"
-            gutterBottom
-            sx={{
-              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
+        <div className="about-header">
+          <h1 className="about-title-gradient">
             NeuroNova
-          </Typography>
+          </h1>
           <Typography variant="h6" color="text.secondary">
             Neurology + Nova - 뇌과학의 새로운 별
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
             AI 기반 뇌종양 임상 의사결정 지원 시스템 (CDSS)
           </Typography>
-        </Box>
+        </div>
 
         <Divider sx={{ mb: 6 }} />
 
@@ -119,40 +106,27 @@ const AboutPage = () => {
           <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
             주요 기능
           </Typography>
-          <Grid container spacing={3}>
+          <div className="features-grid">
             {features.map((feature, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card sx={{ height: '100%' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Box sx={{ color: 'primary.main', mr: 1 }}>{feature.icon}</Box>
-                      <Typography variant="h6" fontWeight="bold">
-                        {feature.title}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {feature.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+              <div key={index} className="feature-card">
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <div className="feature-icon">{feature.icon}</div>
+                  <Typography variant="h6" fontWeight="bold">
+                    {feature.title}
+                  </Typography>
+                </Box>
+                <Typography variant="body2" color="text.secondary">
+                  {feature.description}
+                </Typography>
+              </div>
             ))}
-          </Grid>
+          </div>
         </Box>
 
         <Divider sx={{ mb: 6 }} />
 
         {/* 앱 다운로드 섹션 */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            mb: 6,
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-          }}
-        >
+        <div className="app-download-section">
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             환자용 모바일 앱
           </Typography>
@@ -171,17 +145,9 @@ const AboutPage = () => {
           >
             {/* QR 코드 */}
             <Box>
-              <Paper
-                elevation={6}
-                sx={{
-                  p: 2,
-                  bgcolor: 'white',
-                  borderRadius: 2,
-                  display: 'inline-block',
-                }}
-              >
+              <div className="qr-code-box">
                 <canvas ref={qrCanvasRef} />
-              </Paper>
+              </div>
               <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                 스마트폰 카메라로 스캔하세요
               </Typography>
@@ -215,7 +181,7 @@ const AboutPage = () => {
               </Typography>
             </Box>
           </Box>
-        </Paper>
+        </div>
 
         <Divider sx={{ mb: 6 }} />
 
@@ -224,29 +190,25 @@ const AboutPage = () => {
           <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
             기술 스택
           </Typography>
-          <Grid container spacing={2}>
+          <div className="features-grid">
             {Object.entries(techStack).map(([category, items]) => (
-              <Grid item xs={12} sm={6} md={4} key={category}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom color="primary">
-                      {category}
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {items.map((item) => (
-                        <Chip
-                          key={item}
-                          label={item}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+              <div key={category} className="feature-card">
+                <Typography variant="h6" fontWeight="bold" gutterBottom color="primary">
+                  {category}
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {items.map((item) => (
+                    <Chip
+                      key={item}
+                      label={item}
+                      size="small"
+                      variant="outlined"
+                    />
+                  ))}
+                </Box>
+              </div>
             ))}
-          </Grid>
+          </div>
         </Box>
 
         <Divider sx={{ mb: 6 }} />
@@ -274,7 +236,7 @@ const AboutPage = () => {
             © 2025 NeuroNova. All rights reserved.
           </Typography>
         </Box>
-      </Container>
+      </div>
     </DashboardLayout>
   );
 };

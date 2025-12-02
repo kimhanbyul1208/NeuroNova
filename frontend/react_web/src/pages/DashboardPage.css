@@ -2,64 +2,1067 @@
 
 /* Main Container */
 .dashboard-container {
-  padding: 2rem;
+    padding: 2rem;
 }
 
 /* Header Section (Unique) */
 #dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
 }
 
 .user-info-text {
-  margin-right: 1rem;
+    margin-right: 1rem;
 }
 
-/* Stats Grid (Common Layout) */
+/* Layout Grids */
+.dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
 }
 
-/* Stat Card (Common Component) */
+.content-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    min-height: 400px;
+}
+
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Cards */
 .stat-card {
-  border: 1px solid #ccc;
-  padding: 1.5rem;
-  border-radius: 8px;
+    background-color: white;
+    border: 1px solid #e1e1e1;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.stat-card.centered {
+    text-align: center;
+}
+
+.stat-card.interactive {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.stat-card.interactive:hover {
+    transform: translateY(-2px);
+}
+
+.large-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid #e1e1e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-section {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    text-align: center;
+    border: 1px solid #e1e1e1;
+}
+
+/* Typography */
+.section-title {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #2f3542;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.card-title {
+    margin: 0 0 0.5rem 0;
+    color: #747d8c;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
 }
 
 .stat-value {
-  font-size: 2rem;
-  font-weight: bold;
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2f3542;
+}
+
+.stat-value.small {
+    font-size: 1.5rem;
+}
+
+.stat-title {
+    font-size: 0.85rem;
+    color: #747d8c;
+    margin-top: 0.2rem;
+}
+
+/* Icons */
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Actions */
+.action-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.action-button {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e1e1e1;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2f3542;
+    transition: all 0.2s;
+}
+
+.action-button:hover {
+    background-color: #e1e1e1;
+}
+
+.debug-button {
+    padding: 1rem;
+    background-color: #fff3e0;
+    border: 1px solid #ffb74d;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e65100;
+    transition: all 0.2s;
+}
+
+.debug-button:hover {
+    background-color: #ffe0b2;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.quick-action-button {
+    background-color: #f8f9fa;
+    border: 1px solid #f1f2f6;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 0.2rem;
+    color: white;
+}
+
+.action-btn-label {
+    color: #57606f;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Schedule List */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.view-all-btn {
+    background: none;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.appointment-item {
+    display: flex;
+    gap: 1rem;
+}
+
+.time-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 50px;
+}
+
+.time-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #747d8c;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-line {
+    width: 2px;
+    flex: 1;
+    background-color: #f1f2f6;
+    border-radius: 1px;
+}
+
+.appointment-card {
+    flex: 1;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.2s;
+    cursor: pointer;
+    border: 1px solid #f1f2f6;
+}
+
+.patient-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.patient-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #2f3542;
+}
+
+.patient-meta {
+    font-size: 0.85rem;
+    color: #747d8c;
+}
+
+.status-tag {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.action-icon-btn {
+    background: none;
+    border: none;
+    color: #a4b0be;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* Alerts */
+.alert-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.alert-item {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+}
+
+.alert-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-message {
+    font-size: 0.9rem;
+    color: #2f3542;
+    margin-bottom: 0.2rem;
+}
+
+.alert-meta {
+    font-size: 0.8rem;
+    color: #747d8c;
+}
+
+/* States */
+.loading-state,
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: #747d8c;
+}
+
+.empty-state {
+    font-style: italic;
+}
+
+padding: 1rem;
+background-color: #fff3e0;
+border: 1px solid #ffb74d;
+border-radius: 12px;
+cursor: pointer;
+font-size: 1rem;
+font-weight: 600;
+color: #e65100;
+transition: all 0.2s;
+}
+
+.debug-button:hover {
+    background-color: #ffe0b2;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.quick-action-button {
+    background-color: #f8f9fa;
+    border: 1px solid #f1f2f6;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 0.2rem;
+    color: white;
+}
+
+.action-btn-label {
+    color: #57606f;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Schedule List */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.view-all-btn {
+    background: none;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.appointment-item {
+    display: flex;
+    gap: 1rem;
+}
+
+.time-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 50px;
+}
+
+.time-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #747d8c;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-line {
+    width: 2px;
+    flex: 1;
+    background-color: #f1f2f6;
+    border-radius: 1px;
+}
+
+.appointment-card {
+    flex: 1;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color 0.2s;
+    cursor: pointer;
+    border: 1px solid #f1f2f6;
+}
+
+.patient-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.patient-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #2f3542;
+}
+
+.patient-meta {
+    font-size: 0.85rem;
+    color: #747d8c;
+}
+
+.status-tag {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.action-icon-btn {
+    background: none;
+    border: none;
+    color: #a4b0be;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* Alerts */
+.alert-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.alert-item {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+}
+
+.alert-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-message {
+    font-size: 0.9rem;
+    color: #2f3542;
+    margin-bottom: 0.2rem;
+}
+
+.alert-meta {
+    font-size: 0.8rem;
+    color: #747d8c;
+}
+
+/* States */
+.loading-state,
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: #747d8c;
+}
+
+.empty-state {
+    font-style: italic;
 }
 
 /* Recent Results Section (Unique) */
 #recent-results-section {
-  margin-top: 2rem;
+    margin-top: 2rem;
 }
 
 /* Results Table (Common Component) */
 .results-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
 }
 
 .table-header-row {
-  border-bottom: 2px solid #ccc;
+    border-bottom: 2px solid #ccc;
 }
 
 .table-header-cell {
-  padding: 0.75rem;
-  text-align: left;
+    padding: 0.75rem;
+    text-align: left;
 }
 
 .table-body-row {
-  border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
 
 .table-body-cell {
-  padding: 0.75rem;
+    padding: 0.75rem;
 }
+
+/* Recent Results Section (Unique) */
+#recent-results-section {
+    margin-top: 2rem;
+}
+
+/* Results Table (Common Component) */
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.table-header-row {
+    border-bottom: 2px solid #eee;
+}
+
+.table-header-cell {
+    padding: 1rem;
+    text-align: left;
+    color: #747d8c;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.table-body-row {
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.table-body-cell {
+    padding: 1rem;
+    vertical-align: middle;
+    color: #2f3542;
+}
+
+/* Patient Dashboard Specifics */
+.date-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #4facfe;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    min-width: 50px;
+}
+
+.date-day {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.date-month {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.apt-info {
+    flex: 1;
+}
+
+.apt-doctor {
+    margin: 0 0 0.2rem 0;
+    font-size: 1rem;
+    color: #2f3542;
+}
+
+.apt-dept {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #747d8c;
+}
+
+.apt-time {
+    margin: 0.2rem 0 0 0;
+    font-size: 0.8rem;
+    color: #a4b0be;
+}
+
+.status-badge {
+    padding: 0.3rem 0.8rem;
+    background-color: #e3f2fd;
+    color: #2196f3;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.side-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+/* Staff Dashboard Specifics */
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.refresh-button {
+    padding: 0.4rem 0.8rem;
+    background-color: transparent;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #666;
+}
+
+.primary-button {
+    padding: 0.8rem;
+    background-color: #00796b;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.secondary-button {
+    padding: 0.8rem;
+    background-color: white;
+    color: #00796b;
+    border: 1px solid #00796b;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.noti-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.noti-item {
+    padding: 0.8rem;
+    background-color: #fff8e1;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+
+    .alert-meta {
+        font-size: 0.8rem;
+        color: #747d8c;
+    }
+
+    /* States */
+    .loading-state,
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        color: #747d8c;
+    }
+
+    .empty-state {
+        font-style: italic;
+    }
+
+    /* Recent Results Section (Unique) */
+    #recent-results-section {
+        margin-top: 2rem;
+    }
+
+    /* Results Table (Common Component) */
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .table-header-row {
+        border-bottom: 2px solid #ccc;
+    }
+
+    .table-header-cell {
+        padding: 0.75rem;
+        text-align: left;
+    }
+
+    .table-body-row {
+        border-bottom: 1px solid #eee;
+    }
+
+    .table-body-cell {
+        padding: 0.75rem;
+    }
+
+    /* Recent Results Section (Unique) */
+    #recent-results-section {
+        margin-top: 2rem;
+    }
+
+    /* Results Table (Common Component) */
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .table-header-row {
+        border-bottom: 2px solid #eee;
+    }
+
+    .table-header-cell {
+        padding: 1rem;
+        text-align: left;
+        color: #747d8c;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .table-body-row {
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    .table-body-cell {
+        padding: 1rem;
+        vertical-align: middle;
+        color: #2f3542;
+    }
+
+    /* Patient Dashboard Specifics */
+    .date-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #4facfe;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 8px;
+        min-width: 50px;
+    }
+
+    .date-day {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .date-month {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+
+    .apt-info {
+        flex: 1;
+    }
+
+    .apt-doctor {
+        margin: 0 0 0.2rem 0;
+        font-size: 1rem;
+        color: #2f3542;
+    }
+
+    .apt-dept {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #747d8c;
+    }
+
+    .apt-time {
+        margin: 0.2rem 0 0 0;
+        font-size: 0.8rem;
+        color: #a4b0be;
+    }
+
+    .status-badge {
+        padding: 0.3rem 0.8rem;
+        background-color: #e3f2fd;
+        color: #2196f3;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .side-panel {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    /* Staff Dashboard Specifics */
+    .card-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .refresh-button {
+        padding: 0.4rem 0.8rem;
+        background-color: transparent;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .primary-button {
+        padding: 0.8rem;
+        background-color: #00796b;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .secondary-button {
+        padding: 0.8rem;
+        background-color: white;
+        color: #00796b;
+        border: 1px solid #00796b;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .noti-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .noti-item {
+        padding: 0.8rem;
+        background-color: #fff8e1;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: #f57f17;
+        border-left: 3px solid #ffca28;
+    }
+
+    .assign-button {
+        padding: 0.4rem 1rem;
+        background-color: #009688;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+
+    /* General Page Layouts */
+    .page-container {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2f3542;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .page-subtitle {
+        font-size: 1rem;
+        color: #747d8c;
+        margin: 0;
+    }
+
+    .search-bar-container {
+        background-color: white;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        border: 1px solid #e1e1e1;
+    }
+
+    .content-card {
+        background-color: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        border: 1px solid #e1e1e1;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-content {
+        padding: 1.5rem;
+    }
+
+    /* About Page Specifics */
+    .about-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .about-title-gradient {
+        background: linear-gradient(45deg, #2196F3 30%, #21CBF3 90%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .feature-card {
+        height: 100%;
+        background-color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f2f6;
+        transition: transform 0.2s;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .feature-icon {
+        color: #2196F3;
+        margin-right: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .app-download-section {
+        padding: 2rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .qr-code-box {
+        background-color: white;
+        padding: 1rem;
+        border-radius: 12px;
+        display: inline-block;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Patient List Specifics */
+    .patient-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Appointment Management Specifics */
+    .appointment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .tab-container {
+        background-color: white;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e1e1e1;
+        overflow: hidden;
+    }
