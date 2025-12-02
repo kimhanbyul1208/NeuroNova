@@ -11,11 +11,18 @@ import {
   Chip,
   Button,
   Divider,
-  Avatar
+  Avatar,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton,
+  ListItemIcon
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PersonIcon from '@mui/icons-material/Person';
-import { LoadingSpinner, ErrorAlert, AppointmentCard, DiagnosisResultCard } from '../components';
+import ScienceIcon from '@mui/icons-material/Science';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { LoadingSpinner, ErrorAlert, AppointmentCard } from '../components';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 import { format } from 'date-fns';
@@ -23,7 +30,7 @@ import './DashboardPage.css';
 
 /**
  * 환자 상세 페이지
- * 환자 정보, 진료 기록, SOAP 차트, AI 진단 결과 표시
+ * 환자 정보, 진료 기록, SOAP 차트, 항원 검사 결과(처방전) 표시
  */
 const PatientDetailPage = () => {
   const { id } = useParams();
@@ -31,7 +38,7 @@ const PatientDetailPage = () => {
   const [patient, setPatient] = useState(null);
   const [encounters, setEncounters] = useState([]);
   const [appointments, setAppointments] = useState([]);
-  const [predictions, setPredictions] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -44,16 +51,15 @@ const PatientDetailPage = () => {
         setError(null);
 
         // 병렬로 데이터 요청
-        const [patientRes, encountersRes, appointmentsRes, predictionsRes] = await Promise.all([
+        const [patientRes, encountersRes, appointmentsRes, prescriptionsRes] = await Promise.all([
           axiosClient.get(`${API_ENDPOINTS.PATIENTS}${id}/`),
           axiosClient.get(`${API_ENDPOINTS.ENCOUNTERS}?patient_id=${id}`),
           axiosClient.get(`${API_ENDPOINTS.APPOINTMENTS}?patient_id=${id}`),
-          axiosClient.get(`${API_ENDPOINTS.PREDICTIONS}?patient_id=${id}`)
+          axiosClient.get(`${API_ENDPOINTS.PRESCRIPTIONS}?patient_id=${id}`) // 처방전 데이터 요청
         ]);
 
         // Helper to handle pagination
         const getResults = (data) => {
-          console.log('API Data:', data);
           if (!data) return [];
           if (Array.isArray(data)) return data;
           if (data.results && Array.isArray(data.results)) return data.results;
@@ -63,7 +69,7 @@ const PatientDetailPage = () => {
         setPatient(patientRes.data);
         setEncounters(getResults(encountersRes.data));
         setAppointments(getResults(appointmentsRes.data));
-        setPredictions(getResults(predictionsRes.data));
+        setPrescriptions(getResults(prescriptionsRes.data));
       } catch (err) {
         setError(err.response?.data?.message || '환자 정보를 불러오는데 실패했습니다.');
         console.error('Error fetching patient data:', err);
@@ -78,6 +84,19 @@ const PatientDetailPage = () => {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
+
+  // 처방전 날짜별 그룹화
+  const groupedPrescriptions = prescriptions.reduce((groups, prescription) => {
+    const date = prescription.created_at ? prescription.created_at.split('T')[0] : 'Unknown Date';
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(prescription);
+    return groups;
+  }, {});
+
+  // 날짜 내림차순 정렬
+  const sortedDates = Object.keys(groupedPrescriptions).sort((a, b) => new Date(b) - new Date(a));
 
   if (loading) {
     return <LoadingSpinner fullScreen />;
@@ -191,7 +210,7 @@ const PatientDetailPage = () => {
         >
           <Tab label={`예약 (${appointments.length})`} />
           <Tab label={`진료 기록 (${encounters.length})`} />
-          <Tab label={`AI 진단 (${predictions.length})`} />
+          <Tab label={`항원 검사 결과 (${prescriptions.length})`} />
         </Tabs>
 
         {/* 예약 탭 */}
@@ -259,23 +278,50 @@ const PatientDetailPage = () => {
           </div>
         )}
 
-        {/* AI 진단 탭 */}
+        {/* 항원 검사 결과 (처방전 목록) 탭 */}
         {activeTab === 2 && (
           <div className="tab-panel">
-            {predictions.length === 0 ? (
+            {prescriptions.length === 0 ? (
               <div className="empty-state">
                 <Typography variant="body1" color="text.secondary">
-                  AI 진단 기록이 없습니다.
+                  항원 검사(처방) 기록이 없습니다.
                 </Typography>
               </div>
             ) : (
-              <Grid container spacing={2}>
-                {Array.isArray(predictions) && predictions.map((prediction) => (
-                  <Grid item xs={12} md={6} key={prediction.id}>
-                    <DiagnosisResultCard result={prediction} />
-                  </Grid>
-                ))}
-              </Grid>
+              <Paper sx={{ borderRadius: '12px', overflow: 'hidden' }}>
+                <List>
+                  {sortedDates.map((date, index) => {
+                    const count = groupedPrescriptions[date].length;
+                    return (
+                      <div key={date}>
+                        <ListItemButton
+                          onClick={() => navigate(`/patients/${id}/prescriptions/${date}`)}
+                          sx={{
+                            py: 2,
+                            '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
+                          }}
+                        >
+                          <ListItemIcon>
+                            <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.main' }}>
+                              <ScienceIcon />
+                            </Avatar>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Typography variant="subtitle1" fontWeight={600}>
+                                {date} 검사 결과
+                              </Typography>
+                            }
+                            secondary={`총 ${count}건의 처방 내역`}
+                          />
+                          <ChevronRightIcon color="action" />
+                        </ListItemButton>
+                        {index < sortedDates.length - 1 && <Divider variant="inset" component="li" />}
+                      </div>
+                    );
+                  })}
+                </List>
+              </Paper>
             )}
           </div>
         )}
