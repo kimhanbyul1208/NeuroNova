@@ -1,0 +1,61 @@
+.patient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem; /* 카드 사이 간격 */
+  margin-top: 2rem;
+}
+
+.patient-card {
+  background: #fff;
+  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.search-actions {
+  display: flex;
+  align-items: center; /* ★ 버튼과 검색창 높이를 자동으로 일치 */
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 검색창 컨테이너 */
+.search-bar-container {
+  flex: 1;
+}
+
+/* 버튼 컨테이너 */
+.add-btn-container {
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: stretch; /* ★ 버튼이 부모 높이를 채움 */
+}
+
+/* 실제 버튼 스타일 */
+.add-btn-container button {
+  height: 56px;     /* ★ 검색창 외곽 높이와 동일하게 설정 */
+  padding: 0 20px;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.patient-title {
+  font-size: 1.25rem;   /* h3 기본보다 조금 작게 */
+  font-weight: 600;     /* 살짝 굵게 */
+  margin: 0;            /* 헤더 간격 영향 없게 */
+  color: #2f3542;       /* 본문과 어울리는 색상 */
+}
+
+.patient-subtitle {
+  font-size: 0.9rem;    /* 작은 설명 글자 크기 */
+  color: #747d8c;       /* 회색 톤 */
+  margin: 0.25rem 0 0;  /* 위쪽 살짝 간격 */
+}
+
+.cntPatient{
+    text-align: right;
+    padding-right: 13%;
+}
+    

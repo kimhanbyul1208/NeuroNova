@@ -1,0 +1,27 @@
+{
+  "Dashboard": "대시보드",
+  "Patients": "환자 관리",
+  "Schedule": "일정",
+  "Settings": "설정",
+  "Users": "사용자 관리",
+  "View as Doctor": "의사 화면 보기",
+  "View as Nurse": "간호사 화면 보기",
+  "View as Patient": "환자 화면 보기",
+  "Forms": "서식",
+  "My Appointments": "내 예약",
+  "My Prescriptions": "내 처방전",
+
+  "Admin Dashboard" : "관리자 대시보드",
+  "Staff Dashboard" : "간호사 대시보드",
+
+
+  "Appointment Management" : "예약 관리",
+  "Patient Management" :  "환자 관리",
+  "Prescription Management" : "처방전 관리",
+  "Data Management" : "데이터 관리",
+
+  
+  "Morning": "좋은 아침",
+  "Afternoon": "좋은 오후",
+  "Evening": "좋은 저녁"
+}

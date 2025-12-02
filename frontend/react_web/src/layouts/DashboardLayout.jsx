@@ -1,54 +1,58 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useTranslation } from 'react-i18next'; // i18n 라이브러리 : 영문 타이틀 한글화 작업에 사용
+import "./DashboardLayout.css";
 
 const DashboardLayout = ({ children, role, title, activePage }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const currentTime = new Date();
+    const { t } = useTranslation(); // 영문 타이틀 한글화
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
 
-    // Role-based Navigation Items
+
+    // 역할별 사이드바 메뉴 구성
     const getNavItems = () => {
         const commonItems = [
-            { icon: '📊', path: `/${role.toLowerCase()}/dashboard`, title: 'Dashboard', id: 'dashboard' },
+            // { icon: '📊', path: `/${role.toLowerCase()}/dashboard`, title: 'Dashboard', id: 'dashboard' },
+            { icon: '📊', path: `/${role.toLowerCase()}/dashboard`, title: t('Dashboard'), id: 'dashboard' },
         ];
 
         if (role === 'DOCTOR') {
             return [
                 ...commonItems,
-                { icon: '👥', path: '/patients', title: 'Patients', id: 'patients' },
-                { icon: '📅', path: '/appointments', title: 'Schedule', id: 'appointments' },
-                { icon: '⚙️', path: '#', title: 'Settings', id: 'settings', onClick: () => alert('Settings coming soon') },
+                { icon: '👥', path: '/patients', title: t('Patients'), id: 'patients' },
+                { icon: '📅', path: '/appointments', title: t('Schedule'), id: 'appointments' },
+                { icon: '⚙️', path: '#', title: 'Settings', id: t('settings'), onClick: () => alert('Settings coming soon') },
             ];
         }
         if (role === 'ADMIN') {
             return [
                 ...commonItems,
-                { icon: '👥', path: '/admin/users', title: 'Users', id: 'users' },
-                { icon: '⚙️', path: '/admin/settings', title: 'Settings', id: 'settings' },
+                { icon: '👥', path: '/admin/users', title: t('Users'), id: 'users' },
+                { icon: '⚙️', path: '/admin/settings', title: t('Settings'), id: 'settings' },
                 // Debug/Role Switcher Links
-                { icon: '👨‍⚕️', path: '/doctor/dashboard', title: 'View as Doctor', id: 'view_doctor' },
-                { icon: '👩‍⚕️', path: '/staff/dashboard', title: 'View as Nurse', id: 'view_nurse' },
-                { icon: '🏥', path: '/patient/dashboard', title: 'View as Patient', id: 'view_patient' },
+                { icon: '👨‍⚕️', path: '/doctor/dashboard', title: t('View as Doctor'), id: 'view_doctor' },
+                { icon: '👩‍⚕️', path: '/staff/dashboard', title: t('View as Nurse'), id: 'view_nurse' },
+                { icon: '🏥', path: '/patient/dashboard', title: t('View as Patient'), id: 'view_patient' },
             ];
         }
         if (role === 'NURSE') { // Staff
             return [
                 ...commonItems,
-                { icon: '👥', path: '/patients', title: 'Patients', id: 'patients' },
-                { icon: '📝', path: '/forms', title: 'Forms', id: 'forms' },
+                { icon: '👥', path: '/patients', title: t('Patients'), id: 'patients' },
+                { icon: '📝', path: '/forms', title: t('Forms'), id: 'forms' },
             ];
         }
         if (role === 'PATIENT') {
             return [
                 ...commonItems,
-                { icon: '📅', path: '/appointments', title: 'My Appointments', id: 'appointments' },
-                { icon: '💊', path: '/prescriptions', title: 'My Prescriptions', id: 'prescriptions' },
+                { icon: '📅', path: '/appointments', title: t('My Appointments'), id: 'appointments' },
+                { icon: '💊', path: '/prescriptions', title: t('My Prescriptions'), id: 'prescriptions' },
             ];
         }
 
@@ -56,6 +60,43 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
     };
 
     const navItems = getNavItems();
+
+    // 날짜 & 시간 랜더링 코드 
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+        setCurrentTime(new Date()); // 매초 새로운 시간으로 업데이트
+        }, 1000);
+
+        return () => clearInterval(timer); // 컴포넌트 언마운트 시 타이머 정리
+    }, []);
+
+
+    // 알림 기능 랜더링 코드 
+    const [showNotifications, setShowNotifications] = useState(false);
+    const closeDropdown = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+        // 알림박스 영역 밖 클릭 시 닫기
+        if (closeDropdown.current && !closeDropdown.current.contains(event.target)) {
+            setShowNotifications(false);
+        }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    // todo : 샘플 알림 데이터 (나중에 API 연동 가능)
+    const notifications = [
+        { id: 1, text: '📅 오늘 오후 3시 회의' },
+        { id: 2, text: '💊 처방전 업데이트' },
+        { id: 3, text: '👥 새로운 환자 등록' },
+    ];
 
     return (
         <div style={styles.container}>
@@ -88,9 +129,9 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
             <main style={styles.mainContent}>
                 {/* Header */}
                 <header style={styles.header}>
-                    <div>
-                        <h1 style={styles.greeting}>
-                            {title || (
+                    <div>                        
+                        {/* <h1 style={styles.greeting}>
+                            {t(title) || (
                                 <>
                                     Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'},
                                     <span style={styles.nameHighlight}> {user?.last_name || user?.username}</span>
@@ -99,15 +140,81 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
                         </h1>
                         <p style={styles.dateDisplay}>
                             {currentTime.toLocaleDateString('ko-KR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                            {' '}
+                            {currentTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                        </p> */}
+
+                        <h1 style={styles.greeting}>
+                            {t(title) || (
+                                <>
+                                {currentTime.getHours() < 12
+                                    ? 'Good Morning'
+                                    : currentTime.getHours() < 18
+                                        ? 'Good Afternoon'
+                                        : 'Good Evening'
+                                },
+                                <span style={styles.nameHighlight}>{user?.last_name || user?.username}</span>
+                                </>
+                            )}
+                        </h1>
+                        <p style={styles.dateDisplay}>
+                            {currentTime.toLocaleDateString('ko-KR', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                            })}{' '}
+                            {currentTime.toLocaleTimeString('ko-KR', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                            })}
                         </p>
                     </div>
-                    <div style={styles.headerRight}>
+                    {/* <div style={styles.headerRight}>
                         <div style={styles.searchBar}>
                             <span style={styles.searchIcon}>🔍</span>
                             <input type="text" placeholder="Search..." style={styles.searchInput} />
                         </div>
-                        <div style={styles.notificationBtn} onClick={() => navigate('/notifications')}>
+                        {/* <div style={styles.notificationBtn} onClick={() => navigate('/notifications')}>
                             🔔<span style={styles.badge}>3</span>
+                        </div>                      
+
+                    </div> */}
+                    <div className="headerRight" id="headerRight">
+                        <div className="searchBar" id="searchBar">
+                            <span className="searchIcon" id="searchIcon">🔍</span>
+                            <input
+                            type="text"
+                            placeholder="Search..."
+                            className="searchInput"
+                            id="searchInput"
+                            />
+                        </div>
+
+                        {/* 알림 버튼 */}
+                        <div className="notificationWrapper" id="notificationWrapper" ref={closeDropdown}>
+                            <div
+                            className="notificationBtn"
+                            id="notificationBtn"
+                            onClick={() => setShowNotifications(!showNotifications)} // ✅ 토글
+                            >
+                            🔔<span className="badge" id="badge">{notifications.length}</span>
+                            </div>
+
+                            {/* 알림 드롭다운 */}
+                            {showNotifications && (
+                            <div className="notificationDropdown" id="notificationDropdown">
+                                <h4 className="dropdownTitle" id="dropdownTitle">알림</h4>
+                                <ul className="dropdownList" id="dropdownList">
+                                {notifications.map((n) => (
+                                    <li key={n.id} className="dropdownItem" id={`dropdownItem-${n.id}`}>
+                                    {n.text}
+                                    </li>
+                                ))}
+                                </ul>
+                            </div>
+                            )}
                         </div>
                     </div>
                 </header>
