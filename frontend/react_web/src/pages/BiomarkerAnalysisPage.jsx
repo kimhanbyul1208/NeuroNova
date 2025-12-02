@@ -1,25 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    Container,
-    Typography,
-    Box,
-    Paper,
-    Grid,
-    Button,
-    Alert,
-    Stack,
-    Tabs,
-    Tab,
-    CircularProgress
-} from '@mui/material';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
 import DashboardLayout from '../layouts/DashboardLayout';
 import BiomarkerClassificationCard from '../components/BiomarkerClassificationCard';
 import ProteinButtonGrid from '../components/ProteinButtonGrid';
 import ProteinDetailModal from '../components/ProteinDetailModal';
 import XAIVisualization from '../components/XAIVisualization';
+import './DashboardPage.css';
 
 /**
  * 바이오마커 분석 페이지

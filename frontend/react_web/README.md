@@ -1,15 +1,37 @@
 # NeuroNova Web Frontend
 
-의료진용 React 웹 애플리케이션
+의료진용 React 웹 애플리케이션 - 뇌종양 진단 임상 의사결정 지원 시스템 (CDSS)
 
-## 기술 스택
+## 📋 요구사항
 
-- **React 18** - UI 라이브러리
-- **Vite** - 빌드 도구
-- **React Router** - 라우팅
+- **Node.js**: >= 18.0.0
+- **npm**: >= 9.0.0
+
+### Node.js 버전 확인
+
+```bash
+node --version  # v18.0.0 이상이어야 함
+npm --version   # v9.0.0 이상이어야 함
+```
+
+### Node.js 업데이트
+
+Node.js 18 이상이 필요합니다. 설치되어 있지 않다면:
+
+1. [Node.js 공식 웹사이트](https://nodejs.org/)에서 **LTS 버전 (v18 이상)** 다운로드
+2. 설치 완료 후 **시스템 재시작** (PATH 업데이트를 위해)
+3. 버전 확인: `node --version` 및 `npm --version`
+
+## 🚀 기술 스택
+
+- **React 19.2.0** - UI 라이브러리
+- **Vite 5.0** - 빌드 도구
+- **React Router 7.0** - 라우팅
 - **Axios** - HTTP 클라이언트
-- **Material-UI** - UI 컴포넌트
+- **Material-UI 5.14** - UI 컴포넌트
 - **Recharts** - 차트 라이브러리
+- **3Dmol 2.5** - 단백질 3D 뷰어
+- **QRCode** - QR 코드 생성
 
 ## 설치 및 실행
 

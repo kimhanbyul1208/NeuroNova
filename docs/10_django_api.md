@@ -54,7 +54,7 @@ Authorization: Bearer <access_token>
   ```json
   {
     "username": "doctor1",
-    "password": "password123"
+    "password": "doctor123"
   }
   ```
 * **Response**: Returns Access & Refresh tokens.

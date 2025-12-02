@@ -1,18 +1,6 @@
 // Register Page - 의료진 회원가입
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  MenuItem,
-  Alert,
-  Paper,
-  Grid,
-} from '@mui/material';
-import { PersonAdd } from '@mui/icons-material';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 
@@ -133,181 +121,191 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8, mb: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-          <PersonAdd sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
-          <Typography component="h1" variant="h4" fontWeight="bold">
-            NeuroNova
-          </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mt: 1 }}>
-            의료진 회원가입
-          </Typography>
-        </Box>
+    <div className="login-container">
+      <div className="login-card" style={{ maxWidth: '600px' }}>
+        <div className="login-header">
+          <h1 className="login-title">NeuroNova</h1>
+          <p className="login-subtitle">뇌종양 진단 임상 의사결정 지원 시스템</p>
+          <h2 className="login-heading">의료진 회원가입</h2>
+        </div>
+
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
+          <div className="error-box">
+            <span className="error-icon">⚠️</span> {error}
+          </div>
         )}
         {success && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            회원가입이 완료되었습니다! 로그인 페이지로 이동합니다...
-          </Alert>
+          <div className="error-box" style={{ backgroundColor: '#d4edda', borderColor: '#c3e6cb', color: '#155724' }}>
+            <span className="error-icon">✓</span> 회원가입이 완료되었습니다! 로그인 페이지로 이동합니다...
+          </div>
         )}
-        <Box component="form" onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            {/* 직책 - 가장 먼저 선택하도록 배치 */}
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                select
-                label="직책"
+
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="register-grid">
+            {/* 직책 */}
+            <div className="form-group">
+              <label className="form-label">직책 *</label>
+              <select
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
+                required
+                className="form-input"
               >
                 {roles.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
+                  <option key={option.value} value={option.value}>
                     {option.label}
-                  </MenuItem>
+                  </option>
                 ))}
-              </TextField>
-            </Grid>
+              </select>
+            </div>
+
             {/* 사용자명 */}
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="사용자명"
+            <div className="form-group">
+              <label className="form-label">사용자명 *</label>
+              <input
+                type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
+                required
+                className="form-input"
                 autoComplete="username"
               />
-            </Grid>
+            </div>
+
             {/* 이메일 */}
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="이메일"
-                name="email"
+            <div className="form-group">
+              <label className="form-label">이메일 *</label>
+              <input
                 type="email"
+                name="email"
                 value={formData.email}
                 onChange={handleChange}
+                required
+                className="form-input"
                 autoComplete="email"
               />
-            </Grid>
-            {/* 성 */}
-            <Grid item xs={6}>
-              <TextField
-                required
-                fullWidth
-                label="성"
-                name="last_name"
-                value={formData.last_name}
-                onChange={handleChange}
-                autoComplete="family-name"
-              />
-            </Grid>
-            {/* 이름 */}
-            <Grid item xs={6}>
-              <TextField
-                required
-                fullWidth
-                label="이름"
-                name="first_name"
-                value={formData.first_name}
-                onChange={handleChange}
-                autoComplete="given-name"
-              />
-            </Grid>
+            </div>
+
+            {/* 성 & 이름 */}
+            <div className="form-row">
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">성 *</label>
+                <input
+                  type="text"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  required
+                  className="form-input"
+                  autoComplete="family-name"
+                />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">이름 *</label>
+                <input
+                  type="text"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  required
+                  className="form-input"
+                  autoComplete="given-name"
+                />
+              </div>
+            </div>
+
             {/* 비밀번호 */}
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="비밀번호"
-                name="password"
+            <div className="form-group">
+              <label className="form-label">비밀번호 *</label>
+              <input
                 type="password"
+                name="password"
                 value={formData.password}
                 onChange={handleChange}
-                autoComplete="new-password"
-                helperText="최소 8자 이상"
-              />
-            </Grid>
-            {/* 비밀번호 확인 */}
-            <Grid item xs={12}>
-              <TextField
                 required
-                fullWidth
-                label="비밀번호 확인"
-                name="password_confirm"
+                className="form-input"
+                autoComplete="new-password"
+                placeholder="최소 8자 이상"
+              />
+            </div>
+
+            {/* 비밀번호 확인 */}
+            <div className="form-group">
+              <label className="form-label">비밀번호 확인 *</label>
+              <input
                 type="password"
+                name="password_confirm"
                 value={formData.password_confirm}
                 onChange={handleChange}
+                required
+                className="form-input"
                 autoComplete="new-password"
               />
-            </Grid>
+            </div>
+
             {/* 전화번호 */}
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="전화번호"
+            <div className="form-group">
+              <label className="form-label">전화번호</label>
+              <input
+                type="tel"
                 name="phone_number"
                 value={formData.phone_number}
                 onChange={handleChange}
+                className="form-input"
                 autoComplete="tel"
                 placeholder="010-1234-5678"
               />
-            </Grid>
+            </div>
+
             {/* 부서 & 면허번호 - 의료진 전용 */}
             {(formData.role === 'DOCTOR' || formData.role === 'NURSE') && (
-              <>
-                <Grid item xs={6}>
-                  <TextField
-                    fullWidth
-                    label="부서"
+              <div className="form-row">
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">부서</label>
+                  <input
+                    type="text"
                     name="department"
                     value={formData.department}
                     onChange={handleChange}
+                    className="form-input"
                     placeholder="신경외과"
                   />
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField
-                    fullWidth
-                    label="면허번호"
+                </div>
+                <div className="form-group" style={{ flex: 1 }}>
+                  <label className="form-label">면허번호</label>
+                  <input
+                    type="text"
                     name="license_number"
                     value={formData.license_number}
                     onChange={handleChange}
+                    className="form-input"
                   />
-                </Grid>
-              </>
+                </div>
+              </div>
             )}
-          </Grid>
-          <Button
+          </div>
+
+          <button
             type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
             disabled={loading}
-            sx={{ mt: 3, mb: 2, py: 1.5 }}
+            className="login-button"
           >
             {loading ? '가입 중...' : '회원가입'}
-          </Button>
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2">
-              이미 계정이 있으신가요?{' '}
-              <Link to="/login" style={{ color: '#2196F3', textDecoration: 'none' }}>
-                로그인
-              </Link>
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
-    </Container>
+          </button>
+        </form>
+
+        <div className="login-footer">
+          <p className="footer-text">
+            이미 계정이 있으신가요?{' '}
+            <Link to="/login" className="footer-link">
+              로그인
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 

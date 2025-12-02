@@ -26,7 +26,13 @@
       "Bash(cmd.exe /c \"npm run dev\")",
       "Bash(npm.cmd run dev:*)",
       "Bash(/c/Program Files/nodejs/npm.cmd run dev)",
-      "Bash(wsl --list:*)"
+      "Bash(wsl --list:*)",
+      "Bash(where npm:*)",
+      "Bash(\"/c/Program Files/nodejs/npm.cmd\" --version)",
+      "Bash(powershell.exe -Command \"npm run dev\")",
+      "Bash(powershell.exe -Command \"Get-Command node | Select-Object -ExpandProperty Source\")",
+      "Bash(powershell.exe -Command \"Start-Process powershell -ArgumentList ''-NoExit'', ''-Command'', ''npm run dev''\")",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []
