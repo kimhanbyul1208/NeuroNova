@@ -156,6 +156,24 @@ const RegisterPage = () => {
         )}
         <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={2}>
+            {/* 직책 - 가장 먼저 선택하도록 배치 */}
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                select
+                label="직책"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+              >
+                {roles.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
             {/* 사용자명 */}
             <Grid item xs={12}>
               <TextField
@@ -231,24 +249,6 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 autoComplete="new-password"
               />
-            </Grid>
-            {/* 직책 */}
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                select
-                label="직책"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                {roles.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
             </Grid>
             {/* 전화번호 */}
             <Grid item xs={12}>

@@ -10,7 +10,7 @@
 
 | Username | Password | Email | Role | Phone |
 |----------|----------|-------|------|-------|
-admin, admin1234
+
 | `admin1` | `admin123` | admin1@neuronova.com | ADMIN | 010-1000-0001 |
 | `admin2` | `admin123` | admin2@neuronova.com | ADMIN | 010-1000-0002 |
 | `admin3` | `admin123` | admin3@neuronova.com | ADMIN | 010-1000-0003 |
@@ -109,9 +109,9 @@ python manage.py shell < create_all_accounts.py
 
 모든 테스트 계정은 다음 패턴을 따릅니다:
 - **Admin**: `admin123`
-- **Doctor**: `password123` (created by populate_db.py)
+- **Doctor**: `doctor123`
 - **Nurse**: `nurse123`
-- **Patient**: `password123` (created by populate_db.py)
+- **Patient**: `patient123`
 
 > [!WARNING]
 > 이 계정들은 **개발/테스트 전용**입니다. 프로덕션 환경에서는 절대 사용하지 마세요!

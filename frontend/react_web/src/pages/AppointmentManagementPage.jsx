@@ -18,12 +18,15 @@ import {
 } from '@mui/material';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS, APPOINTMENT_STATUS } from '../utils/config';
+import DashboardLayout from '../layouts/DashboardLayout';
+import { useAuth } from '../auth/AuthContext';
 
 /**
  * 예약 관리 페이지
  * 의사가 환자 예약을 승인/거부하고 관리
  */
 const AppointmentManagementPage = () => {
+  const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -131,175 +134,177 @@ const AppointmentManagementPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ marginTop: 4, marginBottom: 4 }}>
-      {/* 헤더 */}
-      <Box sx={{ marginBottom: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          예약 관리
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          환자 예약을 승인하고 관리합니다.
-        </Typography>
-      </Box>
+    <DashboardLayout role={user?.role} activePage="appointments" title="Appointment Management">
+      <Container maxWidth="lg" sx={{ marginTop: 4, marginBottom: 4 }}>
+        {/* 헤더 */}
+        <Box sx={{ marginBottom: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            예약 관리
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            환자 예약을 승인하고 관리합니다.
+          </Typography>
+        </Box>
 
-      {/* 에러 표시 */}
-      {error && (
-        <Alert severity="error" sx={{ marginBottom: 2 }}>
-          <Typography variant="h6">오류 발생</Typography>
-          <Typography>{error}</Typography>
-          <Button onClick={fetchAppointments} sx={{ marginTop: 1 }}>재시도</Button>
-        </Alert>
-      )}
+        {/* 에러 표시 */}
+        {error && (
+          <Alert severity="error" sx={{ marginBottom: 2 }}>
+            <Typography variant="h6">오류 발생</Typography>
+            <Typography>{error}</Typography>
+            <Button onClick={fetchAppointments} sx={{ marginTop: 1 }}>재시도</Button>
+          </Alert>
+        )}
 
-      {/* 탭 메뉴 */}
-      {!error && (
-        <>
-          <Paper sx={{ marginBottom: 2 }}>
-            <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth">
-              <Tab label={`대기 중 (${pendingAppointments.length})`} />
-              <Tab label={`확정 (${confirmedAppointments.length})`} />
-              <Tab label={`완료 (${completedAppointments.length})`} />
-              <Tab label={`취소/미방문 (${cancelledAppointments.length})`} />
-            </Tabs>
-          </Paper>
+        {/* 탭 메뉴 */}
+        {!error && (
+          <>
+            <Paper sx={{ marginBottom: 2 }}>
+              <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth">
+                <Tab label={`대기 중 (${pendingAppointments.length})`} />
+                <Tab label={`확정 (${confirmedAppointments.length})`} />
+                <Tab label={`완료 (${completedAppointments.length})`} />
+                <Tab label={`취소/미방문 (${cancelledAppointments.length})`} />
+              </Tabs>
+            </Paper>
 
-          {/* 탭 컨텐츠 */}
-          <Box>
-            {/* 대기 중 탭 */}
-            {activeTab === 0 && (
-              <Box>
-                {pendingAppointments.length === 0 ? (
-                  <Paper sx={{ padding: 4, textAlign: 'center' }}>
-                    <Typography variant="body1" color="text.secondary">
-                      대기 중인 예약이 없습니다.
-                    </Typography>
-                  </Paper>
-                ) : (
-                  <Grid container spacing={2}>
-                    {pendingAppointments.map((appointment) => (
-                      <Grid item xs={12} md={6} key={appointment.id}>
-                        <Card>
-                          <CardContent>
-                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
-                            </Typography>
-                            <Chip label={appointment.status} size="small" sx={{ marginTop: 1 }} />
-                          </CardContent>
-                          <CardActions>
-                            <Button size="small" color="primary" onClick={() => handleApprove(appointment.id)}>승인</Button>
-                            <Button size="small" color="error" onClick={() => handleReject(appointment.id)}>거부</Button>
-                          </CardActions>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
-              </Box>
-            )}
+            {/* 탭 컨텐츠 */}
+            <Box>
+              {/* 대기 중 탭 */}
+              {activeTab === 0 && (
+                <Box>
+                  {pendingAppointments.length === 0 ? (
+                    <Paper sx={{ padding: 4, textAlign: 'center' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        대기 중인 예약이 없습니다.
+                      </Typography>
+                    </Paper>
+                  ) : (
+                    <Grid container spacing={2}>
+                      {pendingAppointments.map((appointment) => (
+                        <Grid item xs={12} md={6} key={appointment.id}>
+                          <Card>
+                            <CardContent>
+                              <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                              </Typography>
+                              <Chip label={appointment.status} size="small" sx={{ marginTop: 1 }} />
+                            </CardContent>
+                            <CardActions>
+                              <Button size="small" color="primary" onClick={() => handleApprove(appointment.id)}>승인</Button>
+                              <Button size="small" color="error" onClick={() => handleReject(appointment.id)}>거부</Button>
+                            </CardActions>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
+                </Box>
+              )}
 
-            {/* 확정 탭 */}
-            {activeTab === 1 && (
-              <Box>
-                {confirmedAppointments.length === 0 ? (
-                  <Paper sx={{ padding: 4, textAlign: 'center' }}>
-                    <Typography variant="body1" color="text.secondary">
-                      확정된 예약이 없습니다.
-                    </Typography>
-                  </Paper>
-                ) : (
-                  <Grid container spacing={2}>
-                    {confirmedAppointments.map((appointment) => (
-                      <Grid item xs={12} md={6} key={appointment.id}>
-                        <Card>
-                          <CardContent>
-                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
-                            </Typography>
-                            <Chip label={appointment.status} size="small" color="success" sx={{ marginTop: 1 }} />
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
-              </Box>
-            )}
+              {/* 확정 탭 */}
+              {activeTab === 1 && (
+                <Box>
+                  {confirmedAppointments.length === 0 ? (
+                    <Paper sx={{ padding: 4, textAlign: 'center' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        확정된 예약이 없습니다.
+                      </Typography>
+                    </Paper>
+                  ) : (
+                    <Grid container spacing={2}>
+                      {confirmedAppointments.map((appointment) => (
+                        <Grid item xs={12} md={6} key={appointment.id}>
+                          <Card>
+                            <CardContent>
+                              <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                              </Typography>
+                              <Chip label={appointment.status} size="small" color="success" sx={{ marginTop: 1 }} />
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
+                </Box>
+              )}
 
-            {/* 완료 탭 */}
-            {activeTab === 2 && (
-              <Box>
-                {completedAppointments.length === 0 ? (
-                  <Paper sx={{ padding: 4, textAlign: 'center' }}>
-                    <Typography variant="body1" color="text.secondary">
-                      완료된 예약이 없습니다.
-                    </Typography>
-                  </Paper>
-                ) : (
-                  <Grid container spacing={2}>
-                    {completedAppointments.map((appointment) => (
-                      <Grid item xs={12} md={6} key={appointment.id}>
-                        <Card>
-                          <CardContent>
-                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
-                            </Typography>
-                            <Chip label={appointment.status} size="small" color="default" sx={{ marginTop: 1 }} />
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
-              </Box>
-            )}
+              {/* 완료 탭 */}
+              {activeTab === 2 && (
+                <Box>
+                  {completedAppointments.length === 0 ? (
+                    <Paper sx={{ padding: 4, textAlign: 'center' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        완료된 예약이 없습니다.
+                      </Typography>
+                    </Paper>
+                  ) : (
+                    <Grid container spacing={2}>
+                      {completedAppointments.map((appointment) => (
+                        <Grid item xs={12} md={6} key={appointment.id}>
+                          <Card>
+                            <CardContent>
+                              <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                              </Typography>
+                              <Chip label={appointment.status} size="small" color="default" sx={{ marginTop: 1 }} />
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
+                </Box>
+              )}
 
-            {/* 취소/미방문 탭 */}
-            {activeTab === 3 && (
-              <Box>
-                {cancelledAppointments.length === 0 ? (
-                  <Paper sx={{ padding: 4, textAlign: 'center' }}>
-                    <Typography variant="body1" color="text.secondary">
-                      취소 또는 미방문 예약이 없습니다.
-                    </Typography>
-                  </Paper>
-                ) : (
-                  <Grid container spacing={2}>
-                    {cancelledAppointments.map((appointment) => (
-                      <Grid item xs={12} md={6} key={appointment.id}>
-                        <Card>
-                          <CardContent>
-                            <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
-                            </Typography>
-                            <Chip label={appointment.status} size="small" color="error" sx={{ marginTop: 1 }} />
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
-              </Box>
-            )}
-          </Box>
-        </>
-      )}
+              {/* 취소/미방문 탭 */}
+              {activeTab === 3 && (
+                <Box>
+                  {cancelledAppointments.length === 0 ? (
+                    <Paper sx={{ padding: 4, textAlign: 'center' }}>
+                      <Typography variant="body1" color="text.secondary">
+                        취소 또는 미방문 예약이 없습니다.
+                      </Typography>
+                    </Paper>
+                  ) : (
+                    <Grid container spacing={2}>
+                      {cancelledAppointments.map((appointment) => (
+                        <Grid item xs={12} md={6} key={appointment.id}>
+                          <Card>
+                            <CardContent>
+                              <Typography variant="h6">{appointment.patient_name || '환자정보 없음'}</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {new Date(appointment.scheduled_time).toLocaleString('ko-KR')}
+                              </Typography>
+                              <Chip label={appointment.status} size="small" color="error" sx={{ marginTop: 1 }} />
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
+                </Box>
+              )}
+            </Box>
+          </>
+        )}
 
-      {/* 스낵바 알림 */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+        {/* 스낵바 알림 */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </DashboardLayout>
   );
 };
 

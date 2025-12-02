@@ -31,6 +31,8 @@ import {
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 import { LoadingSpinner, ErrorAlert } from '../components';
+import DashboardLayout from '../layouts/DashboardLayout';
+import { useAuth } from '../auth/AuthContext';
 
 /**
  * Prescription Management Page
@@ -38,6 +40,7 @@ import { LoadingSpinner, ErrorAlert } from '../components';
  */
 const PrescriptionManagementPage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -175,197 +178,199 @@ const PrescriptionManagementPage = () => {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h4" component="h1">
-                    처방전 관리
-                </Typography>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => handleOpenDialog()}
-                >
-                    새 처방전
-                </Button>
-            </Box>
+        <DashboardLayout role={user?.role} activePage="prescriptions" title="Prescription Management">
+            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h4" component="h1">
+                        처방전 관리
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => handleOpenDialog()}
+                    >
+                        새 처방전
+                    </Button>
+                </Box>
 
-            {error && <ErrorAlert message={error} onRetry={fetchPrescriptions} sx={{ mb: 3 }} />}
+                {error && <ErrorAlert message={error} onRetry={fetchPrescriptions} sx={{ mb: 3 }} />}
 
-            <Paper sx={{ p: 2, mb: 3 }}>
-                <TextField
-                    fullWidth
-                    placeholder="약물명 또는 환자명으로 검색..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                        startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                    }}
-                />
-            </Paper>
+                <Paper sx={{ p: 2, mb: 3 }}>
+                    <TextField
+                        fullWidth
+                        placeholder="약물명 또는 환자명으로 검색..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        InputProps={{
+                            startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                        }}
+                    />
+                </Paper>
 
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>환자명</TableCell>
-                            <TableCell>약물명</TableCell>
-                            <TableCell>용량</TableCell>
-                            <TableCell>복용 빈도</TableCell>
-                            <TableCell>기간</TableCell>
-                            <TableCell>상태</TableCell>
-                            <TableCell>처방일</TableCell>
-                            <TableCell align="right">작업</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredPrescriptions.length === 0 ? (
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
                             <TableRow>
-                                <TableCell colSpan={8} align="center">
-                                    <Typography variant="body2" color="text.secondary">
-                                        처방전이 없습니다.
-                                    </Typography>
-                                </TableCell>
+                                <TableCell>환자명</TableCell>
+                                <TableCell>약물명</TableCell>
+                                <TableCell>용량</TableCell>
+                                <TableCell>복용 빈도</TableCell>
+                                <TableCell>기간</TableCell>
+                                <TableCell>상태</TableCell>
+                                <TableCell>처방일</TableCell>
+                                <TableCell align="right">작업</TableCell>
                             </TableRow>
-                        ) : (
-                            filteredPrescriptions.map((prescription) => (
-                                <TableRow key={prescription.id} hover>
-                                    <TableCell>{prescription.patient_name || '-'}</TableCell>
-                                    <TableCell>{prescription.medication_name}</TableCell>
-                                    <TableCell>{prescription.dosage}</TableCell>
-                                    <TableCell>{prescription.frequency}</TableCell>
-                                    <TableCell>{prescription.duration_days}일</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={getStatusLabel(prescription.status)}
-                                            color={getStatusColor(prescription.status)}
-                                            size="small"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        {new Date(prescription.created_at).toLocaleDateString('ko-KR')}
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleOpenDialog(prescription)}
-                                            color="primary"
-                                        >
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleDelete(prescription.id)}
-                                            color="error"
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
+                        </TableHead>
+                        <TableBody>
+                            {filteredPrescriptions.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={8} align="center">
+                                        <Typography variant="body2" color="text.secondary">
+                                            처방전이 없습니다.
+                                        </Typography>
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                            ) : (
+                                filteredPrescriptions.map((prescription) => (
+                                    <TableRow key={prescription.id} hover>
+                                        <TableCell>{prescription.patient_name || '-'}</TableCell>
+                                        <TableCell>{prescription.medication_name}</TableCell>
+                                        <TableCell>{prescription.dosage}</TableCell>
+                                        <TableCell>{prescription.frequency}</TableCell>
+                                        <TableCell>{prescription.duration_days}일</TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={getStatusLabel(prescription.status)}
+                                                color={getStatusColor(prescription.status)}
+                                                size="small"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            {new Date(prescription.created_at).toLocaleDateString('ko-KR')}
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleOpenDialog(prescription)}
+                                                color="primary"
+                                            >
+                                                <EditIcon />
+                                            </IconButton>
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleDelete(prescription.id)}
+                                                color="error"
+                                            >
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
-            {/* Create/Edit Dialog */}
-            <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-                <DialogTitle>
-                    {editingPrescription ? '처방전 수정' : '새 처방전 작성'}
-                </DialogTitle>
-                <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="환자 ID"
-                                type="number"
-                                value={formData.patient_id}
-                                onChange={handleChange('patient_id')}
-                                required
-                            />
+                {/* Create/Edit Dialog */}
+                <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+                    <DialogTitle>
+                        {editingPrescription ? '처방전 수정' : '새 처방전 작성'}
+                    </DialogTitle>
+                    <DialogContent>
+                        <Grid container spacing={2} sx={{ mt: 1 }}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="환자 ID"
+                                    type="number"
+                                    value={formData.patient_id}
+                                    onChange={handleChange('patient_id')}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="진료 ID"
+                                    type="number"
+                                    value={formData.encounter_id}
+                                    onChange={handleChange('encounter_id')}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    label="약물명"
+                                    value={formData.medication_name}
+                                    onChange={handleChange('medication_name')}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="용량"
+                                    value={formData.dosage}
+                                    onChange={handleChange('dosage')}
+                                    placeholder="예: 500mg"
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="복용 빈도"
+                                    value={formData.frequency}
+                                    onChange={handleChange('frequency')}
+                                    placeholder="예: 1일 3회"
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="복용 기간 (일)"
+                                    type="number"
+                                    value={formData.duration_days}
+                                    onChange={handleChange('duration_days')}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    select
+                                    label="상태"
+                                    value={formData.status}
+                                    onChange={handleChange('status')}
+                                >
+                                    <MenuItem value="ACTIVE">활성</MenuItem>
+                                    <MenuItem value="COMPLETED">완료</MenuItem>
+                                    <MenuItem value="CANCELLED">취소</MenuItem>
+                                </TextField>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={3}
+                                    label="복용 지시사항"
+                                    value={formData.instructions}
+                                    onChange={handleChange('instructions')}
+                                    placeholder="예: 식후 30분에 복용"
+                                />
+                            </Grid>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="진료 ID"
-                                type="number"
-                                value={formData.encounter_id}
-                                onChange={handleChange('encounter_id')}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="약물명"
-                                value={formData.medication_name}
-                                onChange={handleChange('medication_name')}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="용량"
-                                value={formData.dosage}
-                                onChange={handleChange('dosage')}
-                                placeholder="예: 500mg"
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="복용 빈도"
-                                value={formData.frequency}
-                                onChange={handleChange('frequency')}
-                                placeholder="예: 1일 3회"
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="복용 기간 (일)"
-                                type="number"
-                                value={formData.duration_days}
-                                onChange={handleChange('duration_days')}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                select
-                                label="상태"
-                                value={formData.status}
-                                onChange={handleChange('status')}
-                            >
-                                <MenuItem value="ACTIVE">활성</MenuItem>
-                                <MenuItem value="COMPLETED">완료</MenuItem>
-                                <MenuItem value="CANCELLED">취소</MenuItem>
-                            </TextField>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                multiline
-                                rows={3}
-                                label="복용 지시사항"
-                                value={formData.instructions}
-                                onChange={handleChange('instructions')}
-                                placeholder="예: 식후 30분에 복용"
-                            />
-                        </Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseDialog}>취소</Button>
-                    <Button onClick={handleSave} variant="contained">
-                        저장
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Container>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseDialog}>취소</Button>
+                        <Button onClick={handleSave} variant="contained">
+                            저장
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Container>
+        </DashboardLayout>
     );
 };
 
