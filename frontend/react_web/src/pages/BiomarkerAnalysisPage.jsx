@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Container,
     Typography,
@@ -26,6 +27,7 @@ import XAIVisualization from '../components/XAIVisualization';
  * 30개 단백질 바이오마커를 분석하여 [코로나, 독감, 감기, 정상] 분류
  */
 const BiomarkerAnalysisPage = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState(0);
     const [biomarkers, setBiomarkers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -122,6 +124,20 @@ const BiomarkerAnalysisPage = () => {
         alert('보고서 다운로드 기능은 추후 구현 예정입니다');
     };
 
+    // 처방전 생성 페이지로 이동
+    const handleGeneratePrescription = () => {
+        navigate('/prescriptions', {
+            state: {
+                patient_id: 1, // 임시 환자 ID (실제 연동 시 변경 필요)
+                medication_name: analysisResult.category === 'COVID' ? 'Paxlovid' :
+                    analysisResult.category === 'FLU' ? 'Tamiflu' :
+                        analysisResult.category === 'COLD' ? 'Tylenol' : '',
+                instructions: `AI 진단 결과 (${analysisResult.category})에 따른 처방`,
+                diagnosis_category: analysisResult.category
+            }
+        });
+    };
+
     return (
         <DashboardLayout role="DOCTOR" activePage="biomarker" title="바이오마커 AI 진단">
             <Container maxWidth="xl" sx={{ mt: 0, mb: 4, padding: 0 }}>
@@ -192,6 +208,16 @@ const BiomarkerAnalysisPage = () => {
                                 onViewDetails={handleViewDetails}
                                 onDownloadReport={handleDownloadReport}
                             />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                fullWidth
+                                size="large"
+                                sx={{ mt: 2, borderRadius: 3, py: 1.5, fontWeight: 700, fontSize: '1.1rem' }}
+                                onClick={handleGeneratePrescription}
+                            >
+                                💊 처방전 생성 (Generate Prescription)
+                            </Button>
                         </Grid>
                         <Grid item xs={12} lg={7}>
                             <Paper sx={{ p: 3, borderRadius: 3, height: '100%' }}>
