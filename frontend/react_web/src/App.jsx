@@ -29,6 +29,9 @@ import AboutAIPage from './pages/admin/AboutAIPage';
 import FormsPage from './pages/nurse/FormsPage';
 import MedicalRecordsPage from './pages/MedicalRecordsPage';
 
+import BiomarkerAnalysisPage from './pages/BiomarkerAnalysisPage';
+import ProteinViewerPage from './pages/ProteinViewerPage';
+
 // Protected Route Component
 function ProtectedRoute({ children, roles = [] }) {
   const { isAuthenticated, user, loading } = useAuth();
@@ -201,6 +204,18 @@ function App() {
 
         <Route path="/doctor/cdss" element={
           <Navigate to="/doctor/biomarker-analysis" replace />
+        } />
+
+        <Route path="/doctor/biomarker-analysis" element={
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
+            <BiomarkerAnalysisPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/doctor/protein-viewer" element={
+          <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
+            <ProteinViewerPage />
+          </ProtectedRoute>
         } />
 
 
