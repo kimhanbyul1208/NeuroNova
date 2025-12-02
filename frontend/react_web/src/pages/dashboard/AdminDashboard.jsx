@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import '../../DashboardPage.css';
+import '../DashboardPage.css';
 
 const AdminDashboard = () => {
     const { user } = useAuth();

@@ -19,7 +19,7 @@ import { LoadingSpinner, ErrorAlert, AppointmentCard, DiagnosisResultCard } from
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 import { format } from 'date-fns';
-import '../DashboardPage.css';
+import './DashboardPage.css';
 
 /**
  * 환자 상세 페이지
