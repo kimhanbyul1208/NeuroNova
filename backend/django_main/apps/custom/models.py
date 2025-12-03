@@ -428,3 +428,45 @@ class Prescription(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.medication_name} - {self.dosage} ({self.frequency})"
+
+
+class AntigenAnalysisResult(BaseModel):
+    """
+    Antigen Test Analysis Result.
+    Stores user-selected analysis results from the Antigen Result Page.
+    """
+
+    patient = models.ForeignKey(
+        Patient,
+        on_delete=models.CASCADE,
+        related_name='antigen_results',
+        verbose_name="환자"
+    )
+
+    input_sequence = models.TextField(
+        verbose_name="입력 서열",
+        help_text="분석된 단백질/DNA/RNA 서열"
+    )
+
+    input_type = models.CharField(
+        max_length=20,
+        verbose_name="입력 타입",
+        help_text="PROTEIN, DNA, RNA"
+    )
+
+    prediction_result = models.JSONField(
+        verbose_name="예측 결과",
+        help_text="Task1, Task2, Task3 결과 포함"
+    )
+
+    class Meta:
+        db_table = 'custom_antigen_result'
+        verbose_name = '항원 분석 결과'
+        verbose_name_plural = '항원 분석 결과 목록'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['patient', '-created_at']),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.patient.full_name} - {self.input_type} ({self.created_at.strftime('%Y-%m-%d')})"

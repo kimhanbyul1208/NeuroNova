@@ -10,14 +10,16 @@ from apps.custom.models import (
     PatientDoctor,
     Appointment,
     PatientPredictionResult,
-    Prescription
+    Prescription,
+    AntigenAnalysisResult
 )
 from apps.custom.serializers import (
     DoctorSerializer,
     PatientDoctorSerializer,
     AppointmentSerializer,
     PatientPredictionResultSerializer,
-    PrescriptionSerializer
+    PrescriptionSerializer,
+    AntigenAnalysisResultSerializer
 )
 from apps.custom.permissions import (
     IsDoctorOrAdmin,
@@ -160,3 +162,14 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, CanAccessPrescriptions]
     filterset_fields = ['encounter']
     ordering_fields = ['prescribed_at', 'created_at']
+
+
+class AntigenAnalysisResultViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Antigen Analysis Result management.
+    """
+    queryset = AntigenAnalysisResult.objects.all()
+    serializer_class = AntigenAnalysisResultSerializer
+    permission_classes = [IsAuthenticated]
+    filterset_fields = ['patient']
+    ordering_fields = ['created_at']

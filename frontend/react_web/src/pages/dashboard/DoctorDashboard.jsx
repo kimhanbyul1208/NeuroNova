@@ -141,7 +141,7 @@ const DoctorDashboard = () => {
                                     icon="🧬"
                                     label="AI Analysis"
                                     color="#a18cd1"
-                                    onClick={() => navigate('/doctor/cdss')}
+                                    onClick={() => navigate('/antigen-test')}
                                 />
                                 <ActionButton
                                     icon="🧊"

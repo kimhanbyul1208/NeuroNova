@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
   APPOINTMENTS: `/api/${API_CONFIG.API_VERSION}/custom/appointments/`,
   PREDICTIONS: `/api/${API_CONFIG.API_VERSION}/custom/predictions/`,
   PRESCRIPTIONS: `/api/${API_CONFIG.API_VERSION}/custom/prescriptions/`,
+  ANTIGEN_RESULTS: `/api/${API_CONFIG.API_VERSION}/custom/antigen-results/`,
 
   // AI Services
   AI_PRESCRIPTION_RECOMMEND: `/api/${API_CONFIG.API_VERSION}/ai/prescription/recommend/`,
