@@ -62,7 +62,7 @@ def predict_proxy(request):
                 flask_url,
                 json=request_data,
                 headers=headers,
-                timeout=30
+                timeout=60
             )
             response.raise_for_status()
 
@@ -253,4 +253,31 @@ def history_view(request):
         return JsonResponse(
             {"error": f"Internal server error: {str(e)}"},
             status=500
+        )
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def example_data_proxy(request):
+    """
+    Flask ML 서버의 예시 데이터를 조회합니다. (단순 프록시)
+    """
+    try:
+        flask_url = f"{FLASK_ML_SERVER_URL}/api/example_data"
+
+        # 쿼리 파라미터 전달
+        params = request.GET.dict()
+
+        # API 키 헤더 준비
+        headers = {}
+        if FLASK_API_KEY:
+            headers['X-API-Key'] = FLASK_API_KEY
+
+        response = requests.get(flask_url, params=params, headers=headers, timeout=10)
+        return JsonResponse(response.json(), status=response.status_code)
+    except Exception as e:
+        logger.error(f"Example data proxy error: {str(e)}")
+        return JsonResponse(
+            {"error": f"Cannot connect to Flask server: {str(e)}"},
+            status=503
         )

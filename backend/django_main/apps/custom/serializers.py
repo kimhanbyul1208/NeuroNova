@@ -7,7 +7,8 @@ from apps.custom.models import (
     PatientDoctor,
     Appointment,
     PatientPredictionResult,
-    Prescription
+    Prescription,
+    AntigenAnalysisResult
 )
 from apps.emr.models import Patient, Encounter
 from django.contrib.auth.models import User
@@ -71,3 +72,13 @@ class PrescriptionSerializer(serializers.ModelSerializer):
         model = Prescription
         fields = '__all__'
         read_only_fields = ['id', 'prescribed_at', 'created_at', 'updated_at']
+
+
+class AntigenAnalysisResultSerializer(serializers.ModelSerializer):
+    """Antigen Analysis Result serializer."""
+    patient_name = serializers.CharField(source='patient.full_name', read_only=True)
+
+    class Meta:
+        model = AntigenAnalysisResult
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']

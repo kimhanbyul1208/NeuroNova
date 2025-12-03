@@ -7,7 +7,7 @@
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
   API_VERSION: 'v1',
-  TIMEOUT: 30000, // 30 seconds
+  TIMEOUT: 60000, // 60 seconds
   ORTHANC_URL: import.meta.env.VITE_ORTHANC_URL || 'http://localhost:8042', // Orthanc DICOM server
 };
 
@@ -38,6 +38,7 @@ export const API_ENDPOINTS = {
   APPOINTMENTS: `/api/${API_CONFIG.API_VERSION}/custom/appointments/`,
   PREDICTIONS: `/api/${API_CONFIG.API_VERSION}/custom/predictions/`,
   PRESCRIPTIONS: `/api/${API_CONFIG.API_VERSION}/custom/prescriptions/`,
+  ANTIGEN_RESULTS: `/api/${API_CONFIG.API_VERSION}/custom/antigen-results/`,
 
   // AI Services
   AI_PRESCRIPTION_RECOMMEND: `/api/${API_CONFIG.API_VERSION}/ai/prescription/recommend/`,
@@ -52,6 +53,7 @@ export const API_ENDPOINTS = {
   ML_STATUS: '/ml/v1/status/',
   ML_MODEL_INFO: '/ml/v1/model-info/',
   ML_HISTORY: '/ml/v1/history/',
+  ML_EXAMPLE_DATA: '/ml/v1/example-data/',
 };
 
 // App Configuration
