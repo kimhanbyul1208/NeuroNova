@@ -61,15 +61,18 @@ const PrescriptionManagementPage = () => {
     const [loadingAi, setLoadingAi] = useState(false);
     const [showAiPanel, setShowAiPanel] = useState(false);
 
+    const [encounters, setEncounters] = useState([]);
+
     const [formData, setFormData] = useState({
         patient_id: '',
-        encounter_id: '',
+        encounter: '',
+        medication_code: 'MED-' + Math.floor(Math.random() * 10000), // Default random code
         medication_name: '',
         dosage: '',
         frequency: '',
-        duration_days: '',
+        duration: '',
+        route: 'ORAL',
         instructions: '',
-        status: 'ACTIVE',
     });
 
     const location = useLocation();
@@ -82,15 +85,48 @@ const PrescriptionManagementPage = () => {
         if (location.state) {
             setFormData(prev => ({
                 ...prev,
-                ...location.state
+                ...location.state,
+                // Ensure medication_code is set if not provided
+                medication_code: location.state.medication_code || ('MED-' + Math.floor(Math.random() * 10000))
             }));
-            setEditingPrescription(null); // Ensure it's treated as new
+            setEditingPrescription(null);
             setDialogOpen(true);
 
-            // Clear state to prevent reopening on refresh
+            // If patient_id is provided, fetch encounters
+            if (location.state.patient_id) {
+                fetchEncounters(location.state.patient_id);
+            }
+
             window.history.replaceState({}, document.title);
         }
     }, [location]);
+
+    // Fetch encounters when patient_id changes
+    useEffect(() => {
+        if (formData.patient_id) {
+            fetchEncounters(formData.patient_id);
+        }
+    }, [formData.patient_id]);
+
+    const fetchEncounters = async (patientId) => {
+        try {
+            const response = await axiosClient.get(API_ENDPOINTS.ENCOUNTERS, {
+                params: { patient: patientId }
+            });
+            const data = response.data.results || response.data;
+            setEncounters(data);
+
+            // Auto-select latest encounter if not set
+            if (data.length > 0 && !formData.encounter) {
+                setFormData(prev => ({
+                    ...prev,
+                    encounter: data[0].id
+                }));
+            }
+        } catch (err) {
+            console.error('Failed to fetch encounters:', err);
+        }
+    };
 
     const fetchPrescriptions = async () => {
         try {
@@ -111,19 +147,29 @@ const PrescriptionManagementPage = () => {
     const handleOpenDialog = (prescription = null) => {
         if (prescription) {
             setEditingPrescription(prescription);
-            setFormData(prescription);
+            setFormData({
+                ...prescription,
+                // Ensure fields match
+                duration: prescription.duration || prescription.duration_days,
+                encounter: prescription.encounter || prescription.encounter_id
+            });
+            if (prescription.patient_id) {
+                fetchEncounters(prescription.patient_id);
+            }
         } else {
             setEditingPrescription(null);
             setFormData({
                 patient_id: '',
-                encounter_id: '',
+                encounter: '',
+                medication_code: 'MED-' + Math.floor(Math.random() * 10000),
                 medication_name: '',
                 dosage: '',
                 frequency: '',
-                duration_days: '',
+                duration: '',
+                route: 'ORAL',
                 instructions: '',
-                status: 'ACTIVE',
             });
+            setEncounters([]);
         }
         setDialogOpen(true);
     };
@@ -142,18 +188,38 @@ const PrescriptionManagementPage = () => {
 
     const handleSave = async () => {
         try {
+            // Validate required fields
+            if (!formData.encounter) {
+                setError('진료 세션(Encounter)이 필요합니다. 환자를 선택하거나 진료 기록을 확인해주세요.');
+                return;
+            }
+
+            const payload = {
+                ...formData,
+                // Ensure correct field names for backend
+                duration: formData.duration, // Backend expects 'duration'
+                encounter: formData.encounter, // Backend expects 'encounter' ID
+                medication_code: formData.medication_code || 'MED-UNKNOWN'
+            };
+
+            // Remove fields not in model
+            delete payload.patient_id; // Backend uses encounter to link patient
+            delete payload.status; // Not in model
+            delete payload.duration_days; // Renamed to duration
+
             if (editingPrescription) {
                 await axiosClient.put(
                     `${API_ENDPOINTS.PRESCRIPTIONS}${editingPrescription.id}/`,
-                    formData
+                    payload
                 );
             } else {
-                await axiosClient.post(API_ENDPOINTS.PRESCRIPTIONS, formData);
+                await axiosClient.post(API_ENDPOINTS.PRESCRIPTIONS, payload);
             }
             handleCloseDialog();
             fetchPrescriptions();
         } catch (err) {
-            setError(err.response?.data?.message || '처방전 저장에 실패했습니다.');
+            console.error('Save error:', err);
+            setError(err.response?.data?.message || '처방전 저장에 실패했습니다. 입력 값을 확인해주세요.');
         }
     };
 
@@ -186,7 +252,7 @@ const PrescriptionManagementPage = () => {
             // AI API 호출
             const response = await axiosClient.post(API_ENDPOINTS.AI_PRESCRIPTION_RECOMMEND, {
                 patient_id: formData.patient_id,
-                encounter_id: formData.encounter_id,
+                encounter_id: formData.encounter,
                 symptoms: formData.instructions, // 증상 정보를 instructions에서 가져옴
             });
 
@@ -201,7 +267,7 @@ const PrescriptionManagementPage = () => {
                         medication_name: '아세트아미노펜',
                         dosage: '500mg',
                         frequency: '1일 3회',
-                        duration_days: 7,
+                        duration_days: '7일',
                         instructions: '식후 30분에 복용',
                         confidence: 0.95,
                         reason: '발열 및 통증 완화에 효과적입니다.'
@@ -210,7 +276,7 @@ const PrescriptionManagementPage = () => {
                         medication_name: '이부프로펜',
                         dosage: '200mg',
                         frequency: '1일 2회',
-                        duration_days: 5,
+                        duration_days: '5일',
                         instructions: '식후 복용',
                         confidence: 0.87,
                         reason: '항염증 효과가 있습니다.'
@@ -232,7 +298,7 @@ const PrescriptionManagementPage = () => {
             medication_name: recommendation.medication_name,
             dosage: recommendation.dosage,
             frequency: recommendation.frequency,
-            duration_days: recommendation.duration_days,
+            duration: recommendation.duration_days || recommendation.duration, // Handle both formats
             instructions: recommendation.instructions,
         });
         setShowAiPanel(false);
@@ -244,29 +310,12 @@ const PrescriptionManagementPage = () => {
     );
 
     const getStatusColor = (status) => {
-        switch (status) {
-            case 'ACTIVE':
-                return 'success';
-            case 'COMPLETED':
-                return 'default';
-            case 'CANCELLED':
-                return 'error';
-            default:
-                return 'default';
-        }
+        // Status is not in backend model, but keeping for UI if needed or future use
+        return 'default';
     };
 
     const getStatusLabel = (status) => {
-        switch (status) {
-            case 'ACTIVE':
-                return '활성';
-            case 'COMPLETED':
-                return '완료';
-            case 'CANCELLED':
-                return '취소';
-            default:
-                return status;
-        }
+        return status || '-';
     };
 
     if (loading) {
@@ -314,7 +363,6 @@ const PrescriptionManagementPage = () => {
                                 <TableCell className="table-header-cell">용량</TableCell>
                                 <TableCell className="table-header-cell">복용 빈도</TableCell>
                                 <TableCell className="table-header-cell">기간</TableCell>
-                                <TableCell className="table-header-cell">상태</TableCell>
                                 <TableCell className="table-header-cell">처방일</TableCell>
                                 <TableCell className="table-header-cell" align="right">작업</TableCell>
                             </TableRow>
@@ -322,7 +370,7 @@ const PrescriptionManagementPage = () => {
                         <TableBody>
                             {filteredPrescriptions.length === 0 ? (
                                 <TableRow className="table-body-row">
-                                    <TableCell colSpan={8} align="center" className="table-body-cell">
+                                    <TableCell colSpan={7} align="center" className="table-body-cell">
                                         <Typography variant="body2" color="text.secondary">
                                             처방전이 없습니다.
                                         </Typography>
@@ -335,14 +383,7 @@ const PrescriptionManagementPage = () => {
                                         <TableCell className="table-body-cell">{prescription.medication_name}</TableCell>
                                         <TableCell className="table-body-cell">{prescription.dosage}</TableCell>
                                         <TableCell className="table-body-cell">{prescription.frequency}</TableCell>
-                                        <TableCell className="table-body-cell">{prescription.duration_days}일</TableCell>
-                                        <TableCell className="table-body-cell">
-                                            <Chip
-                                                label={getStatusLabel(prescription.status)}
-                                                color={getStatusColor(prescription.status)}
-                                                size="small"
-                                            />
-                                        </TableCell>
+                                        <TableCell className="table-body-cell">{prescription.duration}</TableCell>
                                         <TableCell className="table-body-cell">
                                             {new Date(prescription.created_at).toLocaleDateString('ko-KR')}
                                         </TableCell>
@@ -427,7 +468,7 @@ const PrescriptionManagementPage = () => {
                                                                 {rec.medication_name}
                                                             </Typography>
                                                             <Typography variant="body2" color="text.secondary">
-                                                                용량: {rec.dosage} | 빈도: {rec.frequency} | 기간: {rec.duration_days}일
+                                                                용량: {rec.dosage} | 빈도: {rec.frequency} | 기간: {rec.duration_days || rec.duration}
                                                             </Typography>
                                                             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                                                                 복용법: {rec.instructions}
@@ -464,16 +505,30 @@ const PrescriptionManagementPage = () => {
                                     value={formData.patient_id}
                                     onChange={handleChange('patient_id')}
                                     required
+                                    helperText="환자 ID를 입력하면 진료 세션이 자동 로드됩니다."
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="진료 ID"
-                                    type="number"
-                                    value={formData.encounter_id}
-                                    onChange={handleChange('encounter_id')}
-                                />
+                                    select
+                                    label="진료 세션 (Encounter)"
+                                    value={formData.encounter}
+                                    onChange={handleChange('encounter')}
+                                    required
+                                    disabled={encounters.length === 0}
+                                >
+                                    {encounters.map((enc) => (
+                                        <MenuItem key={enc.id} value={enc.id}>
+                                            {new Date(enc.start_date).toLocaleDateString()} - {enc.type}
+                                        </MenuItem>
+                                    ))}
+                                    {encounters.length === 0 && (
+                                        <MenuItem value="" disabled>
+                                            진료 기록 없음
+                                        </MenuItem>
+                                    )}
+                                </TextField>
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
@@ -507,25 +562,21 @@ const PrescriptionManagementPage = () => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="복용 기간 (일)"
-                                    type="number"
-                                    value={formData.duration_days}
-                                    onChange={handleChange('duration_days')}
+                                    label="복용 기간"
+                                    value={formData.duration}
+                                    onChange={handleChange('duration')}
+                                    placeholder="예: 7일"
                                     required
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    select
-                                    label="상태"
-                                    value={formData.status}
-                                    onChange={handleChange('status')}
-                                >
-                                    <MenuItem value="ACTIVE">활성</MenuItem>
-                                    <MenuItem value="COMPLETED">완료</MenuItem>
-                                    <MenuItem value="CANCELLED">취소</MenuItem>
-                                </TextField>
+                                    label="약물 코드"
+                                    value={formData.medication_code}
+                                    onChange={handleChange('medication_code')}
+                                    disabled
+                                />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
