@@ -34,7 +34,13 @@
       "Bash(powershell.exe -Command \"Start-Process powershell -ArgumentList ''-NoExit'', ''-Command'', ''npm run dev''\")",
       "Bash(taskkill:*)",
       "Bash(git checkout:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(python -c:*)",
+      "Bash(python app.py:*)",
+      "Bash(if [ -d \"venv\" ])",
+      "Bash(then echo \"venv exists\")",
+      "Bash(else echo \"venv not found\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

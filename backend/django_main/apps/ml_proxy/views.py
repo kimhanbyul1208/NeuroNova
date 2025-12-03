@@ -1,5 +1,6 @@
 import requests
 import logging
+import os
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -7,8 +8,9 @@ from .models import InferenceLog
 
 logger = logging.getLogger(__name__)
 
-# Flask ML 서버 주소
-FLASK_ML_SERVER_URL = "http://127.0.0.1:9000"
+# Flask ML 서버 설정 (환경 변수 사용)
+FLASK_ML_SERVER_URL = os.getenv('FLASK_INFERENCE_URL', 'http://127.0.0.1:9000')
+FLASK_API_KEY = os.getenv('FLASK_API_KEY', '')
 
 
 @csrf_exempt
@@ -50,10 +52,16 @@ def predict_proxy(request):
         # Flask ML 서버로 요청 전달
         flask_url = f"{FLASK_ML_SERVER_URL}/api/predict"
 
+        # API 키 헤더 준비
+        headers = {}
+        if FLASK_API_KEY:
+            headers['X-API-Key'] = FLASK_API_KEY
+
         try:
             response = requests.post(
                 flask_url,
                 json=request_data,
+                headers=headers,
                 timeout=30
             )
             response.raise_for_status()
@@ -109,7 +117,13 @@ def status_proxy(request):
     """
     try:
         flask_url = f"{FLASK_ML_SERVER_URL}/api/health"
-        response = requests.get(flask_url, timeout=10)
+
+        # API 키 헤더 준비
+        headers = {}
+        if FLASK_API_KEY:
+            headers['X-API-Key'] = FLASK_API_KEY
+
+        response = requests.get(flask_url, headers=headers, timeout=10)
         return JsonResponse(response.json(), status=response.status_code)
     except Exception as e:
         logger.error(f"Status proxy error: {str(e)}")
@@ -127,7 +141,13 @@ def model_info_proxy(request):
     """
     try:
         flask_url = f"{FLASK_ML_SERVER_URL}/api/schema"
-        response = requests.get(flask_url, timeout=10)
+
+        # API 키 헤더 준비
+        headers = {}
+        if FLASK_API_KEY:
+            headers['X-API-Key'] = FLASK_API_KEY
+
+        response = requests.get(flask_url, headers=headers, timeout=10)
         return JsonResponse(response.json(), status=response.status_code)
     except Exception as e:
         logger.error(f"Model info proxy error: {str(e)}")
@@ -152,9 +172,16 @@ def retrain_proxy(request):
             request_data = {}
 
         flask_url = f"{FLASK_ML_SERVER_URL}/api/reload_model"
+
+        # API 키 헤더 준비
+        headers = {}
+        if FLASK_API_KEY:
+            headers['X-API-Key'] = FLASK_API_KEY
+
         response = requests.post(
             flask_url,
             json=request_data,
+            headers=headers,
             timeout=300  # 재학습은 시간이 오래 걸릴 수 있음
         )
         return JsonResponse(response.json(), status=response.status_code)
