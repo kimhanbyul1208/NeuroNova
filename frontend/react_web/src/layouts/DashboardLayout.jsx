@@ -66,7 +66,7 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
 
     useEffect(() => {
         const timer = setInterval(() => {
-        setCurrentTime(new Date()); // 매초 새로운 시간으로 업데이트
+            setCurrentTime(new Date()); // 매초 새로운 시간으로 업데이트
         }, 1000);
 
         return () => clearInterval(timer); // 컴포넌트 언마운트 시 타이머 정리
@@ -79,15 +79,15 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
 
     useEffect(() => {
         function handleClickOutside(event) {
-        // 알림박스 영역 밖 클릭 시 닫기
-        if (closeDropdown.current && !closeDropdown.current.contains(event.target)) {
-            setShowNotifications(false);
-        }
+            // 알림박스 영역 밖 클릭 시 닫기
+            if (closeDropdown.current && !closeDropdown.current.contains(event.target)) {
+                setShowNotifications(false);
+            }
         }
 
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
 
@@ -97,6 +97,18 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
         { id: 2, text: '💊 처방전 업데이트' },
         { id: 3, text: '👥 새로운 환자 등록' },
     ];
+
+    // Search functionality
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleSearch = (e) => {
+        if (e.key === 'Enter') {
+            console.log('Search query:', searchQuery);
+            // Placeholder for search logic
+            // You can add a prop like onSearch(searchQuery) to pass this up if needed
+            alert(`검색 기능은 아직 구현되지 않았습니다. 입력된 검색어: ${searchQuery}`);
+        }
+    };
 
     return (
         <div style={styles.container}>
@@ -129,31 +141,17 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
             <main style={styles.mainContent}>
                 {/* Header */}
                 <header style={styles.header}>
-                    <div>                        
-                        {/* <h1 style={styles.greeting}>
-                            {t(title) || (
-                                <>
-                                    Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'},
-                                    <span style={styles.nameHighlight}> {user?.last_name || user?.username}</span>
-                                </>
-                            )}
-                        </h1>
-                        <p style={styles.dateDisplay}>
-                            {currentTime.toLocaleDateString('ko-KR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                            {' '}
-                            {currentTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                        </p> */}
-
+                    <div>
                         <h1 style={styles.greeting}>
                             {t(title) || (
                                 <>
-                                {currentTime.getHours() < 12
-                                    ? 'Good Morning'
-                                    : currentTime.getHours() < 18
-                                        ? 'Good Afternoon'
-                                        : 'Good Evening'
-                                },
-                                <span style={styles.nameHighlight}>{user?.last_name || user?.username}</span>
+                                    {currentTime.getHours() < 12
+                                        ? 'Good Morning'
+                                        : currentTime.getHours() < 18
+                                            ? 'Good Afternoon'
+                                            : 'Good Evening'
+                                    },
+                                    <span style={styles.nameHighlight}>{user?.last_name || user?.username}</span>
                                 </>
                             )}
                         </h1>
@@ -171,49 +169,43 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
                             })}
                         </p>
                     </div>
-                    {/* <div style={styles.headerRight}>
-                        <div style={styles.searchBar}>
-                            <span style={styles.searchIcon}>🔍</span>
-                            <input type="text" placeholder="Search..." style={styles.searchInput} />
-                        </div>
-                        {/* <div style={styles.notificationBtn} onClick={() => navigate('/notifications')}>
-                            🔔<span style={styles.badge}>3</span>
-                        </div>                      
 
-                    </div> */}
                     <div className="headerRight" id="headerRight">
                         <div className="searchBar" id="searchBar">
                             <span className="searchIcon" id="searchIcon">🔍</span>
                             <input
-                            type="text"
-                            placeholder="Search..."
-                            className="searchInput"
-                            id="searchInput"
+                                type="text"
+                                placeholder="Search..."
+                                className="searchInput"
+                                id="searchInput"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyPress={handleSearch}
                             />
                         </div>
 
                         {/* 알림 버튼 */}
                         <div className="notificationWrapper" id="notificationWrapper" ref={closeDropdown}>
                             <div
-                            className="notificationBtn"
-                            id="notificationBtn"
-                            onClick={() => setShowNotifications(!showNotifications)} // ✅ 토글
+                                className="notificationBtn"
+                                id="notificationBtn"
+                                onClick={() => setShowNotifications(!showNotifications)} // ✅ 토글
                             >
-                            🔔<span className="badge" id="badge">{notifications.length}</span>
+                                🔔<span className="badge" id="badge">{notifications.length}</span>
                             </div>
 
                             {/* 알림 드롭다운 */}
                             {showNotifications && (
-                            <div className="notificationDropdown" id="notificationDropdown">
-                                <h4 className="dropdownTitle" id="dropdownTitle">알림</h4>
-                                <ul className="dropdownList" id="dropdownList">
-                                {notifications.map((n) => (
-                                    <li key={n.id} className="dropdownItem" id={`dropdownItem-${n.id}`}>
-                                    {n.text}
-                                    </li>
-                                ))}
-                                </ul>
-                            </div>
+                                <div className="notificationDropdown" id="notificationDropdown">
+                                    <h4 className="dropdownTitle" id="dropdownTitle">알림</h4>
+                                    <ul className="dropdownList" id="dropdownList">
+                                        {notifications.map((n) => (
+                                            <li key={n.id} className="dropdownItem" id={`dropdownItem-${n.id}`}>
+                                                {n.text}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             )}
                         </div>
                     </div>

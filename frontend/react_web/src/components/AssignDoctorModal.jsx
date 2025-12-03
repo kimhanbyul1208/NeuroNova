@@ -37,11 +37,22 @@ const AssignDoctorModal = ({ open, onClose, patient, onAssignSuccess }) => {
     const fetchDoctors = async () => {
         try {
             setFetchingDoctors(true);
-            const response = await axiosClient.get(API_ENDPOINTS.DOCTORS || '/api/custom/doctors/');
-            setDoctors(response.data);
+            setError(null);
+            const response = await axiosClient.get(API_ENDPOINTS.DOCTORS);
+
+            // Handle both array response and paginated response
+            const doctorList = Array.isArray(response.data) ? response.data : response.data.results || [];
+            setDoctors(doctorList);
+
+            if (doctorList.length === 0) {
+                setError("등록된 의사가 없습니다. 먼저 의사를 등록해주세요.");
+            }
         } catch (err) {
             console.error("Error fetching doctors:", err);
-            setError("의사 목록을 불러오는데 실패했습니다.");
+            const errorMessage = err.response?.data?.detail ||
+                                err.response?.data?.message ||
+                                "의사 목록을 불러오는데 실패했습니다. 권한을 확인해주세요.";
+            setError(errorMessage);
         } finally {
             setFetchingDoctors(false);
         }
@@ -64,10 +75,7 @@ const AssignDoctorModal = ({ open, onClose, patient, onAssignSuccess }) => {
                 assigned_date: new Date().toISOString().split('T')[0]
             };
 
-            // Assuming endpoint is /api/custom/patient-doctors/
-            // We might need to check if API_ENDPOINTS has this, if not use direct path or add to config later.
-            // Using direct path for now as it might not be in config yet.
-            await axiosClient.post('/api/custom/patient-doctors/', payload);
+            await axiosClient.post(API_ENDPOINTS.PATIENT_DOCTORS, payload);
 
             onAssignSuccess();
             onClose();

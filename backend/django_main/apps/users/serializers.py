@@ -238,6 +238,30 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             approval_status=approval_status
         )
 
+        # Create Patient record if role is PATIENT
+        if role == 'PATIENT':
+            from apps.emr.models import Patient
+            from config.constants import Gender
+            import datetime
+
+            # Generate unique PID
+            pid = f"PT-{datetime.datetime.now().strftime('%Y%m%d')}-{user.id:04d}"
+
+            # Set default date of birth (2000-01-01) and gender (Other)
+            # User can update this later via their profile
+            Patient.objects.create(
+                user=user,
+                pid=pid,
+                first_name=validated_data.get('first_name', ''),
+                last_name=validated_data.get('last_name', ''),
+                phone=phone_number,
+                email=validated_data['email'],
+                date_of_birth=datetime.date(2000, 1, 1),  # Default DOB, can be updated later
+                gender=Gender.OTHER,  # Default gender, can be updated later
+                address='',  # Can be updated later via profile
+            )
+            logger.info(f"Patient record created for user: {user.username} with PID: {pid}")
+
         logger.info(f"New user registered: {user.username} with role {role}. Active: {is_active}, Status: {approval_status}")
         return user
 

@@ -35,15 +35,15 @@ const DoctorDashboard = () => {
         fetchAppointments();
     }, []);
 
-    const greeting = (
-        <>
-            Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'},
-            <span style={{ fontWeight: '300', color: '#57606f' }}> Dr. {user?.last_name || user?.username}</span>
-        </>
-    );
+    // const greeting = (
+    //     <>
+    //         Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 18 ? 'Afternoon' : 'Evening'},
+    //         <span style={{ fontWeight: '300', color: '#57606f' }}> Dr. {user?.last_name || user?.username}</span>
+    //     </>
+    // );
 
     return (
-        <DashboardLayout role="DOCTOR" activePage="dashboard" title={greeting}>
+        <DashboardLayout role="DOCTOR" activePage="dashboard" title="Doctor Dashboard">
             <div className="dashboard-grid">
                 {/* Stats Row */}
                 <div className="stats-grid">

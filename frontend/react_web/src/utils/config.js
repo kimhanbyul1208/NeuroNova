@@ -33,6 +33,8 @@ export const API_ENDPOINTS = {
   DOCUMENTS: `/api/${API_CONFIG.API_VERSION}/emr/documents/`,
 
   // Custom
+  DOCTORS: `/api/${API_CONFIG.API_VERSION}/custom/doctors/`,
+  PATIENT_DOCTORS: `/api/${API_CONFIG.API_VERSION}/custom/patient-doctors/`,
   APPOINTMENTS: `/api/${API_CONFIG.API_VERSION}/custom/appointments/`,
   PREDICTIONS: `/api/${API_CONFIG.API_VERSION}/custom/predictions/`,
   PRESCRIPTIONS: `/api/${API_CONFIG.API_VERSION}/custom/prescriptions/`,

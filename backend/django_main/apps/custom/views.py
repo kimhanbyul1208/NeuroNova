@@ -70,6 +70,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if hasattr(self.request.user, 'patient'):
             serializer.save(patient=self.request.user.patient)
         else:
+            # If patient field is not provided and user is not a patient, raise error
+            if 'patient' not in serializer.validated_data:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({
+                    "patient": "Patient is required. Please ensure your account is linked to a patient profile."
+                })
             serializer.save()
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanManageAppointments])
