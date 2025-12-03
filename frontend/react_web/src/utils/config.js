@@ -52,6 +52,7 @@ export const API_ENDPOINTS = {
   ML_STATUS: '/ml/v1/status/',
   ML_MODEL_INFO: '/ml/v1/model-info/',
   ML_HISTORY: '/ml/v1/history/',
+  ML_EXAMPLE_DATA: '/ml/v1/example-data/',
 };
 
 // App Configuration

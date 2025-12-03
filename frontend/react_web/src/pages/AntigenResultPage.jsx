@@ -49,25 +49,6 @@ const BgIcon = () => <span>🌓</span>;
 const SaveIcon = () => <span>💾</span>;
 const ResetIcon = () => <span>⏮️</span>;
 
-// 예시 데이터 (QUICK_START.md 기반)
-const EXAMPLE_SEQUENCES = [
-    {
-        type: 'PROTEIN',
-        value: 'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD',
-        description: 'p53 Tumor Suppressor (Protein Viewer Example)'
-    },
-    {
-        type: 'PROTEIN',
-        value: 'MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNF',
-        description: 'SARS-CoV-2 Spike Protein'
-    },
-    {
-        type: 'PROTEIN',
-        value: 'MSDNGPQNQRNAPRITFGGPSDSTGSNQNGERSGARSKQRRPQGLPNNTASWFTALTQHGKEDLKFPRGQGVPINTNSSPDDQIGYYRRATRRIRGGDGKMKDLSPRWYFYYLGTGPEAGLPYGANKDGIIWVATEGALNTPKDHIGTRNPANNAAIVLQLPQGTTLPKGFYAEGSRGGSQASSRSSSRSRNSSRNSTPGSSRGTSPARMAGNGGDAALALLLLDRLNQLESKMSGKGQQQQGQTVTKKSAAEASKKPRQKRTATKAYNVTQAFGRRGPEQTQGNFGDQELIRQGTDYKHWPQIAQFAPSASAFFGMSRIGMEVTPSGTWLTYTGAIKLDDKDPNFKDQVILLNKHIDAYKTFPPTEPKKDKKKKADETQALPQRQKKQQTVTLLPAADLDDFSKQLQQSMSSADSTQA',
-        description: 'Influenza A Nucleocapsid'
-    }
-];
-
 const CATEGORY_COLORS = {
     Pathogen: '#dc2626',
     'Non-Pathogen': '#16a34a'
@@ -102,6 +83,14 @@ const AntigenResultPage = () => {
     const [styleMode, setStyleMode] = useState('cartoon');
     const [darkBg, setDarkBg] = useState(false);
 
+    // Example Data Settings State
+    const [openExampleSettings, setOpenExampleSettings] = useState(false);
+    const [exampleSettings, setExampleSettings] = useState({
+        num_people: 1,
+        samples_per_person: 2,
+        datatype: 'protein'
+    });
+
     useEffect(() => {
         const fetchPatient = async () => {
             try {
@@ -129,13 +118,41 @@ const AntigenResultPage = () => {
         setInputs(newInputs);
     };
 
-    // 예시 데이터 로드
-    const handleLoadExample = () => {
-        setInputs(EXAMPLE_SEQUENCES.map(ex => ({
-            type: ex.type,
-            value: ex.value
-        })));
+    // 예시 데이터 로드 핸들러 (설정 팝업 열기)
+    const handleOpenExampleSettings = () => {
+        setOpenExampleSettings(true);
+    };
+
+    // 실제 예시 데이터 가져오기
+    const handleFetchExampleData = async () => {
+        setLoading(true);
         setError(null);
+        setOpenExampleSettings(false);
+
+        try {
+            const response = await axiosClient.get(API_ENDPOINTS.ML_EXAMPLE_DATA, {
+                params: exampleSettings
+            });
+
+            if (response.data.ok && response.data.items && response.data.items.length > 0) {
+                // 첫 번째 사람의 샘플들을 가져옴
+                const samples = response.data.items[0].samples;
+
+                const newInputs = samples.map(sample => ({
+                    type: sample.seq_type === 'protein' ? 'PROTEIN' : (sample.seq_type === 'dna' ? 'DNA' : 'RNA'),
+                    value: sample.sequence
+                }));
+
+                setInputs(newInputs);
+            } else {
+                setError('예시 데이터를 가져올 수 없습니다.');
+            }
+        } catch (err) {
+            console.error('Failed to fetch example data:', err);
+            setError('예시 데이터를 불러오는데 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // 실제 API 호출
@@ -401,12 +418,12 @@ const AntigenResultPage = () => {
                             <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 <Button
                                     startIcon={<AddIcon />}
-                                    onClick={handleLoadExample}
+                                    onClick={handleOpenExampleSettings}
                                     fullWidth
                                     variant="outlined"
                                     color="secondary"
                                 >
-                                    예시 데이터 입력
+                                    예시 데이터 가져오기
                                 </Button>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Button startIcon={<AddIcon />} onClick={handleAddInput} fullWidth variant="outlined">
@@ -527,6 +544,52 @@ const AntigenResultPage = () => {
                         </Paper>
                     </Grid>
                 </Grid>
+
+                {/* Example Data Settings Dialog */}
+                <Dialog open={openExampleSettings} onClose={() => setOpenExampleSettings(false)}>
+                    <DialogTitle>예시 데이터 설정</DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            AI 모델 테스트를 위한 가상 데이터를 생성합니다.
+                        </Typography>
+                        <Stack spacing={2} sx={{ mt: 1, minWidth: 300 }}>
+                            <TextField
+                                label="사람 수 (num_people)"
+                                type="number"
+                                value={exampleSettings.num_people}
+                                onChange={(e) => setExampleSettings({ ...exampleSettings, num_people: parseInt(e.target.value) || 1 })}
+                                fullWidth
+                                size="small"
+                            />
+                            <TextField
+                                label="인당 샘플 수 (samples_per_person)"
+                                type="number"
+                                value={exampleSettings.samples_per_person}
+                                onChange={(e) => setExampleSettings({ ...exampleSettings, samples_per_person: parseInt(e.target.value) || 1 })}
+                                fullWidth
+                                size="small"
+                            />
+                            <FormControl fullWidth size="small">
+                                <InputLabel>데이터 타입 (datatype)</InputLabel>
+                                <Select
+                                    value={exampleSettings.datatype}
+                                    label="데이터 타입 (datatype)"
+                                    onChange={(e) => setExampleSettings({ ...exampleSettings, datatype: e.target.value })}
+                                >
+                                    <MenuItem value="protein">Protein</MenuItem>
+                                    <MenuItem value="dna">DNA</MenuItem>
+                                    <MenuItem value="rna">RNA</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setOpenExampleSettings(false)}>취소</Button>
+                        <Button onClick={handleFetchExampleData} variant="contained" color="primary">
+                            데이터 가져오기
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
                 {/* Detail Popup */}
                 <Dialog open={openPopup} onClose={() => setOpenPopup(false)} maxWidth="lg" fullWidth>
