@@ -1,165 +1,149 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as $3Dmol from '3dmol';
+import { Box, CircularProgress, Alert, Typography } from '@mui/material';
 
 /**
  * ProteinViewer Component
  * 
  * Visualizes a protein structure from a PDB ID or custom URL using 3dmol (NPM package).
- * 
- * @component
- * @param {Object} props
- * @param {string} [props.pdbId] - The PDB ID of the protein to visualize (e.g., '1UBQ').
- * @param {string} [props.customUrl] - Custom URL to load structure from (e.g., AlphaFold PDB URL).
- * @param {string} [props.width='100%'] - Width of the viewer container.
- * @param {string} [props.height='400px'] - Height of the viewer container.
- * @param {Object} [props.style] - Additional CSS styles for the container.
- * @param {Function} [props.onViewerReady] - Callback when viewer is initialized.
  */
-const ProteinViewer = ({ pdbId, customUrl, width = '100%', height = '400px', style = {}, onViewerReady }) => {
+const ProteinViewer = ({ pdbId, customUrl, height = '400px', onViewerReady }) => {
     const viewerRef = useRef(null);
-    const [viewer, setViewer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const viewerInstanceRef = useRef(null);
 
-    // Initialize Viewer
     useEffect(() => {
-        if (!viewerRef.current || viewer) return;
+        let isMounted = true;
+        let viewer = null;
 
-        const initViewer = () => {
+        const initViewer = async () => {
+            // Ensure element exists and has dimensions
+            if (!viewerRef.current) return;
+
+            // Wait for layout
+            await new Promise(resolve => setTimeout(resolve, 100));
+            if (!isMounted || !viewerRef.current) return;
+
             try {
-                const element = viewerRef.current;
+                setLoading(true);
+                setError(null);
 
-                // Ensure element has dimensions
-                if (element.clientWidth === 0 || element.clientHeight === 0) {
-                    // Retry after a short delay if dimensions are 0 (e.g. inside a hidden tab or animating dialog)
-                    setTimeout(initViewer, 100);
+                // Initialize viewer
+                // Try createWebGLViewer first, then fallback to createViewer
+                if (typeof window.$3Dmol?.createWebGLViewer === 'function') {
+                    viewer = window.$3Dmol.createWebGLViewer(viewerRef.current);
+                } else if (typeof window.$3Dmol?.createViewer === 'function') {
+                    viewer = window.$3Dmol.createViewer(viewerRef.current);
+                } else if (typeof $3Dmol?.createWebGLViewer === 'function') {
+                    viewer = $3Dmol.createWebGLViewer(viewerRef.current);
+                } else if (typeof $3Dmol?.createViewer === 'function') {
+                    viewer = $3Dmol.createViewer(viewerRef.current);
+                } else {
+                    console.error('3Dmol exports:', Object.keys($3Dmol || {}));
+                    console.error('Window 3Dmol:', window.$3Dmol);
+                    throw new Error('$3Dmol.createWebGLViewer is not a function. Library might not be loaded correctly.');
+                }
+
+                if (!viewer) throw new Error('Failed to create 3D viewer instance');
+
+                viewerInstanceRef.current = viewer;
+                if (onViewerReady) onViewerReady(viewer);
+
+                viewer.setBackgroundColor('white');
+
+                // Determine PDB Source
+                let pdbData = '';
+
+                if (customUrl) {
+                    const response = await fetch(customUrl);
+                    if (!response.ok) throw new Error(`Failed to fetch PDB from URL: ${response.statusText}`);
+                    pdbData = await response.text();
+                } else if (pdbId) {
+                    // Check if pdbId is actually a URL
+                    if (pdbId.startsWith('http')) {
+                        const response = await fetch(pdbId);
+                        if (!response.ok) throw new Error(`Failed to fetch PDB from URL: ${response.statusText}`);
+                        pdbData = await response.text();
+                    } else {
+                        // Assume it's a PDB ID (4 chars)
+                        const response = await fetch(`https://files.rcsb.org/download/${pdbId}.pdb`);
+                        if (!response.ok) throw new Error(`Failed to fetch PDB ID ${pdbId}`);
+                        pdbData = await response.text();
+                    }
+                } else {
+                    // No data provided
+                    setLoading(false);
                     return;
                 }
 
-                const config = { backgroundColor: 'white' };
-                // Use the imported $3Dmol directly
-                const v = $3Dmol.createWebGLViewer(element, config);
+                if (!isMounted) return;
 
-                setViewer(v);
-                if (onViewerReady) {
-                    onViewerReady(v);
-                }
-            } catch (err) {
-                console.error("Failed to initialize 3Dmol viewer:", err);
-                setError(`Failed to initialize 3D viewer: ${err.message || err}`);
+                viewer.addModel(pdbData, "pdb");
+                viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
+                viewer.zoomTo();
+                viewer.render();
+                viewer.spin(true);
+
                 setLoading(false);
+
+            } catch (err) {
+                if (isMounted) {
+                    console.error('Viewer Error:', err);
+                    setError(err.message);
+                    setLoading(false);
+                }
             }
         };
 
-        // Add a small delay to ensure DOM is ready (especially in Dialogs)
-        const timer = setTimeout(initViewer, 100);
-        return () => clearTimeout(timer);
-    }, [viewer, onViewerReady]);
+        initViewer();
 
-    // Load PDB Data when pdbId or customUrl changes
-    useEffect(() => {
-        if (!viewer) return;
-        if (!pdbId && !customUrl) {
-            setLoading(false);
-            return;
-        }
-
-        const loadStructure = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                viewer.clear();
-
-                if (customUrl) {
-                    // Load from URL (e.g., AlphaFold)
-                    // 3Dmol.js download method handles fetching and parsing
-                    $3Dmol.download(`url:${customUrl}`, viewer, { multiselect: true }, function () {
-                        viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
-                        viewer.zoomTo();
-                        viewer.render();
-                        setLoading(false);
-                    });
-                } else if (pdbId) {
-                    // Fetch PDB data from RCSB PDB
-                    // We can use $3Dmol.download for PDB IDs too, it's simpler
-                    $3Dmol.download(`pdb:${pdbId}`, viewer, { multiselect: true }, function () {
-                        viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
-                        viewer.zoomTo();
-                        viewer.render();
-                        setLoading(false);
-                    });
-                }
-            } catch (err) {
-                console.error("Error loading protein structure:", err);
-                setError(err.message);
-                setLoading(false);
+        return () => {
+            isMounted = false;
+            // Cleanup if needed
+            if (viewerInstanceRef.current) {
+                // viewerInstanceRef.current.clear(); // 3Dmol doesn't have a strict destroy
             }
         };
-
-        loadStructure();
-    }, [viewer, pdbId, customUrl]);
+    }, [pdbId, customUrl]);
 
     return (
-        <div style={{ position: 'relative', width, height, ...style }}>
+        <Box sx={{ position: 'relative', width: '100%', height: height, bgcolor: '#f5f5f5', borderRadius: 2, overflow: 'hidden' }}>
             {loading && (
-                <div style={styles.overlay}>
-                    <div style={styles.spinner}></div>
-                    <span style={{ marginLeft: '10px' }}>Loading structure...</span>
-                </div>
+                <Box sx={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 10, bgcolor: 'rgba(255,255,255,0.8)'
+                }}>
+                    <CircularProgress />
+                </Box>
             )}
+
             {error && (
-                <div style={styles.overlay}>
-                    <div style={{ textAlign: 'center', color: '#e74c3c' }}>
-                        <strong>Error</strong><br />
-                        {error}
-                    </div>
-                </div>
+                <Box sx={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 10, p: 2
+                }}>
+                    <Alert severity="error">
+                        <Typography variant="body2">{error}</Typography>
+                    </Alert>
+                </Box>
             )}
+
             <div
+                id="gldiv"
                 ref={viewerRef}
-                style={{ width: '100%', height: '100%', position: 'relative' }}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative'
+                }}
             />
-        </div>
+        </Box>
     );
 };
-
-const styles = {
-    overlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        zIndex: 10,
-        color: '#333',
-        fontWeight: 'bold',
-        borderRadius: '12px',
-    },
-    spinner: {
-        width: '20px',
-        height: '20px',
-        border: '3px solid #f3f3f3',
-        borderTop: '3px solid #3498db',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
-    }
-};
-
-// Add keyframes for spinner if not present globally
-if (typeof document !== 'undefined') {
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(styleSheet);
-}
 
 export default ProteinViewer;

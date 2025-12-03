@@ -40,6 +40,7 @@ import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 import ProteinViewer from '../components/ProteinViewer';
 import { LoadingSpinner, ErrorAlert } from '../components';
+import { getPdbUrl } from '../utils/getPdbUrl';
 
 // Icons for Viewer Controls
 const SpinIcon = () => <span>🔄</span>;
@@ -193,46 +194,8 @@ const AntigenResultPage = () => {
                     const task3 = pred.task3 || {};
                     const structure = result.task3_structure || {};
 
-                    // PDB ID 추출 로직 개선
-                    let pdbId = null;
-
-                    // 1. preferred_3d가 있고 pdb_id가 있는 경우
-                    if (structure.preferred_3d && structure.preferred_3d.pdb_id) {
-                        pdbId = structure.preferred_3d.pdb_id;
-                    }
-                    // 2. preferred_3d가 있고 pdb_download_url이 있는 경우 (pdb_id가 없을 때)
-                    else if (structure.preferred_3d && structure.preferred_3d.pdb_download_url) {
-                        pdbId = structure.preferred_3d.pdb_download_url;
-                    }
-                    // 3. preferred_3d가 없으면 uniprot_hits에서 첫 번째 유효한 3D 구조 찾기
-                    else if (structure.uniprot_hits && Array.isArray(structure.uniprot_hits)) {
-                        for (const hit of structure.uniprot_hits) {
-                            if (!hit) continue;
-
-                            // preferred_3d 확인
-                            if (hit.preferred_3d) {
-                                if (hit.preferred_3d.pdb_id) {
-                                    pdbId = hit.preferred_3d.pdb_id;
-                                    break;
-                                }
-                                if (hit.preferred_3d.pdb_download_url) {
-                                    pdbId = hit.preferred_3d.pdb_download_url;
-                                    break;
-                                }
-                            }
-
-                            // experimental_3d 배열 확인
-                            if (hit.experimental_3d && Array.isArray(hit.experimental_3d)) {
-                                for (const exp of hit.experimental_3d) {
-                                    if (exp && exp.pdb_id) {
-                                        pdbId = exp.pdb_id;
-                                        break;
-                                    }
-                                }
-                                if (pdbId) break;
-                            }
-                        }
-                    }
+                    // PDB ID/URL 추출 (유틸리티 함수 사용)
+                    const pdbId = getPdbUrl(structure);
 
                     return {
                         id: index + 1,
@@ -258,36 +221,8 @@ const AntigenResultPage = () => {
                 const task3 = pred.task3 || {};
                 const structure = response.data.task3_structure || {};
 
-                // PDB ID 추출 로직 개선 (단일 응답용)
-                let pdbId = null;
-                if (structure.preferred_3d && structure.preferred_3d.pdb_id) {
-                    pdbId = structure.preferred_3d.pdb_id;
-                } else if (structure.preferred_3d && structure.preferred_3d.pdb_download_url) {
-                    pdbId = structure.preferred_3d.pdb_download_url;
-                } else if (structure.uniprot_hits && Array.isArray(structure.uniprot_hits)) {
-                    for (const hit of structure.uniprot_hits) {
-                        if (!hit) continue;
-                        if (hit.preferred_3d) {
-                            if (hit.preferred_3d.pdb_id) {
-                                pdbId = hit.preferred_3d.pdb_id;
-                                break;
-                            }
-                            if (hit.preferred_3d.pdb_download_url) {
-                                pdbId = hit.preferred_3d.pdb_download_url;
-                                break;
-                            }
-                        }
-                        if (hit.experimental_3d && Array.isArray(hit.experimental_3d)) {
-                            for (const exp of hit.experimental_3d) {
-                                if (exp && exp.pdb_id) {
-                                    pdbId = exp.pdb_id;
-                                    break;
-                                }
-                            }
-                            if (pdbId) break;
-                        }
-                    }
-                }
+                // PDB ID/URL 추출 (유틸리티 함수 사용)
+                const pdbId = getPdbUrl(structure);
 
                 setResults([{
                     id: 1,
