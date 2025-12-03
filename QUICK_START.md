@@ -61,8 +61,8 @@ POST http://localhost:8000/ml/v1/predict/
 Content-Type: application/json
 
 {
-  "doctor_name": "Dr. Kim",
-  "patient_name": "John Doe",
+  "doctor_name": "doctor_0001",
+  "patient_name": "patient_0001",
   "sequence": "MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHS",
   "seq_type": "protein",
   "task3_threshold": 0.5
@@ -75,8 +75,8 @@ POST http://localhost:8000/ml/v1/predict/
 Content-Type: application/json
 
 {
-  "doctor_name": "Dr. Kim",
-  "patient_name": "Jane Smith",
+  "doctor_name": "doctor_0001",
+  "patient_name": "patient_0002",
   "items": [
     {
       "id": "sample_1",
@@ -101,8 +101,8 @@ Content-Type: application/json
 #### 3. 추론 이력 조회
 ```bash
 GET http://localhost:8000/ml/v1/history/
-GET http://localhost:8000/ml/v1/history/?doctor=Dr. Kim
-GET http://localhost:8000/ml/v1/history/?patient=John Doe
+GET http://localhost:8000/ml/v1/history/?doctor=doctor_0001
+GET http://localhost:8000/ml/v1/history/?patient=patient_0001
 ```
 
 ---

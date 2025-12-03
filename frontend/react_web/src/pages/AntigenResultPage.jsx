@@ -40,7 +40,7 @@ import { API_ENDPOINTS } from '../utils/config';
 import ProteinViewer from '../components/ProteinViewer';
 import { LoadingSpinner, ErrorAlert } from '../components';
 
-// 예시 데이터 (test_data.pkl 기반)
+// 예시 데이터 (QUICK_START.md 기반)
 const EXAMPLE_SEQUENCES = [
     {
         type: 'PROTEIN',
@@ -318,7 +318,7 @@ const AntigenResultPage = () => {
                                     variant="outlined"
                                     color="secondary"
                                 >
-                                    예시 데이터 로드
+                                    예시 데이터 입력
                                 </Button>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Button startIcon={<AddIcon />} onClick={handleAddInput} fullWidth variant="outlined">

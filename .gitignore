@@ -34,9 +34,11 @@ media/
 staticfiles/
 local_settings.py
 
-# Environment
-.env
+# Environment - 개발용 기본 .env는 커밋, 실제 운영 환경 설정만 제외
+# .env는 이제 Git에 포함됨 (기본값 포함)
+# 실제 운영 환경에서는 .env 파일의 값을 수정해서 사용
 .env.local
+.env.production
 .env.*.local
 
 # IDEs

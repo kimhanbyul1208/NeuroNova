@@ -1,8 +1,8 @@
-# Django ML API Examples (7 Key Endpoints)
+# Django ML API 예제 (7개 주요 엔드포인트)
 
 Base URL: `http://localhost:8000`
 
-## 1. Predict (Proxy)
+## 1. 예측 (Predict - Proxy)
 **POST** `/ml/v1/predict/`
 
 **Body (JSON):**
@@ -15,11 +15,11 @@ Base URL: `http://localhost:8000`
     "task3_threshold": 0.5
 }
 ```
-*Note: This forwards the request to the Flask server and logs the transaction.*
+*참고: 이 요청은 Flask 서버로 전달되며 트랜잭션이 기록됩니다.*
 
 ---
 
-## 2. System Status
+## 2. 시스템 상태 (System Status)
 **GET** `/ml/v1/status/`
 
 Response:
@@ -33,7 +33,7 @@ Response:
 
 ---
 
-## 3. Model Info
+## 3. 모델 정보 (Model Info)
 **GET** `/ml/v1/model-info/`
 
 Response:
@@ -46,23 +46,23 @@ Response:
 
 ---
 
-## 4. Retrain Model
+## 4. 모델 재학습 (Retrain Model)
 **POST** `/ml/v1/retrain/`
 
 **Body (JSON):**
 ```json
 {}
 ```
-*Note: Triggers model retraining on the Flask server.*
+*참고: Flask 서버에서 모델 재학습을 트리거합니다.*
 
 ---
 
-## 5. Inference History
+## 5. 추론 이력 (Inference History)
 **GET** `/ml/v1/history/?doctor=doctor_0001`
 
 **Query Params:**
-- `doctor`: Filter by doctor name
-- `patient`: Filter by patient name
+- `doctor`: 의사 이름으로 필터링
+- `patient`: 환자 이름으로 필터링
 
 Response:
 ```json
@@ -74,9 +74,9 @@ Response:
 
 ---
 
-## 6. Pending Reviews
+## 6. 검토 대기 목록 (Pending Reviews)
 **GET** `/api/v1/custom/predictions/pending_review/`
-*(Requires Authentication)*
+*(인증 필요)*
 
 Response:
 ```json
@@ -93,15 +93,15 @@ Response:
 
 ---
 
-## 7. Confirm Prediction
+## 7. 예측 확정 (Confirm Prediction)
 **POST** `/api/v1/custom/predictions/{id}/confirm_prediction/`
-*(Requires Authentication)*
+*(인증 필요)*
 
 **Body (JSON):**
 ```json
 {
     "doctor_feedback": "Correct",
-    "doctor_note": "Confirmed based on MRI scan."
+    "doctor_note": "MRI 스캔을 기반으로 확정함."
 }
 ```
-*Note: Updates the prediction record with the doctor's expert opinion.*
+*참고: 의사의 전문 의견으로 예측 기록을 업데이트합니다.*
