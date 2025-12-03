@@ -20,6 +20,11 @@ class PatientSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def get_doctor_name(self, obj):
+        if obj.doctor and hasattr(obj.doctor, "get_full_name"):
+            return obj.doctor.get_full_name()
+        return None
+
 
 class EncounterSerializer(serializers.ModelSerializer):
     """Encounter serializer."""
