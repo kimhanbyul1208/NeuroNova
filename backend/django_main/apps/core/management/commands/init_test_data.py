@@ -203,10 +203,21 @@ class Command(BaseCommand):
             self.doctors.append(doctor)
 
     def create_patients(self, count):
-        """Create Patient records for users with PATIENT role."""
+        """
+        Create Patient records.
+
+        Creates two types of patients:
+        1. Patients with User accounts (from PATIENT role users) - 70%
+        2. Patients without User accounts (registered by staff) - 30%
+
+        This reflects real-world scenarios where some patients use the app
+        and others are registered directly by medical staff.
+        """
         patient_users = [u for u in self.users if u.profile.role == UserRole.PATIENT]
 
-        for i, user in enumerate(patient_users[:count]):
+        # Create patients with user accounts (70%)
+        users_with_account = int(count * 0.7)
+        for i, user in enumerate(patient_users[:users_with_account]):
             patient = Patient.objects.create(
                 user=user,
                 pid=f"PT-2025-{1000 + i}",
@@ -216,6 +227,25 @@ class Command(BaseCommand):
                 gender=random.choice([Gender.MALE, Gender.FEMALE]),
                 phone=self.fake.phone_number(),
                 email=user.email,
+                address=self.fake.address(),
+                insurance_id=f"INS-{random.randint(100000, 999999)}",
+                emergency_contact=self.fake.phone_number()
+            )
+            self.patients.append(patient)
+
+        # Create patients WITHOUT user accounts (30%) - registered by staff
+        patients_without_account = count - users_with_account
+        base_index = users_with_account
+        for i in range(patients_without_account):
+            patient = Patient.objects.create(
+                user=None,  # No user account - registered by medical staff
+                pid=f"PT-2025-{1000 + base_index + i}",
+                first_name=self.fake.first_name(),
+                last_name=self.fake.last_name(),
+                date_of_birth=self.fake.date_of_birth(minimum_age=18, maximum_age=85),
+                gender=random.choice([Gender.MALE, Gender.FEMALE]),
+                phone=self.fake.phone_number(),
+                email=self.fake.email(),
                 address=self.fake.address(),
                 insurance_id=f"INS-{random.randint(100000, 999999)}",
                 emergency_contact=self.fake.phone_number()
@@ -456,12 +486,18 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('DATA GENERATION SUMMARY'))
         self.stdout.write('='*60)
 
+        # Count patients with and without user accounts
+        patients_with_user = Patient.objects.filter(user__isnull=False).count()
+        patients_without_user = Patient.objects.filter(user__isnull=True).count()
+
         models_count = {
             'Departments': Department.objects.count(),
             'Users': User.objects.count(),
             'UserProfiles': UserProfile.objects.count(),
             'Doctors': Doctor.objects.count(),
-            'Patients': Patient.objects.count(),
+            'Patients (Total)': Patient.objects.count(),
+            '  - With App Account': patients_with_user,
+            '  - Without App Account': patients_without_user,
             'PatientDoctor Relationships': PatientDoctor.objects.count(),
             'Encounters': Encounter.objects.count(),
             'FormSOAP': FormSOAP.objects.count(),
@@ -481,4 +517,5 @@ class Command(BaseCommand):
         self.stdout.write('\nDefault credentials for testing:')
         self.stdout.write('  Username: patient_0001, doctor_0001, nurse_0001, admin_0001')
         self.stdout.write('  Password: testpass123')
+        self.stdout.write('\nNote: ~70% of patients have app accounts, ~30% are registered by staff only')
         self.stdout.write('')

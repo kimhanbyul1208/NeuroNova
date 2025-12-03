@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import * as $3Dmol from '3dmol';
 
 /**
  * ProteinViewer Component
  * 
- * Visualizes a protein structure from a PDB ID or custom URL using 3Dmol.js (via CDN).
+ * Visualizes a protein structure from a PDB ID or custom URL using 3dmol (NPM package).
  * 
  * @component
  * @param {Object} props
@@ -19,53 +20,49 @@ const ProteinViewer = ({ pdbId, customUrl, width = '100%', height = '400px', sty
     const [viewer, setViewer] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [libLoaded, setLibLoaded] = useState(false);
 
-    // Check for 3Dmol library availability with retry
+    // Initialize Viewer
     useEffect(() => {
-        let attempts = 0;
-        const maxAttempts = 10; // Try for 5 seconds (500ms * 10)
+        if (!viewerRef.current || viewer) return;
 
-        const checkLib = setInterval(() => {
-            if (window.$3Dmol) {
-                setLibLoaded(true);
-                clearInterval(checkLib);
-            } else {
-                attempts++;
-                if (attempts >= maxAttempts) {
-                    clearInterval(checkLib);
-                    setError("3Dmol.js library failed to load. Please check your internet connection.");
-                    setLoading(false);
+        const initViewer = () => {
+            try {
+                const element = viewerRef.current;
+
+                // Ensure element has dimensions
+                if (element.clientWidth === 0 || element.clientHeight === 0) {
+                    // Retry after a short delay if dimensions are 0 (e.g. inside a hidden tab or animating dialog)
+                    setTimeout(initViewer, 100);
+                    return;
                 }
+
+                const config = { backgroundColor: 'white' };
+                // Use the imported $3Dmol directly
+                const v = $3Dmol.createWebGLViewer(element, config);
+
+                setViewer(v);
+                if (onViewerReady) {
+                    onViewerReady(v);
+                }
+            } catch (err) {
+                console.error("Failed to initialize 3Dmol viewer:", err);
+                setError(`Failed to initialize 3D viewer: ${err.message || err}`);
+                setLoading(false);
             }
-        }, 500);
+        };
 
-        return () => clearInterval(checkLib);
-    }, []);
-
-    // Initialize Viewer once library is loaded
-    useEffect(() => {
-        if (!libLoaded || !viewerRef.current || viewer) return;
-
-        try {
-            const element = viewerRef.current;
-            const config = { backgroundColor: 'white' };
-            const v = window.$3Dmol.createWebGLViewer(element, config);
-            setViewer(v);
-            if (onViewerReady) {
-                onViewerReady(v);
-            }
-        } catch (err) {
-            console.error("Failed to initialize 3Dmol viewer:", err);
-            setError("Failed to initialize 3D viewer. WebGL might not be supported.");
-            setLoading(false);
-        }
-    }, [libLoaded, viewer, onViewerReady]);
+        // Add a small delay to ensure DOM is ready (especially in Dialogs)
+        const timer = setTimeout(initViewer, 100);
+        return () => clearTimeout(timer);
+    }, [viewer, onViewerReady]);
 
     // Load PDB Data when pdbId or customUrl changes
     useEffect(() => {
         if (!viewer) return;
-        if (!pdbId && !customUrl) return;
+        if (!pdbId && !customUrl) {
+            setLoading(false);
+            return;
+        }
 
         const loadStructure = async () => {
             setLoading(true);
@@ -76,8 +73,7 @@ const ProteinViewer = ({ pdbId, customUrl, width = '100%', height = '400px', sty
                 if (customUrl) {
                     // Load from URL (e.g., AlphaFold)
                     // 3Dmol.js download method handles fetching and parsing
-                    // Note: 'pdb' format is assumed for AlphaFold, but we can try to detect or default
-                    window.$3Dmol.download(`url:${customUrl}`, viewer, { multiselect: true }, function () {
+                    $3Dmol.download(`url:${customUrl}`, viewer, { multiselect: true }, function () {
                         viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
                         viewer.zoomTo();
                         viewer.render();
@@ -85,24 +81,13 @@ const ProteinViewer = ({ pdbId, customUrl, width = '100%', height = '400px', sty
                     });
                 } else if (pdbId) {
                     // Fetch PDB data from RCSB PDB
-                    const response = await fetch(`https://files.rcsb.org/download/${pdbId}.pdb`);
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch PDB data for ID: ${pdbId}`);
-                    }
-                    const pdbData = await response.text();
-
-                    // Add model
-                    viewer.addModel(pdbData, "pdb");
-
-                    // Set style to Cartoon
-                    viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
-
-                    // Zoom to fit
-                    viewer.zoomTo();
-
-                    // Render
-                    viewer.render();
-                    setLoading(false);
+                    // We can use $3Dmol.download for PDB IDs too, it's simpler
+                    $3Dmol.download(`pdb:${pdbId}`, viewer, { multiselect: true }, function () {
+                        viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
+                        viewer.zoomTo();
+                        viewer.render();
+                        setLoading(false);
+                    });
                 }
             } catch (err) {
                 console.error("Error loading protein structure:", err);

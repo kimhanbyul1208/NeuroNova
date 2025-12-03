@@ -30,7 +30,7 @@ Django의 management command를 사용하여 NeuroNova 데이터베이스에 테
 - **UserProfile**: 사용자 프로필 (User와 1:1)
 
 ### EMR Models
-- **Patient**: 환자 기본 정보 (User와 1:1)
+- **Patient**: 환자 기본 정보 (User와 1:1, 선택적 - 앱 미사용 환자 가능)
 - **Encounter**: 진료 세션
 - **FormSOAP**: SOAP 차트 (Encounter와 1:1)
 - **FormVitals**: 활력 징후 (Encounter와 1:N)
@@ -61,6 +61,10 @@ cd backend/django_main
 python manage.py makemigrations
 python manage.py migrate
 ```
+
+**최신 마이그레이션 (2025-12-03)**:
+- `emr.0002_alter_patient_user`: Patient.user 필드를 nullable로 변경
+- 이 마이그레이션은 기존 데이터에 영향을 주지 않으며, 새로운 환자 등록 방식을 지원합니다
 
 ### 2. 기본 실행
 
@@ -108,6 +112,12 @@ python manage.py init_test_data --clear --count 150
 - Username: `patient_0001`, `doctor_0001`, `nurse_0001`, `admin_0001`
 - Password: `testpass123`
 
+**자동 환자 레코드 생성**:
+- PATIENT 역할로 회원가입 시 자동으로 Patient 레코드가 생성됩니다
+- PID는 `PT-YYYYMMDD-XXXX` 형식으로 자동 할당됩니다
+- 기본 생년월일: 2000-01-01 (나중에 수정 가능)
+- 기본 성별: Other (나중에 수정 가능)
+
 ### 3. Patient (환자)
 - 고유 환자 번호 (PID): `PT-2025-1000` ~ `PT-2025-1099`
 - 한국어 이름 (성, 이름)
@@ -116,6 +126,16 @@ python manage.py init_test_data --clear --count 150
 - 주소 (한국 주소 형식)
 - 건강보험 번호
 - 비상 연락처
+
+**중요 변경사항 (2025-12-03)**:
+- Patient의 `user` 필드가 **nullable**로 변경되었습니다
+- 두 가지 환자 등록 방식을 지원합니다:
+  1. **환자 앱 회원가입**: User + UserProfile + Patient 모두 자동 생성 (user 필드 연결됨)
+  2. **의료진 직접 등록**: Patient만 생성 (user 필드 null, 나중에 앱 계정 연결 가능)
+
+**테스트 데이터 생성 시**:
+- 전체 환자의 70%는 User 계정과 연결되어 생성됩니다 (앱 사용자)
+- 전체 환자의 30%는 User 계정 없이 생성됩니다 (의료진이 직접 등록)
 
 ### 4. Doctor (의사)
 - 의사 면허 번호: `DOC-2024000` ~
@@ -328,6 +348,40 @@ python manage.py init_test_data --clear
 ### 재현성
 - Random seed가 고정되어 있어 동일한 데이터 생성 가능
 - Seed 변경: `init_test_data.py`의 `Faker.seed(42)` 및 `random.seed(42)` 수정
+
+## 🔄 최근 변경사항 (2025-12-03)
+
+### Patient 모델 업데이트
+**변경 내용**: Patient.user 필드를 nullable로 변경
+
+**마이그레이션**:
+```bash
+python manage.py migrate emr 0002_alter_patient_user
+```
+
+**영향**:
+1. **기존 데이터**: 영향 없음. 기존 Patient 레코드는 그대로 유지됩니다.
+2. **새로운 기능**:
+   - 환자 앱 회원가입 시 자동으로 Patient 레코드 생성
+   - 의료진이 앱 계정 없는 환자 직접 등록 가능
+   - 나중에 환자가 앱 가입 시 기존 Patient 레코드와 연결 가능
+
+**테스트 데이터**:
+- `init_test_data` 명령어가 두 가지 유형의 환자를 생성합니다:
+  - 70%: User 계정이 있는 환자 (앱 사용자)
+  - 30%: User 계정이 없는 환자 (의료진 등록)
+
+**회원가입 자동화**:
+- UserRegistrationSerializer가 PATIENT 역할 생성 시 자동으로 Patient 레코드 생성
+- 자동 생성 필드:
+  - PID: `PT-YYYYMMDD-XXXX` 형식
+  - 생년월일: 2000-01-01 (기본값)
+  - 성별: Other (기본값)
+  - 이름, 전화번호, 이메일: User 정보에서 복사
+
+**API 변경사항**:
+- `/api/v1/users/register/` - PATIENT 역할 회원가입 시 Patient 자동 생성
+- `/api/v1/emr/patients/` - POST 요청 시 user 필드 선택 사항
 
 ## 📞 문의
 

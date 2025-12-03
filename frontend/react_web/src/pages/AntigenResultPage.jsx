@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Container,
@@ -25,7 +25,8 @@ import {
     List,
     ListItem,
     ListItemText,
-    Divider
+    Divider,
+    Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,8 +41,20 @@ import { API_ENDPOINTS } from '../utils/config';
 import ProteinViewer from '../components/ProteinViewer';
 import { LoadingSpinner, ErrorAlert } from '../components';
 
+// Icons for Viewer Controls
+const SpinIcon = () => <span>🔄</span>;
+const StyleIcon = () => <span>🎨</span>;
+const BgIcon = () => <span>🌓</span>;
+const SaveIcon = () => <span>💾</span>;
+const ResetIcon = () => <span>⏮️</span>;
+
 // 예시 데이터 (QUICK_START.md 기반)
 const EXAMPLE_SEQUENCES = [
+    {
+        type: 'PROTEIN',
+        value: 'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD',
+        description: 'p53 Tumor Suppressor (Protein Viewer Example)'
+    },
     {
         type: 'PROTEIN',
         value: 'MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNF',
@@ -51,11 +64,6 @@ const EXAMPLE_SEQUENCES = [
         type: 'PROTEIN',
         value: 'MSDNGPQNQRNAPRITFGGPSDSTGSNQNGERSGARSKQRRPQGLPNNTASWFTALTQHGKEDLKFPRGQGVPINTNSSPDDQIGYYRRATRRIRGGDGKMKDLSPRWYFYYLGTGPEAGLPYGANKDGIIWVATEGALNTPKDHIGTRNPANNAAIVLQLPQGTTLPKGFYAEGSRGGSQASSRSSSRSRNSSRNSTPGSSRGTSPARMAGNGGDAALALLLLDRLNQLESKMSGKGQQQQGQTVTKKSAAEASKKPRQKRTATKAYNVTQAFGRRGPEQTQGNFGDQELIRQGTDYKHWPQIAQFAPSASAFFGMSRIGMEVTPSGTWLTYTGAIKLDDKDPNFKDQVILLNKHIDAYKTFPPTEPKKDKKKKADETQALPQRQKKQQTVTLLPAADLDDFSKQLQQSMSSADSTQA',
         description: 'Influenza A Nucleocapsid'
-    },
-    {
-        type: 'PROTEIN',
-        value: 'MKTIIALSYIFCLVLGQDLPGNDNSTATLCLGHHAVPNGTLVKTITDDQIEVTNATELVQSSSTGKICNNPHRILDGIDCTLIDALLGDPHCDVFQNETWDLFVERSKAFSNCYPYDVPDYASLRSLVASSGTLEFITEGFTWTGVTQNGGSNACKRGPGSGFFSRLNWLTKSGSTYPVLNVTMPNNDNFDKLYIWGIHHPSTNQEQTSLYVQASGRVTVSTRRSQQTIIPNIGSRPWVRGLSSRISIYWTIVKPGDVLVINSNGNLIAPRGYFKMRTGKSSIMRSDAPIDTCISECITPNGSIPNDKPFQNVNKITYGACPKYVKQNTLKLATGMRNVPEKQT',
-        description: 'Influenza A Hemagglutinin'
     }
 ];
 
@@ -86,6 +94,12 @@ const AntigenResultPage = () => {
     // Popup State
     const [openPopup, setOpenPopup] = useState(false);
     const [selectedResult, setSelectedResult] = useState(null);
+
+    // Viewer Controls State
+    const [viewerInstance, setViewerInstance] = useState(null);
+    const [spinning, setSpinning] = useState(false);
+    const [styleMode, setStyleMode] = useState('cartoon');
+    const [darkBg, setDarkBg] = useState(false);
 
     useEffect(() => {
         const fetchPatient = async () => {
@@ -179,6 +193,47 @@ const AntigenResultPage = () => {
                     const task3 = pred.task3 || {};
                     const structure = result.task3_structure || {};
 
+                    // PDB ID 추출 로직 개선
+                    let pdbId = null;
+
+                    // 1. preferred_3d가 있고 pdb_id가 있는 경우
+                    if (structure.preferred_3d && structure.preferred_3d.pdb_id) {
+                        pdbId = structure.preferred_3d.pdb_id;
+                    }
+                    // 2. preferred_3d가 있고 pdb_download_url이 있는 경우 (pdb_id가 없을 때)
+                    else if (structure.preferred_3d && structure.preferred_3d.pdb_download_url) {
+                        pdbId = structure.preferred_3d.pdb_download_url;
+                    }
+                    // 3. preferred_3d가 없으면 uniprot_hits에서 첫 번째 유효한 3D 구조 찾기
+                    else if (structure.uniprot_hits && Array.isArray(structure.uniprot_hits)) {
+                        for (const hit of structure.uniprot_hits) {
+                            if (!hit) continue;
+
+                            // preferred_3d 확인
+                            if (hit.preferred_3d) {
+                                if (hit.preferred_3d.pdb_id) {
+                                    pdbId = hit.preferred_3d.pdb_id;
+                                    break;
+                                }
+                                if (hit.preferred_3d.pdb_download_url) {
+                                    pdbId = hit.preferred_3d.pdb_download_url;
+                                    break;
+                                }
+                            }
+
+                            // experimental_3d 배열 확인
+                            if (hit.experimental_3d && Array.isArray(hit.experimental_3d)) {
+                                for (const exp of hit.experimental_3d) {
+                                    if (exp && exp.pdb_id) {
+                                        pdbId = exp.pdb_id;
+                                        break;
+                                    }
+                                }
+                                if (pdbId) break;
+                            }
+                        }
+                    }
+
                     return {
                         id: index + 1,
                         inputValue: validInputs[index]?.value || '',
@@ -189,7 +244,7 @@ const AntigenResultPage = () => {
                         task2Confidence: task2.confidence || 0,
                         task3TopPredictions: task3.top_predictions || [],
                         proteinName: structure.protein_name || 'Unknown',
-                        pdbId: structure.preferred_3d || null,
+                        pdbId: pdbId,
                         translatedSequence: result.translation?.protein_sequence || ''
                     };
                 });
@@ -203,6 +258,37 @@ const AntigenResultPage = () => {
                 const task3 = pred.task3 || {};
                 const structure = response.data.task3_structure || {};
 
+                // PDB ID 추출 로직 개선 (단일 응답용)
+                let pdbId = null;
+                if (structure.preferred_3d && structure.preferred_3d.pdb_id) {
+                    pdbId = structure.preferred_3d.pdb_id;
+                } else if (structure.preferred_3d && structure.preferred_3d.pdb_download_url) {
+                    pdbId = structure.preferred_3d.pdb_download_url;
+                } else if (structure.uniprot_hits && Array.isArray(structure.uniprot_hits)) {
+                    for (const hit of structure.uniprot_hits) {
+                        if (!hit) continue;
+                        if (hit.preferred_3d) {
+                            if (hit.preferred_3d.pdb_id) {
+                                pdbId = hit.preferred_3d.pdb_id;
+                                break;
+                            }
+                            if (hit.preferred_3d.pdb_download_url) {
+                                pdbId = hit.preferred_3d.pdb_download_url;
+                                break;
+                            }
+                        }
+                        if (hit.experimental_3d && Array.isArray(hit.experimental_3d)) {
+                            for (const exp of hit.experimental_3d) {
+                                if (exp && exp.pdb_id) {
+                                    pdbId = exp.pdb_id;
+                                    break;
+                                }
+                            }
+                            if (pdbId) break;
+                        }
+                    }
+                }
+
                 setResults([{
                     id: 1,
                     inputValue: validInputs[0]?.value || '',
@@ -213,7 +299,7 @@ const AntigenResultPage = () => {
                     task2Confidence: task2.confidence || 0,
                     task3TopPredictions: task3.top_predictions || [],
                     proteinName: structure.protein_name || 'Unknown',
-                    pdbId: structure.preferred_3d || null,
+                    pdbId: pdbId,
                     translatedSequence: response.data.translation?.protein_sequence || ''
                 }]);
             } else {
@@ -231,17 +317,84 @@ const AntigenResultPage = () => {
     const handleOpenPopup = (result) => {
         setSelectedResult(result);
         setOpenPopup(true);
+        // Reset viewer state
+        setSpinning(false);
+        setStyleMode('cartoon');
+        setDarkBg(false);
+        setViewerInstance(null);
     };
 
     const handleCreatePrescription = () => {
-        // Navigate to prescription management with pre-filled data (if implemented)
-        // For now, just go to the list
+        // Navigate to prescription management with pre-filled data
+        const instructions = `항원 검사 결과 기반 처방:\n${results.map(r => {
+            const category = r.task1Label || 'Unknown';
+            const proteinType = r.task2Label || 'Unknown';
+            const protein = r.proteinName || 'Unknown';
+            return `- [${category}] ${proteinType} → ${protein}`;
+        }).join('\n')}`;
+
         navigate('/prescriptions', {
             state: {
                 patient_id: patientId,
-                instructions: `항원 검사 결과 기반 처방:\n${results.map(r => `- ${r.task2}: ${r.task3}`).join('\n')}`
+                instructions: instructions
             }
         });
+    };
+
+    // Viewer Control Handlers
+    const handleViewerReady = (viewer) => {
+        setViewerInstance(viewer);
+    };
+
+    const handleResetView = () => {
+        if (viewerInstance) {
+            viewerInstance.zoomTo();
+            viewerInstance.render();
+        }
+    };
+
+    const handleToggleSpin = () => {
+        if (viewerInstance) {
+            const next = !spinning;
+            viewerInstance.spin(next);
+            setSpinning(next);
+        }
+    };
+
+    const handleToggleStyle = () => {
+        if (viewerInstance) {
+            const nextMode = styleMode === 'cartoon' ? 'stick' : 'cartoon';
+            setStyleMode(nextMode);
+
+            viewerInstance.setStyle({}, {});
+            if (nextMode === 'cartoon') {
+                viewerInstance.setStyle({}, { cartoon: { color: 'spectrum' } });
+            } else {
+                viewerInstance.setStyle({}, { stick: { radius: 0.15 } });
+            }
+            viewerInstance.render();
+        }
+    };
+
+    const handleToggleBg = () => {
+        if (viewerInstance) {
+            const next = !darkBg;
+            setDarkBg(next);
+            viewerInstance.setBackgroundColor(next ? 'black' : 'white');
+            viewerInstance.render();
+        }
+    };
+
+    const handleSaveImage = () => {
+        if (viewerInstance) {
+            const dataUrl = viewerInstance.pngURI();
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `protein_${selectedResult?.proteinName || 'structure'}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
 
     return (
@@ -453,11 +606,61 @@ const AntigenResultPage = () => {
                             <Grid item xs={12} md={6}>
                                 <Typography variant="subtitle1" gutterBottom fontWeight={600}>3D 단백질 구조</Typography>
                                 {selectedResult?.pdbId ? (
-                                    <Box sx={{ height: '350px', border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
-                                        <ProteinViewer pdbId={selectedResult?.pdbId} height="100%" />
+                                    <Box sx={{
+                                        height: '400px',
+                                        border: '1px solid #eee',
+                                        borderRadius: '8px',
+                                        overflow: 'hidden',
+                                        position: 'relative',
+                                        bgcolor: darkBg ? 'black' : 'white'
+                                    }}>
+                                        {/* Viewer Controls Toolbar */}
+                                        <Box sx={{
+                                            position: 'absolute',
+                                            top: 10,
+                                            right: 10,
+                                            zIndex: 10,
+                                            display: 'flex',
+                                            gap: 1,
+                                            bgcolor: 'rgba(255,255,255,0.8)',
+                                            borderRadius: '8px',
+                                            p: 0.5,
+                                            boxShadow: 1
+                                        }}>
+                                            <Tooltip title="뷰 초기화">
+                                                <IconButton size="small" onClick={handleResetView}><ResetIcon /></IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="회전 토글">
+                                                <IconButton size="small" onClick={handleToggleSpin} color={spinning ? 'primary' : 'default'}><SpinIcon /></IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="스타일 전환 (Cartoon/Stick)">
+                                                <IconButton size="small" onClick={handleToggleStyle}><StyleIcon /></IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="배경 전환 (White/Black)">
+                                                <IconButton size="small" onClick={handleToggleBg}><BgIcon /></IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="이미지 저장">
+                                                <IconButton size="small" onClick={handleSaveImage}><SaveIcon /></IconButton>
+                                            </Tooltip>
+                                        </Box>
+
+                                        {/* Check if pdbId is a URL or PDB ID */}
+                                        {selectedResult.pdbId.startsWith('http') ? (
+                                            <ProteinViewer
+                                                customUrl={selectedResult.pdbId}
+                                                height="100%"
+                                                onViewerReady={handleViewerReady}
+                                            />
+                                        ) : (
+                                            <ProteinViewer
+                                                pdbId={selectedResult.pdbId}
+                                                height="100%"
+                                                onViewerReady={handleViewerReady}
+                                            />
+                                        )}
                                     </Box>
                                 ) : (
-                                    <Box sx={{ height: '350px', border: '1px solid #eee', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Box sx={{ height: '400px', border: '1px solid #eee', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <Typography color="text.secondary">3D 구조 정보 없음</Typography>
                                     </Box>
                                 )}

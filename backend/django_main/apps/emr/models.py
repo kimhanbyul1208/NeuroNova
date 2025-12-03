@@ -23,8 +23,10 @@ class Patient(BaseModel):
         User,
         on_delete=models.CASCADE,
         related_name='patient',
+        null=True,
+        blank=True,
         verbose_name="사용자 계정",
-        help_text="Django User와 1:1 관계 (앱 로그인용)"
+        help_text="Django User와 1:1 관계 (앱 로그인용, 선택 사항)"
     )
 
     pid = models.CharField(
