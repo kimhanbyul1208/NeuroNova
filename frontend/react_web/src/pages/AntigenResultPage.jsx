@@ -49,25 +49,6 @@ const BgIcon = () => <span>🌓</span>;
 const SaveIcon = () => <span>💾</span>;
 const ResetIcon = () => <span>⏮️</span>;
 
-// 예시 데이터 (QUICK_START.md 기반)
-const EXAMPLE_SEQUENCES = [
-    {
-        type: 'PROTEIN',
-        value: 'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD',
-        description: 'p53 Tumor Suppressor (Protein Viewer Example)'
-    },
-    {
-        type: 'PROTEIN',
-        value: 'MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFFSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNF',
-        description: 'SARS-CoV-2 Spike Protein'
-    },
-    {
-        type: 'PROTEIN',
-        value: 'MSDNGPQNQRNAPRITFGGPSDSTGSNQNGERSGARSKQRRPQGLPNNTASWFTALTQHGKEDLKFPRGQGVPINTNSSPDDQIGYYRRATRRIRGGDGKMKDLSPRWYFYYLGTGPEAGLPYGANKDGIIWVATEGALNTPKDHIGTRNPANNAAIVLQLPQGTTLPKGFYAEGSRGGSQASSRSSSRSRNSSRNSTPGSSRGTSPARMAGNGGDAALALLLLDRLNQLESKMSGKGQQQQGQTVTKKSAAEASKKPRQKRTATKAYNVTQAFGRRGPEQTQGNFGDQELIRQGTDYKHWPQIAQFAPSASAFFGMSRIGMEVTPSGTWLTYTGAIKLDDKDPNFKDQVILLNKHIDAYKTFPPTEPKKDKKKKADETQALPQRQKKQQTVTLLPAADLDDFSKQLQQSMSSADSTQA',
-        description: 'Influenza A Nucleocapsid'
-    }
-];
-
 const CATEGORY_COLORS = {
     Pathogen: '#dc2626',
     'Non-Pathogen': '#16a34a'
@@ -102,6 +83,14 @@ const AntigenResultPage = () => {
     const [styleMode, setStyleMode] = useState('cartoon');
     const [darkBg, setDarkBg] = useState(false);
 
+    // Example Data Settings State
+    const [openExampleSettings, setOpenExampleSettings] = useState(false);
+    const [exampleSettings, setExampleSettings] = useState({
+        num_people: 1,
+        samples_per_person: 2,
+        datatype: 'protein'
+    });
+
     useEffect(() => {
         const fetchPatient = async () => {
             try {
@@ -129,13 +118,41 @@ const AntigenResultPage = () => {
         setInputs(newInputs);
     };
 
-    // 예시 데이터 로드
-    const handleLoadExample = () => {
-        setInputs(EXAMPLE_SEQUENCES.map(ex => ({
-            type: ex.type,
-            value: ex.value
-        })));
+    // 예시 데이터 로드 핸들러 (설정 팝업 열기)
+    const handleOpenExampleSettings = () => {
+        setOpenExampleSettings(true);
+    };
+
+    // 실제 예시 데이터 가져오기
+    const handleFetchExampleData = async () => {
+        setLoading(true);
         setError(null);
+        setOpenExampleSettings(false);
+
+        try {
+            const response = await axiosClient.get(API_ENDPOINTS.ML_EXAMPLE_DATA, {
+                params: exampleSettings
+            });
+
+            if (response.data.ok && response.data.items && response.data.items.length > 0) {
+                // 첫 번째 사람의 샘플들을 가져옴
+                const samples = response.data.items[0].samples;
+
+                const newInputs = samples.map(sample => ({
+                    type: sample.seq_type === 'protein' ? 'PROTEIN' : (sample.seq_type === 'dna' ? 'DNA' : 'RNA'),
+                    value: sample.sequence
+                }));
+
+                setInputs(newInputs);
+            } else {
+                setError('예시 데이터를 가져올 수 없습니다.');
+            }
+        } catch (err) {
+            console.error('Failed to fetch example data:', err);
+            setError('예시 데이터를 불러오는데 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // 실제 API 호출
@@ -332,6 +349,84 @@ const AntigenResultPage = () => {
         }
     };
 
+    // History State
+    const [history, setHistory] = useState([]);
+    const [checkedItems, setCheckedItems] = useState({});
+
+    useEffect(() => {
+        if (patientId) {
+            fetchHistory();
+        }
+    }, [patientId]);
+
+    const fetchHistory = async () => {
+        try {
+            const response = await axiosClient.get(API_ENDPOINTS.ANTIGEN_RESULTS, {
+                params: { patient: patientId }
+            });
+            setHistory(response.data.results || response.data);
+        } catch (err) {
+            console.error('Failed to fetch history:', err);
+        }
+    };
+
+    const handleCheckboxChange = (id, checked) => {
+        setCheckedItems(prev => ({
+            ...prev,
+            [id]: checked
+        }));
+    };
+
+    const handleSaveSelected = async () => {
+        const selectedIds = Object.keys(checkedItems).filter(id => checkedItems[id]);
+        if (selectedIds.length === 0) {
+            alert('저장할 항목을 선택해주세요.');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const promises = selectedIds.map(id => {
+                const result = results.find(r => r.id.toString() === id);
+                if (!result) return null;
+
+                return axiosClient.post(API_ENDPOINTS.ANTIGEN_RESULTS, {
+                    patient: patientId,
+                    input_sequence: result.inputValue,
+                    input_type: result.inputType,
+                    prediction_result: {
+                        task1: { prediction: result.task1Label, confidence: result.task1Confidence },
+                        task2: { prediction: result.task2Label, confidence: result.task2Confidence },
+                        task3: { top_predictions: result.task3TopPredictions },
+                        protein_name: result.proteinName,
+                        pdb_id: result.pdbId
+                    }
+                });
+            });
+
+            await Promise.all(promises);
+            alert('선택한 항목이 저장되었습니다.');
+            setCheckedItems({});
+            fetchHistory();
+        } catch (err) {
+            console.error('Save failed:', err);
+            alert('저장에 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteHistory = async (id) => {
+        if (!window.confirm('정말 삭제하시겠습니까?')) return;
+        try {
+            await axiosClient.delete(`${API_ENDPOINTS.ANTIGEN_RESULTS}${id}/`);
+            fetchHistory();
+        } catch (err) {
+            console.error('Delete failed:', err);
+            alert('삭제에 실패했습니다.');
+        }
+    };
+
     return (
         <DashboardLayout role={user?.role} activePage="antigen-test" title="항원 검사 결과">
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -401,12 +496,12 @@ const AntigenResultPage = () => {
                             <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 <Button
                                     startIcon={<AddIcon />}
-                                    onClick={handleLoadExample}
+                                    onClick={handleOpenExampleSettings}
                                     fullWidth
                                     variant="outlined"
                                     color="secondary"
                                 >
-                                    예시 데이터 입력
+                                    예시 데이터 가져오기
                                 </Button>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Button startIcon={<AddIcon />} onClick={handleAddInput} fullWidth variant="outlined">
@@ -428,10 +523,22 @@ const AntigenResultPage = () => {
 
                     {/* Right: Result Section */}
                     <Grid item xs={12} md={7}>
-                        <Paper sx={{ p: 3, borderRadius: '16px', minHeight: '400px' }}>
-                            <Typography variant="h6" gutterBottom fontWeight={600}>
-                                예측 결과 분석
-                            </Typography>
+                        <Paper sx={{ p: 3, borderRadius: '16px', minHeight: '400px', mb: 3 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                <Typography variant="h6" fontWeight={600}>
+                                    예측 결과 분석
+                                </Typography>
+                                {results.length > 0 && (
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={<SaveIcon />}
+                                        onClick={handleSaveSelected}
+                                        size="small"
+                                    >
+                                        선택 항목 저장
+                                    </Button>
+                                )}
+                            </Box>
 
                             {results.length === 0 ? (
                                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', color: 'text.secondary' }}>
@@ -468,13 +575,21 @@ const AntigenResultPage = () => {
                                                     ) : (
                                                         <>
                                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <Box>
-                                                                    <Typography variant="subtitle2" color="text.secondary">
-                                                                        샘플 #{result.id} [{result.inputType}]
-                                                                    </Typography>
-                                                                    <Typography variant="body2" fontWeight={600} noWrap sx={{ maxWidth: '300px' }}>
-                                                                        {result.inputValue.substring(0, 50)}...
-                                                                    </Typography>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={!!checkedItems[result.id]}
+                                                                        onChange={(e) => handleCheckboxChange(result.id, e.target.checked)}
+                                                                        style={{ width: '18px', height: '18px' }}
+                                                                    />
+                                                                    <Box>
+                                                                        <Typography variant="subtitle2" color="text.secondary">
+                                                                            샘플 #{result.id} [{result.inputType}]
+                                                                        </Typography>
+                                                                        <Typography variant="body2" fontWeight={600} noWrap sx={{ maxWidth: '250px' }}>
+                                                                            {result.inputValue.substring(0, 50)}...
+                                                                        </Typography>
+                                                                    </Box>
                                                                 </Box>
                                                                 <Box sx={{ textAlign: 'right' }}>
                                                                     <Chip
@@ -525,8 +640,106 @@ const AntigenResultPage = () => {
                                 </Stack>
                             )}
                         </Paper>
+
+                        {/* History Section */}
+                        <Paper sx={{ p: 3, borderRadius: '16px' }}>
+                            <Typography variant="h6" gutterBottom fontWeight={600}>
+                                이전 검사 결과 (History)
+                            </Typography>
+                            {history.length === 0 ? (
+                                <Typography color="text.secondary" align="center" sx={{ py: 3 }}>
+                                    저장된 검사 결과가 없습니다.
+                                </Typography>
+                            ) : (
+                                <List>
+                                    {history.map((item) => (
+                                        <React.Fragment key={item.id}>
+                                            <ListItem
+                                                secondaryAction={
+                                                    <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteHistory(item.id)}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                }
+                                            >
+                                                <ListItemText
+                                                    primary={
+                                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                            <Typography variant="subtitle2">
+                                                                {new Date(item.created_at).toLocaleDateString()}
+                                                            </Typography>
+                                                            <Chip
+                                                                label={item.prediction_result?.task1?.prediction || 'Unknown'}
+                                                                size="small"
+                                                                color={item.prediction_result?.task1?.prediction === 'Pathogen' ? 'error' : 'success'}
+                                                            />
+                                                        </Box>
+                                                    }
+                                                    secondary={
+                                                        <>
+                                                            <Typography variant="body2" component="span" display="block">
+                                                                {item.input_type}: {item.prediction_result?.protein_name || 'Unknown Protein'}
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                {item.input_sequence?.substring(0, 30)}...
+                                                            </Typography>
+                                                        </>
+                                                    }
+                                                />
+                                            </ListItem>
+                                            <Divider />
+                                        </React.Fragment>
+                                    ))}
+                                </List>
+                            )}
+                        </Paper>
                     </Grid>
                 </Grid>
+
+                {/* Example Data Settings Dialog */}
+                <Dialog open={openExampleSettings} onClose={() => setOpenExampleSettings(false)}>
+                    <DialogTitle>예시 데이터 설정</DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            AI 모델 테스트를 위한 가상 데이터를 생성합니다.
+                        </Typography>
+                        <Stack spacing={2} sx={{ mt: 1, minWidth: 300 }}>
+                            <TextField
+                                label="사람 수 (num_people)"
+                                type="number"
+                                value={exampleSettings.num_people}
+                                onChange={(e) => setExampleSettings({ ...exampleSettings, num_people: parseInt(e.target.value) || 1 })}
+                                fullWidth
+                                size="small"
+                            />
+                            <TextField
+                                label="인당 샘플 수 (samples_per_person)"
+                                type="number"
+                                value={exampleSettings.samples_per_person}
+                                onChange={(e) => setExampleSettings({ ...exampleSettings, samples_per_person: parseInt(e.target.value) || 1 })}
+                                fullWidth
+                                size="small"
+                            />
+                            <FormControl fullWidth size="small">
+                                <InputLabel>데이터 타입 (datatype)</InputLabel>
+                                <Select
+                                    value={exampleSettings.datatype}
+                                    label="데이터 타입 (datatype)"
+                                    onChange={(e) => setExampleSettings({ ...exampleSettings, datatype: e.target.value })}
+                                >
+                                    <MenuItem value="protein">Protein</MenuItem>
+                                    <MenuItem value="dna">DNA</MenuItem>
+                                    <MenuItem value="rna">RNA</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setOpenExampleSettings(false)}>취소</Button>
+                        <Button onClick={handleFetchExampleData} variant="contained" color="primary">
+                            데이터 가져오기
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
                 {/* Detail Popup */}
                 <Dialog open={openPopup} onClose={() => setOpenPopup(false)} maxWidth="lg" fullWidth>
