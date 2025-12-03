@@ -72,6 +72,7 @@ class Patient(BaseModel):
     )
 
     email = models.EmailField(
+        blank=True,
         verbose_name="이메일"
     )
 

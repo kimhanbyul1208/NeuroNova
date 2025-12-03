@@ -40,7 +40,9 @@
       "Bash(if [ -d \"venv\" ])",
       "Bash(then echo \"venv exists\")",
       "Bash(else echo \"venv not found\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(cat:*)",
+      "Bash(tasklist:*)"
     ],
     "deny": [],
     "ask": []

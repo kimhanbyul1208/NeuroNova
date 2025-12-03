@@ -463,10 +463,14 @@ const PatientListPage = () => {
       setLoading(true);
       setError(null);
 
-      const response = await axiosClient.get(API_ENDPOINTS.PATIENTS);
+      const url = `${API_ENDPOINTS.PATIENTS}?page_size=100`;
+      console.log('🔍 Fetching patients from:', url);
+      const response = await axiosClient.get(url);
       const data = response.data;
+      console.log('✅ Received data:', data);
 
       const patientList = Array.isArray(data) ? data : data.results || [];
+      console.log('📊 Patient list length:', patientList.length);
 
       setPatients(patientList);
       setFilteredPatients(patientList);

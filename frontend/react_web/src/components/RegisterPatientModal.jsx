@@ -82,7 +82,7 @@ const RegisterPatientModal = ({ open, onClose, onRegisterSuccess }) => {
         try {
             let payload = {
                 ...formData,
-                doctor: formData.doctor?.id,  // 🔥 doctor.id만 백엔드에 전송
+                doctor: formData.doctor?.user_id,  // 🔥 doctor.user_id (User ID)를 백엔드에 전송
             };
 
             // PID 자동 생성
@@ -95,7 +95,24 @@ const RegisterPatientModal = ({ open, onClose, onRegisterSuccess }) => {
             while (attempts < maxAttempts) {
                 try {
                     const res = await axiosClient.post(API_ENDPOINTS.PATIENTS, payload);
-                    onRegisterSuccess(res.data);
+                    const newPatient = res.data;
+
+                    // 🔥 환자 등록 성공 후 자동으로 Encounter 생성 (진료 예정)
+                    try {
+                        await axiosClient.post(API_ENDPOINTS.ENCOUNTERS, {
+                            patient: newPatient.id,
+                            doctor: payload.doctor,
+                            encounter_date: new Date().toISOString(),
+                            reason: "신규 환자 등록",
+                            facility: "외래",
+                            status: "SCHEDULED"
+                        });
+                    } catch (encounterErr) {
+                        console.error("Encounter creation failed:", encounterErr);
+                        // Encounter 생성 실패해도 환자 등록은 성공이므로 계속 진행
+                    }
+
+                    onRegisterSuccess(newPatient);
                     onClose();
                     return;
                 } catch (err) {

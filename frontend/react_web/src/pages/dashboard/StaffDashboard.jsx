@@ -32,14 +32,19 @@ const StaffDashboard = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axiosClient.get(API_ENDPOINTS.ENCOUNTERS);
+            const url = `${API_ENDPOINTS.ENCOUNTERS}?page_size=100`;
+            console.log('🔍 Fetching encounters from:', url);
+            const response = await axiosClient.get(url);
 
             // Handle pagination (DRF returns { count, next, previous, results })
             const data = response.data;
-            setQueue(Array.isArray(data) ? data : data.results || []);
+            console.log('✅ Received encounter data:', data);
+            const queueList = Array.isArray(data) ? data : data.results || [];
+            console.log('📊 Queue list length:', queueList.length);
+            setQueue(queueList);
         } catch (err) {
             console.error("Error fetching queue:", err);
-            setError("환자 대기열을 불러오는데 실패했습니다.");
+            setError("진료 대기열을 불러오는데 실패했습니다.");
         } finally {
             setLoading(false);
         }
@@ -64,7 +69,7 @@ const StaffDashboard = () => {
                 {/* Patient Queue */}
                 <div className="stat-card">
                     <div className="card-header-row">
-                        <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>Patient Queue (Today's Encounters)</h2>
+                        <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>진료 대기열 (Today's Encounters)</h2>
                         <button onClick={fetchQueue} className="refresh-button">Refresh</button>
                     </div>
 
