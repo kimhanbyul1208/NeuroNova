@@ -28,6 +28,16 @@ class Patient(BaseModel):
         verbose_name="사용자 계정",
         help_text="Django User와 1:1 관계 (앱 로그인용, 선택 사항)"
     )
+    
+    doctor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="patients",
+        verbose_name="담당 의사"
+    )
+
 
     pid = models.CharField(
         max_length=50,
