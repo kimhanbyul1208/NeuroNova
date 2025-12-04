@@ -17,6 +17,8 @@ const PatientDashboard = () => {
             try {
                 // Fetch real appointments if API is ready, otherwise mock
                 // For now, let's try to fetch or fallback to mock
+                // const response = await axiosClient.get(API_ENDPOINTS.APPOINTMENTS);
+                // const response = await axiosClient.get(`${API_ENDPOINTS.APPOINTMENTS}?patient=${patient.id}`);
                 const response = await axiosClient.get(API_ENDPOINTS.APPOINTMENTS);
                 const data = response.data;
                 const results = Array.isArray(data) ? data : data.results || [];
@@ -35,17 +37,17 @@ const PatientDashboard = () => {
     }, []);
 
     return (
-        <DashboardLayout role="PATIENT" activePage="dashboard" title={`Welcome, ${user?.username}`}>
+        <DashboardLayout role="PATIENT" activePage="dashboard" title={`안녕하세요, ${user?.username}`}>
             <div className="dashboard-grid" style={{ gridTemplateColumns: '2fr 1fr', display: 'grid' }}>
                 {/* Upcoming Appointments */}
                 <div className="stat-card">
-                    <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>Upcoming Appointments</h2>
+                    <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>내 진료 일정</h2>
                     {loading ? (
                         <p className="loading-state">Loading...</p>
                     ) : (
                         <div className="schedule-list">
                             {appointments.filter(a => a.status === 'SCHEDULED' || a.status === 'PENDING').length === 0 ? (
-                                <p className="empty-state">No upcoming appointments.</p>
+                                <p className="empty-state">예약된 진료가 없습니다.</p>
                             ) : (
                                 appointments.filter(a => a.status === 'SCHEDULED' || a.status === 'PENDING').slice(0, 3).map(apt => (
                                     <div key={apt.id} className="appointment-item" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px', padding: '1rem', border: '1px solid #f1f2f6' }}>
@@ -72,13 +74,13 @@ const PatientDashboard = () => {
                         <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>Quick Actions</h2>
                         <div className="button-group">
                             <button className="action-button" style={{ textAlign: 'left', backgroundColor: 'white' }} onClick={() => navigate('/appointments/new')}>
-                                📅 Book Appointment
+                                📅 진료 예약
                             </button>
                             <button className="action-button" style={{ textAlign: 'left', backgroundColor: 'white' }} onClick={() => navigate('/prescriptions')}>
-                                💊 My Prescriptions
+                                💊 내 처방전
                             </button>
                             <button className="action-button" style={{ textAlign: 'left', backgroundColor: 'white' }} onClick={() => navigate('/patient/medical-records')}>
-                                📄 Medical Records
+                                📄 진료 내역
                             </button>
                         </div>
                     </div>

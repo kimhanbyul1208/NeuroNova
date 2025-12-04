@@ -650,7 +650,37 @@
 .tab-container {
     background-color: white;
     border-radius: 12px;
+    margin-top: 1.5rem;
     margin-bottom: 1.5rem;
     border: 1px solid #e1e1e1;
     overflow: hidden;
 }
+
+.search-actions {
+  display: flex;
+  align-items: center; /* ★ 버튼과 검색창 높이를 자동으로 일치 */
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 검색창 컨테이너 */
+.search-bar-container {
+  flex: 1;
+}
+
+/* 버튼 컨테이너 */
+.add-btn-container {
+  flex-shrink: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: stretch; /* ★ 버튼이 부모 높이를 채움 */
+}
+
+/* 실제 버튼 스타일 */
+.add-btn-container button {
+  height: 56px;     /* ★ 검색창 외곽 높이와 동일하게 설정 */
+  padding: 0 20px;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
