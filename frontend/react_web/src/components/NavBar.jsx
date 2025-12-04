@@ -43,19 +43,20 @@ export default function NavBar() {
           <Link to="/appointments" style={linkStyle}>예약 관리</Link>
           <Link to="/prescriptions" style={linkStyle}>처방 관리</Link>
           <Link to="/antigen-test" style={linkStyle}>항원 검사</Link>
-          <Link to="/doctor/data-management" style={linkStyle}>데이터 관리</Link>
+          {/* <Link to="/doctor/data-management" style={linkStyle}>데이터 관리</Link> */}
         </>
       )}
 
       {user?.role === 'PATIENT' && (
         <>
           <Link to="/appointments" style={linkStyle}>내 예약</Link>
-          <Link to="/notifications" style={linkStyle}>알림</Link>
+          {/* <Link to="/notifications" style={linkStyle}>알림</Link> */}
+          <Link to="/about" style={linkStyle}>About Us</Link>
         </>
       )}
 
       {user?.role === 'ADMIN' && (
-        <Link to="/about" style={linkStyle}>시스템 관리</Link>
+        <Link to="/about" style={linkStyle}>About Us</Link>
       )}
 
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>

@@ -51,10 +51,24 @@ const AntigenTestPage = () => {
         }
     };
 
-    const filteredPatients = patients.filter(patient =>
-        `${patient.first_name} ${patient.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.pid?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // const filteredPatients = patients.filter(patient =>
+    //     `${patient.first_name} ${patient.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    //     patient.pid?.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
+
+    // 환자 이름 검색
+    const filteredPatients = patients.filter(patient => {
+        const first = patient.first_name ?? patient.firstName ?? "";
+        const last = patient.last_name ?? patient.lastName ?? "";
+        const pid = patient.pid ?? patient.patient_id ?? "";
+
+        // ✔ 성 + 이름 붙여서 (김철수)
+        const fullName = `${last}${first}`.toLowerCase();  
+        const term = searchTerm.toLowerCase();
+
+        return fullName.includes(term) || pid.toLowerCase().includes(term);
+    });
+
 
     const handlePatientSelect = (patientId) => {
         navigate(`/antigen-test/${patientId}`);
@@ -64,16 +78,7 @@ const AntigenTestPage = () => {
 
     return (
         <DashboardLayout role={user?.role} activePage="antigen-test" title="항원 검사">
-            <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-                <Box sx={{ mb: 4, textAlign: 'center' }}>
-                    <Typography variant="h4" gutterBottom fontWeight={700} color="primary">
-                        항원 검사 대상자 선택
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                        검사를 진행할 환자를 검색하여 선택해주세요.
-                    </Typography>
-                </Box>
-
+            {/* <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}> */}
                 <Paper sx={{ p: 3, borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                     <TextField
                         fullWidth
@@ -90,6 +95,10 @@ const AntigenTestPage = () => {
                         }}
                         sx={{ mb: 3 }}
                     />
+
+                    <Typography variant="body1" color="text.secondary">
+                        항원 검사를 진행할 환자를 검색 후 검사를 시작해주세요.
+                    </Typography>
 
                     {error && <ErrorAlert message={error} sx={{ mb: 2 }} />}
 
@@ -153,7 +162,7 @@ const AntigenTestPage = () => {
                         )}
                     </List>
                 </Paper>
-            </Container>
+            {/* </Container> */}
         </DashboardLayout>
     );
 };

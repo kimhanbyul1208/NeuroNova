@@ -104,7 +104,11 @@ const AppointmentCard = ({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <PersonIcon fontSize="small" color="action" />
               <Typography variant="body2" color="text.secondary">
-                담당의: {appointment.doctor_name}
+                담당의: {" "}
+                {(() => {
+                  const parts = appointment.doctor_name.split(" ");
+                  return parts.length === 2 ? `${parts[1]}${parts[0]}` : appointment.doctor_name;
+                })()}
               </Typography>
             </Box>
           )}

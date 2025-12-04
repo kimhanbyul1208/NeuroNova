@@ -69,20 +69,12 @@ const PatientPrescriptionDetailPage = () => {
     return (
         <DashboardLayout role={user?.role} activePage="patients" title="처방전 상세">
             <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Button
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate(-1)}
-                    sx={{ mb: 2 }}
-                >
-                    뒤로 가기
-                </Button>
-
                 <Paper sx={{ p: 4, borderRadius: '16px' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
                         <Box>
-                            <Typography variant="h4" gutterBottom fontWeight={700}>
+                            {/* <Typography variant="h4" gutterBottom fontWeight={700}>
                                 처방전 상세 내역
-                            </Typography>
+                            </Typography> */}
                             <Typography variant="subtitle1" color="text.secondary">
                                 환자: {patient?.last_name}{patient?.first_name} ({patient?.pid})
                             </Typography>
@@ -156,6 +148,13 @@ const PatientPrescriptionDetailPage = () => {
                         </Typography>
                     </Box>
                 </Paper>
+                <Button
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate(-1)}
+                    sx={{ mb: 2 }}
+                >
+                    뒤로 가기
+                </Button>
             </Container>
         </DashboardLayout>
     );

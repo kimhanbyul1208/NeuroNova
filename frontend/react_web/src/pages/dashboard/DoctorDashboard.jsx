@@ -87,14 +87,14 @@ const DoctorDashboard = () => {
                                 className="view-all-btn"
                                 onClick={() => navigate('/appointments')}
                             >
-                                View All
+                                전체보기
                             </button>
                         </div>
                         <div className="schedule-list">
                             {loading ? (
-                                <div className="loading-state">Loading schedule...</div>
+                                <div className="loading-state">예약 환자 불러오는 중...</div>
                             ) : appointments.length === 0 ? (
-                                <div className="empty-state">No appointments scheduled for today.</div>
+                                <div className="empty-state">오늘 예약된 환자가 없습니다.</div>
                             ) : (
                                 appointments.map(apt => (
                                     <div key={apt.id} className="appointment-item">

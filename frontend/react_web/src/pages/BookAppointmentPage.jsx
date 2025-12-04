@@ -3,12 +3,13 @@ import { Container, Typography, TextField, Button, Box, MenuItem, Alert, Paper }
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
+import DashboardLayout from '../layouts/DashboardLayout';
 
 const BookAppointmentPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         scheduled_at: '',
-        visit_type: 'CHECK_UP',
+        visit_type: 'FIRST_VISIT',
         reason: '',
     });
     const [error, setError] = useState(null);
@@ -24,10 +25,10 @@ const BookAppointmentPage = () => {
         setError(null);
         try {
             await axiosClient.post(API_ENDPOINTS.APPOINTMENTS, formData);
-            alert('Appointment booked successfully!');
+            alert('진료 예약 신청이 완료되었습니다. 메인화면으로 돌아갑니다.');
             navigate('/patient/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to book appointment');
+            setError(err.response?.data?.message || '진료 예약에 실패하였습니다.');
             console.error(err);
         } finally {
             setLoading(false);
@@ -35,11 +36,12 @@ const BookAppointmentPage = () => {
     };
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 4 }}>
+        
+        <DashboardLayout role="PATIENT" activePage="dashboard" title="진료 예약">
             <Paper sx={{ p: 4, borderRadius: '16px' }}>
-                <Typography variant="h4" gutterBottom>Book Appointment</Typography>
+                {/* <Typography variant="h4" gutterBottom>Book Appointment</Typography> */}
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Schedule a new appointment with our specialists.
+                    예약 일정을 확인하시고 진료를 예약하세요.
                 </Typography>
 
                 {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -59,20 +61,20 @@ const BookAppointmentPage = () => {
                     <TextField
                         select
                         fullWidth
-                        label="Visit Type"
+                        label="방문 방법"
                         name="visit_type"
                         value={formData.visit_type}
                         onChange={handleChange}
                         sx={{ mb: 3 }}
                     >
-                        <MenuItem value="FIRST_VISIT">First Visit</MenuItem>
-                        <MenuItem value="FOLLOW_UP">Follow Up</MenuItem>
-                        <MenuItem value="CHECK_UP">Check Up</MenuItem>
-                        <MenuItem value="EMERGENCY">Emergency</MenuItem>
+                        <MenuItem value="FIRST_VISIT">첫 방문</MenuItem>
+                        <MenuItem value="FOLLOW_UP">재방문</MenuItem>
+                        <MenuItem value="CHECK_UP">검진</MenuItem>
+                        <MenuItem value="EMERGENCY">응급</MenuItem>
                     </TextField>
                     <TextField
                         fullWidth
-                        label="Reason for Visit"
+                        label="필요하신 진료과와 아프신 곳을 입력해주세요."
                         name="reason"
                         multiline
                         rows={4}
@@ -80,7 +82,7 @@ const BookAppointmentPage = () => {
                         onChange={handleChange}
                         required
                         sx={{ mb: 3 }}
-                        placeholder="Please describe your symptoms or reason for visit..."
+                        placeholder="필요하신 진료과와 아프신 곳을 입력해주세요"
                     />
                     <Button
                         type="submit"
@@ -89,11 +91,12 @@ const BookAppointmentPage = () => {
                         size="large"
                         disabled={loading}
                     >
-                        {loading ? 'Booking...' : 'Book Appointment'}
+                        {loading ? '예약중...' : '예약하기'}
                     </Button>
                 </Box>
             </Paper>
-        </Container>
+           
+        </DashboardLayout>
     );
 };
 

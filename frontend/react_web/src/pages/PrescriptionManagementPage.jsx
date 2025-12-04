@@ -325,33 +325,30 @@ const PrescriptionManagementPage = () => {
     return (
         <DashboardLayout role={user?.role} activePage="prescriptions" title="Prescription Management">
             <div className="page-container">
-                <div className="page-header">
-                    <h1 className="page-title">
-                        처방전 관리
-                    </h1>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => handleOpenDialog()}
-                    >
-                        새 처방전
-                    </Button>
-                </div>
-
                 {error && <ErrorAlert message={error} onRetry={fetchPrescriptions} sx={{ mb: 3 }} />}
-
-                <div className="search-bar-container">
-                    <TextField
-                        fullWidth
-                        placeholder="약물명 또는 환자명으로 검색..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        InputProps={{
-                            startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                            disableUnderline: true
-                        }}
-                        variant="standard"
-                    />
+                <div className="search-actions">
+                    <div className="search-bar-container">
+                        <TextField
+                            fullWidth
+                            placeholder="약물명 또는 환자명으로 검색..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            InputProps={{
+                                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                                disableUnderline: true
+                            }}
+                            variant="standard"
+                        />
+                    </div>
+                    <div className="add-btn-container">
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => handleOpenDialog()}
+                        >
+                            새 처방전
+                        </Button>
+                    </div>
                 </div>
 
                 <TableContainer component={Paper} className="content-card">
