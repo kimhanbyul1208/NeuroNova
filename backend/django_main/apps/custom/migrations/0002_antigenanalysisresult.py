@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("custom", "0001_initial"),
-        ("emr", "0002_alter_patient_user"),
+        ("emr", "0001_initial"),
     ]
 
     operations = [
