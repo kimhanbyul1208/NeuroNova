@@ -35,11 +35,27 @@ class PatientDoctorSerializer(serializers.ModelSerializer):
     """Patient-Doctor relationship serializer."""
     patient_name = serializers.CharField(source='patient.full_name', read_only=True)
     doctor_name = serializers.CharField(source='doctor.user.get_full_name', read_only=True)
+    last_visit_date = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientDoctor
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_last_visit_date(self, obj):
+        """Get the most recent encounter date for this patient-doctor relationship."""
+        try:
+            last_encounter = Encounter.objects.filter(
+                patient=obj.patient,
+                doctor=obj.doctor.user
+            ).order_by('-encounter_date').first()
+
+            if last_encounter:
+                return last_encounter.encounter_date
+            return None
+        except Exception as e:
+            logger.error(f"Error getting last visit date: {e}")
+            return None
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
