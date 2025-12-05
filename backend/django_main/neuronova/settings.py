@@ -26,8 +26,12 @@ PROJECT_VERSION = config('PROJECT_VERSION', default='1.0.0')
 API_VERSION = config('API_VERSION', default='v1')
 
 ALLOW_PRIVILEGED_SIGNUP = True
-# 개발 단계: True
-# 운영 배포: False 로 전환
+# 개발 단계: True (의료진 회원가입 허용)
+# 운영 배포: False (의료진 회원가입 차단)
+
+REQUIRE_PRIVILEGED_APPROVAL = False
+# 개발 단계: False (의료진 즉시 활성화)
+# 운영 배포: True (관리자 승인 필요)
 
 # Application definition
 INSTALLED_APPS = [

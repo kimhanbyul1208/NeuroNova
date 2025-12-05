@@ -20,7 +20,7 @@ export const API_ENDPOINTS = {
   ME: `/api/${API_CONFIG.API_VERSION}/users/profiles/me/`,
 
   // Users
-  USERS: `/api/${API_CONFIG.API_VERSION}/users/users/`,
+  USERS: `/api/${API_CONFIG.API_VERSION}/users/`,
   USER_PROFILE: (id) => `/api/${API_CONFIG.API_VERSION}/users/profiles/${id}/`,
   USER_PROFILES: `/api/${API_CONFIG.API_VERSION}/users/profiles/`,
 

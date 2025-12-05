@@ -131,10 +131,10 @@ const DoctorPatientRelationshipPage = () => {
 
                 {/* Header Section */}
                 <Box sx={{ mb: 4 }}>
-                    <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, color: '#2f3542' }}>
+                    {/* <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, color: '#2f3542' }}>
                         <HospitalIcon sx={{ fontSize: 36, verticalAlign: 'middle', mr: 1, color: '#667eea' }} />
-                        의사-환자 관계 관리
-                    </Typography>
+                        의사-환자 관계 관리 */}
+                    {/* </Typography> */}
                     <Typography variant="body1" color="text.secondary">
                         담당의와 담당환자의 관계를 확인하고 관리합니다
                     </Typography>

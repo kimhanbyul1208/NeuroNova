@@ -22,12 +22,37 @@ logger = logging.getLogger(__name__)
 def ping(request):
     return Response({"message": "pong"})
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet for User (read-only)."""
+class UserViewSet(viewsets.ModelViewSet):
+    """ViewSet for User management."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     search_fields = ['username', 'email', 'first_name', 'last_name']
+    filterset_fields = ['is_active', 'is_staff']
+
+    def get_queryset(self):
+        """Filter users based on permissions."""
+        user = self.request.user
+        # Admin can see all users
+        if hasattr(user, 'profile') and user.profile.is_admin():
+            return User.objects.all().select_related('profile')
+        # Non-admin users can only see themselves
+        return User.objects.filter(id=user.id)
+
+    def get_permissions(self):
+        """Set permissions based on action."""
+        from apps.users.permissions import IsAdmin
+
+        if self.action in ['me']:
+            # Any authenticated user can access 'me' endpoint
+            return [IsAuthenticated()]
+        elif self.action in ['list', 'retrieve']:
+            # Only admin can list/retrieve users
+            return [IsAuthenticated(), IsAdmin()]
+        elif self.action in ['update', 'partial_update', 'destroy', 'activate', 'deactivate']:
+            # Only admin can modify users
+            return [IsAuthenticated(), IsAdmin()]
+        return super().get_permissions()
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
@@ -102,6 +127,52 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
+    def activate(self, request, pk=None):
+        """Activate a user account (Admin only)."""
+        user = self.get_object()
+        user.is_active = True
+        user.save()
+
+        # Update approval status if profile exists
+        if hasattr(user, 'profile'):
+            from config.constants import ApprovalStatus
+            user.profile.approval_status = ApprovalStatus.APPROVED
+            user.profile.save()
+
+        logger.info(f"User activated: {user.username} by admin: {request.user.username}")
+        return Response(
+            {'message': f'User {user.username} has been activated'},
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['post'])
+    def deactivate(self, request, pk=None):
+        """Deactivate a user account (Admin only)."""
+        user = self.get_object()
+
+        # Prevent deactivating self
+        if user.id == request.user.id:
+            return Response(
+                {'error': 'Cannot deactivate your own account'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.is_active = False
+        user.save()
+
+        # Update approval status if profile exists
+        if hasattr(user, 'profile'):
+            from config.constants import ApprovalStatus
+            user.profile.approval_status = ApprovalStatus.REJECTED
+            user.profile.save()
+
+        logger.info(f"User deactivated: {user.username} by admin: {request.user.username}")
+        return Response(
+            {'message': f'User {user.username} has been deactivated'},
+            status=status.HTTP_200_OK
+        )
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
