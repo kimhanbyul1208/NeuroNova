@@ -25,6 +25,7 @@ import CDSSPage from './pages/CDSSPage';
 import DataManagementPage from './pages/DataManagementPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import AboutAIPage from './pages/admin/AboutAIPage';
 import FormsPage from './pages/nurse/FormsPage';
@@ -129,7 +130,7 @@ function App() {
         {/* Admin Routes */}
         <Route path="/admin/users" element={
           <ProtectedRoute roles={['ADMIN']}>
-            <UserManagementPage />
+            <AdminUsersPage />
           </ProtectedRoute>
         } />
 

@@ -203,16 +203,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         is_privileged = role in UserRole.PRIVILEGED_ROLES
         allow_privileged = getattr(settings, 'ALLOW_PRIVILEGED_SIGNUP', False)
-        
+        require_approval = getattr(settings, 'REQUIRE_PRIVILEGED_APPROVAL', False)
+
         # Determine active status and approval status
         is_active = True
         approval_status = ApprovalStatus.APPROVED
 
         if is_privileged:
             if allow_privileged:
-                # Allow signup but set to inactive/pending
-                is_active = False
-                approval_status = ApprovalStatus.PENDING
+                # Allow signup - check if approval is required
+                if require_approval:
+                    is_active = False
+                    approval_status = ApprovalStatus.PENDING
+                else:
+                    # Allow signup and activate immediately
+                    is_active = True
+                    approval_status = ApprovalStatus.APPROVED
             else:
                 # Should be handled in view, but safety check here
                 pass
