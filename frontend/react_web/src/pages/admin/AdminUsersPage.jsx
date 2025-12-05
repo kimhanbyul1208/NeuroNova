@@ -49,17 +49,20 @@ const AdminUsersPage = () => {
     const { user } = useAuth();
     useFocusCleanup();
 
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState('');
-
     // Pagination
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalCount, setTotalCount] = useState(0);
 
-    // Search
+    // Search & Filter State
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedRoles, setSelectedRoles] = useState(['ADMIN', 'DOCTOR', 'NURSE', 'PATIENT']);
+
+    // Applied Filters (Trigger for API call)
+    const [appliedFilters, setAppliedFilters] = useState({
+        search: '',
+        roles: ['ADMIN', 'DOCTOR', 'NURSE', 'PATIENT']
+    });
 
     // Edit Dialog
     const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -81,15 +84,39 @@ const AdminUsersPage = () => {
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [page, rowsPerPage, appliedFilters]);
 
     const fetchUsers = async () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axiosClient.get(API_ENDPOINTS.USERS);
+
+            // Build query params
+            const params = {
+                page: page + 1, // API is 1-indexed, MUI is 0-indexed
+                page_size: rowsPerPage,
+            };
+
+            if (appliedFilters.search) {
+                params.search = appliedFilters.search;
+            }
+
+            if (appliedFilters.roles.length > 0) {
+                params.roles = appliedFilters.roles.join(',');
+            }
+
+            const response = await axiosClient.get(API_ENDPOINTS.USERS, { params });
             console.log('Users response:', response.data);
-            setUsers(Array.isArray(response.data) ? response.data : response.data.results || []);
+
+            if (response.data.results) {
+                setUsers(response.data.results);
+                setTotalCount(response.data.total_count || response.data.count || 0);
+            } else if (Array.isArray(response.data)) {
+                // Fallback for non-paginated API
+                setUsers(response.data);
+                setTotalCount(response.data.length);
+            }
+
         } catch (err) {
             console.error('Error fetching users:', err);
             if (err.response?.status === 403) {
@@ -104,6 +131,24 @@ const AdminUsersPage = () => {
         }
     };
 
+    const handleRoleFilterChange = (role) => {
+        setSelectedRoles(prev => {
+            if (prev.includes(role)) {
+                return prev.filter(r => r !== role);
+            } else {
+                return [...prev, role];
+            }
+        });
+    };
+
+    const handleSearchClick = () => {
+        setAppliedFilters({
+            search: searchTerm,
+            roles: selectedRoles
+        });
+        setPage(0);
+    };
+
     const handleActivateUser = async (userId) => {
         try {
             await axiosClient.post(`${API_ENDPOINTS.USERS}${userId}/activate/`);
@@ -114,6 +159,7 @@ const AdminUsersPage = () => {
             setError('사용자 활성화에 실패했습니다.');
         }
     };
+
 
     const handleDeactivateUser = async (userId) => {
         try {
@@ -191,17 +237,7 @@ const AdminUsersPage = () => {
         }
     };
 
-    const filteredUsers = users.filter(u =>
-        u.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
-    const paginatedUsers = filteredUsers.slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-    );
 
     const getRoleLabel = (role) => {
         const roleMap = {
@@ -246,21 +282,64 @@ const AdminUsersPage = () => {
                     </Alert>
                 )}
 
-                <TextField
-                    fullWidth
-                    placeholder="사용자명, 이메일, 이름으로 검색..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon color="action" />
-                            </InputAdornment>
-                        ),
-                        sx: { borderRadius: '12px' }
-                    }}
-                    sx={{ mb: 3 }}
-                />
+                <Paper sx={{ mb: 3, p: 2, bgcolor: '#f8f9fa' }}>
+                    <Typography variant="subtitle2" gutterBottom fontWeight={600}>
+                        권한 필터
+                    </Typography>
+                    <FormGroup row>
+                        {['ADMIN', 'DOCTOR', 'NURSE', 'PATIENT'].map((role) => (
+                            <FormControlLabel
+                                key={role}
+                                control={
+                                    <Checkbox
+                                        checked={selectedRoles.includes(role)}
+                                        onChange={() => handleRoleFilterChange(role)}
+                                        size="small"
+                                        color={getRoleColor(role)}
+                                    />
+                                }
+                                label={
+                                    <Chip
+                                        label={getRoleLabel(role)}
+                                        size="small"
+                                        color={getRoleColor(role)}
+                                        variant={selectedRoles.includes(role) ? "filled" : "outlined"}
+                                        sx={{ minWidth: 60, cursor: 'pointer' }}
+                                        onClick={() => handleRoleFilterChange(role)} // Click chip to toggle too
+                                    />
+                                }
+                                sx={{ mr: 2 }}
+                            />
+                        ))}
+                    </FormGroup>
+                </Paper>
+
+                <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+                    <TextField
+                        fullWidth
+                        placeholder="사용자명, 이메일, 이름으로 검색..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon color="action" />
+                                </InputAdornment>
+                            ),
+                            sx: { borderRadius: '12px', bgcolor: 'white' }
+                        }}
+                        size="small"
+                    />
+                    <Button
+                        variant="contained"
+                        onClick={handleSearchClick}
+                        startIcon={<SearchIcon />}
+                        sx={{ minWidth: 100, borderRadius: '12px' }}
+                    >
+                        검색
+                    </Button>
+                </Box>
 
                 <TableContainer>
                     <Table>
@@ -276,14 +355,14 @@ const AdminUsersPage = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {paginatedUsers.length === 0 ? (
+                            {users.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} align="center">
                                         <Typography color="text.secondary">검색 결과가 없습니다.</Typography>
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                paginatedUsers.map((u) => (
+                                users.map((u) => (
                                     <TableRow key={u.id} hover>
                                         <TableCell>{u.id}</TableCell>
                                         <TableCell>{u.username}</TableCell>
@@ -379,7 +458,7 @@ const AdminUsersPage = () => {
 
                 <TablePagination
                     component="div"
-                    count={filteredUsers.length}
+                    count={totalCount}
                     page={page}
                     onPageChange={(e, newPage) => setPage(newPage)}
                     rowsPerPage={rowsPerPage}
