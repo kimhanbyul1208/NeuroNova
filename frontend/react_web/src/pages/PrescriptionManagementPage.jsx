@@ -188,9 +188,38 @@ const PrescriptionManagementPage = () => {
 
     const handleSave = async () => {
         try {
+            setLoading(true);
+            setError(null);
+
+            // If no encounter exists, create one automatically
+            if (!formData.encounter && formData.patient_id) {
+                try {
+                    // Create a new encounter for this patient
+                    const encounterResponse = await axiosClient.post(API_ENDPOINTS.ENCOUNTERS, {
+                        patient: formData.patient_id,
+                        type: 'OUTPATIENT',
+                        status: 'IN_PROGRESS',
+                        chief_complaint: '처방전 발급',
+                        start_date: new Date().toISOString()
+                    });
+
+                    // Update formData with new encounter
+                    formData.encounter = encounterResponse.data.id;
+
+                    // Refresh encounters list
+                    await fetchEncounters(formData.patient_id);
+                } catch (encounterErr) {
+                    console.error('Failed to create encounter:', encounterErr);
+                    setError('진료 기록 생성에 실패했습니다. 환자 ID를 확인해주세요.');
+                    setLoading(false);
+                    return;
+                }
+            }
+
             // Validate required fields
             if (!formData.encounter) {
                 setError('진료 세션(Encounter)이 필요합니다. 환자를 선택하거나 진료 기록을 확인해주세요.');
+                setLoading(false);
                 return;
             }
 
@@ -219,7 +248,9 @@ const PrescriptionManagementPage = () => {
             fetchPrescriptions();
         } catch (err) {
             console.error('Save error:', err);
-            setError(err.response?.data?.message || '처방전 저장에 실패했습니다. 입력 값을 확인해주세요.');
+            setError(err.response?.data?.message || err.response?.data?.error || '처방전 저장에 실패했습니다. 입력 값을 확인해주세요.');
+        } finally {
+            setLoading(false);
         }
     };
 
