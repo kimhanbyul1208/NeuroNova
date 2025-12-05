@@ -18,6 +18,8 @@ const StaffDashboard = () => {
     const [queue, setQueue] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     // Modal States
     const [registerModalOpen, setRegisterModalOpen] = useState(false);
@@ -25,23 +27,27 @@ const StaffDashboard = () => {
     const [selectedPatient, setSelectedPatient] = useState(null);
 
     useEffect(() => {
-        fetchQueue();
+        fetchQueue(1);
     }, []);
 
-    const fetchQueue = async () => {
+    const fetchQueue = async (pageNum = 1) => {
         try {
             setLoading(true);
             setError(null);
-            const url = `${API_ENDPOINTS.ENCOUNTERS}?page_size=100`;
+            const url = `${API_ENDPOINTS.ENCOUNTERS}?page=${pageNum}&page_size=10`;
             console.log('🔍 Fetching encounters from:', url);
             const response = await axiosClient.get(url);
 
             // Handle pagination (DRF returns { count, next, previous, results })
             const data = response.data;
             console.log('✅ Received encounter data:', data);
+
             const queueList = Array.isArray(data) ? data : data.results || [];
-            console.log('📊 Queue list length:', queueList.length);
+            const totalCount = data.count || data.total_count || queueList.length;
+
             setQueue(queueList);
+            setTotalPages(Math.ceil(totalCount / 10) || 1);
+            setPage(pageNum);
         } catch (err) {
             console.error("Error fetching queue:", err);
             setError("진료 대기열을 불러오는데 실패했습니다.");
@@ -70,7 +76,7 @@ const StaffDashboard = () => {
                 <div className="stat-card">
                     <div className="card-header-row">
                         <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>진료 대기열 (Today's Encounters)</h2>
-                        <button onClick={fetchQueue} className="refresh-button">Refresh</button>
+                        <button onClick={() => fetchQueue(page)} className="refresh-button">Refresh</button>
                     </div>
 
                     {loading ? (
@@ -129,6 +135,29 @@ const StaffDashboard = () => {
                             </tbody>
                         </table>
                     )}
+
+                    {/* Pagination Controls */}
+                    <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem', gap: '1rem' }}>
+                        <button
+                            onClick={() => fetchQueue(page - 1)}
+                            disabled={page === 1 || loading}
+                            className="secondary-button"
+                            style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                        >
+                            Previous
+                        </button>
+                        <span style={{ color: '#2f3542', fontWeight: '500' }}>
+                            Page {page} of {totalPages}
+                        </span>
+                        <button
+                            onClick={() => fetchQueue(page + 1)}
+                            disabled={page === totalPages || loading}
+                            className="secondary-button"
+                            style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
 
                 {/* Quick Tasks */}

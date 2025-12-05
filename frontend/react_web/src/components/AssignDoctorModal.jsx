@@ -50,8 +50,8 @@ const AssignDoctorModal = ({ open, onClose, patient, onAssignSuccess }) => {
         } catch (err) {
             console.error("Error fetching doctors:", err);
             const errorMessage = err.response?.data?.detail ||
-                                err.response?.data?.message ||
-                                "의사 목록을 불러오는데 실패했습니다. 권한을 확인해주세요.";
+                err.response?.data?.message ||
+                "의사 목록을 불러오는데 실패했습니다. 권한을 확인해주세요.";
             setError(errorMessage);
         } finally {
             setFetchingDoctors(false);
@@ -108,6 +108,7 @@ const AssignDoctorModal = ({ open, onClose, patient, onAssignSuccess }) => {
                             getOptionLabel={(option) => `Dr. ${option.full_name} (${option.specialty})`}
                             value={selectedDoctor}
                             onChange={(event, newValue) => setSelectedDoctor(newValue)}
+                            isOptionEqualToValue={(option, value) => option.id === value.id}
                             loading={fetchingDoctors}
                             renderInput={(params) => (
                                 <TextField

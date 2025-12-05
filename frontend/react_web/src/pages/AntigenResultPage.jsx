@@ -36,6 +36,8 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../auth/AuthContext';
+import { useFocusCleanup } from '../hooks/useFocusCleanup';
+import { safeBlur } from '../utils/focusManager';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 import ProteinViewer from '../components/ProteinViewer';
@@ -66,6 +68,9 @@ const AntigenResultPage = () => {
     const { patientId } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+
+    // 포커스 관리 훅 추가
+    useFocusCleanup();
 
     const [patient, setPatient] = useState(null);
     const [inputs, setInputs] = useState([{ type: 'PROTEIN', value: '' }]);
@@ -816,7 +821,13 @@ const AntigenResultPage = () => {
                 </Grid>
 
                 {/* Example Data Settings Dialog */}
-                <Dialog open={openExampleSettings} onClose={() => setOpenExampleSettings(false)}>
+                <Dialog
+                    open={openExampleSettings}
+                    onClose={() => {
+                        safeBlur();
+                        setOpenExampleSettings(false);
+                    }}
+                >
                     <DialogTitle>예시 데이터 설정</DialogTitle>
                     <DialogContent>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -854,7 +865,10 @@ const AntigenResultPage = () => {
                         </Stack>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setOpenExampleSettings(false)}>취소</Button>
+                        <Button onClick={() => {
+                            safeBlur();
+                            setOpenExampleSettings(false);
+                        }}>취소</Button>
                         <Button onClick={handleFetchExampleData} variant="contained" color="primary">
                             데이터 가져오기
                         </Button>
@@ -862,7 +876,15 @@ const AntigenResultPage = () => {
                 </Dialog>
 
                 {/* Detail Popup */}
-                <Dialog open={openPopup} onClose={() => setOpenPopup(false)} maxWidth="lg" fullWidth>
+                <Dialog
+                    open={openPopup}
+                    onClose={() => {
+                        safeBlur();
+                        setOpenPopup(false);
+                    }}
+                    maxWidth="lg"
+                    fullWidth
+                >
                     <DialogTitle>
                         AI 예측 상세 결과
                         <Typography variant="subtitle2" color="text.secondary">
@@ -990,7 +1012,10 @@ const AntigenResultPage = () => {
                         </Grid>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setOpenPopup(false)}>닫기</Button>
+                        <Button onClick={() => {
+                            safeBlur();
+                            setOpenPopup(false);
+                        }}>닫기</Button>
                     </DialogActions>
                 </Dialog>
             </Container>

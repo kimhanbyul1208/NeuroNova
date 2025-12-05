@@ -21,6 +21,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import ScienceIcon from '@mui/icons-material/Science';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../auth/AuthContext';
+import { useFocusCleanup } from '../hooks/useFocusCleanup';
 import axiosClient from '../api/axios';
 import { API_ENDPOINTS } from '../utils/config';
 import { LoadingSpinner, ErrorAlert } from '../components';
@@ -28,6 +29,10 @@ import { LoadingSpinner, ErrorAlert } from '../components';
 const AntigenTestPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+
+    // 포커스 관리 훅 추가
+    useFocusCleanup();
+
     const [searchTerm, setSearchTerm] = useState('');
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);

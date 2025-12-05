@@ -11,28 +11,31 @@ const DoctorDashboard = () => {
     const navigate = useNavigate();
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const currentTime = new Date();
 
+    const fetchAppointments = async (pageNum = 1) => {
+        try {
+            setLoading(true);
+            const response = await axiosClient.get(`${API_ENDPOINTS.APPOINTMENTS}?page=${pageNum}&page_size=10`);
+            const data = response.data;
+            // Handle pagination or direct list
+            const results = Array.isArray(data) ? data : data.results || [];
+            const totalCount = data.count || data.total_count || results.length;
+
+            setAppointments(results);
+            setTotalPages(Math.ceil(totalCount / 10) || 1);
+            setPage(pageNum);
+        } catch (error) {
+            console.error("Error fetching appointments:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchAppointments = async () => {
-            try {
-                setLoading(true);
-                const response = await axiosClient.get(API_ENDPOINTS.APPOINTMENTS);
-                const data = response.data;
-                // Handle pagination or direct list
-                const results = Array.isArray(data) ? data : data.results || [];
-
-                // Filter for today's appointments (optional, but good for dashboard)
-                // For now, just showing the latest 5
-                setAppointments(results.slice(0, 5));
-            } catch (error) {
-                console.error("Error fetching appointments:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchAppointments();
+        fetchAppointments(1);
     }, []);
 
     // const greeting = (
@@ -122,6 +125,28 @@ const DoctorDashboard = () => {
                                     </div>
                                 ))
                             )}
+                        </div>
+                        {/* Pagination Controls */}
+                        <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '1rem', gap: '1rem', paddingBottom: '1rem' }}>
+                            <button
+                                onClick={() => fetchAppointments(page - 1)}
+                                disabled={page === 1 || loading}
+                                className="secondary-button"
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                            >
+                                Previous
+                            </button>
+                            <span style={{ color: '#2f3542', fontWeight: '500' }}>
+                                Page {page} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => fetchAppointments(page + 1)}
+                                disabled={page === totalPages || loading}
+                                className="secondary-button"
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                            >
+                                Next
+                            </button>
                         </div>
                     </div>
 

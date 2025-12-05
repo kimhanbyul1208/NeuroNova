@@ -99,7 +99,7 @@ Thumbs.db
 *.onnx
 *.pt
 *.pth
-*.pkl
+# *.pkl 
 *.joblib
 
 # Sensitive data

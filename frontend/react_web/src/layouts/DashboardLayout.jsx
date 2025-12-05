@@ -1,25 +1,43 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useTranslation } from 'react-i18next'; // i18n 라이브러리 : 영문 타이틀 한글화 작업에 사용
+import { useFocusCleanup, usePageFocusManager } from '../hooks/useFocusCleanup';
+import { fixAriaHiddenConflict } from '../utils/focusManager';
 import "./DashboardLayout.css";
 
 const DashboardLayout = ({ children, role, title, activePage }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const { t } = useTranslation(); // 영문 타이틀 한글화
+
+    // 포커스 관리 훅 적용
+    useFocusCleanup(true);
+    usePageFocusManager();
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
 
+    // 라우트 변경 시 포커스 정리
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            fixAriaHiddenConflict();
+        }, 100); // MUI 애니메이션 대기
+
+        return () => clearTimeout(timeoutId);
+    }, [location.pathname]);
+
 
     // 역할별 사이드바 메뉴 구성
     const getNavItems = () => {
+        // NURSE 역할은 staff/dashboard로 매핑
+        const dashboardPath = role === 'NURSE' ? '/staff/dashboard' : `/${role.toLowerCase()}/dashboard`;
+
         const commonItems = [
-            // { icon: '📊', path: `/${role.toLowerCase()}/dashboard`, title: 'Dashboard', id: 'dashboard' },
-            { icon: '📊', path: `/${role.toLowerCase()}/dashboard`, title: t('Dashboard'), id: 'dashboard' },
+            { icon: '📊', path: dashboardPath, title: t('Dashboard'), id: 'dashboard' },
         ];
 
         if (role === 'DOCTOR') {
@@ -83,6 +101,8 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
             // 알림박스 영역 밖 클릭 시 닫기
             if (closeDropdown.current && !closeDropdown.current.contains(event.target)) {
                 setShowNotifications(false);
+                // 드롭다운 닫을 때 포커스 정리
+                setTimeout(() => fixAriaHiddenConflict(), 50);
             }
         }
 
@@ -181,7 +201,7 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
                                 id="searchInput"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyPress={handleSearch}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
                             />
                         </div>
 

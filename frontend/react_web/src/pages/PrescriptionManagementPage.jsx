@@ -71,7 +71,7 @@ const PrescriptionManagementPage = () => {
         dosage: '',
         frequency: '',
         duration: '',
-        route: 'ORAL',
+        route: 'Oral',
         instructions: '',
     });
 
@@ -166,7 +166,7 @@ const PrescriptionManagementPage = () => {
                 dosage: '',
                 frequency: '',
                 duration: '',
-                route: 'ORAL',
+                route: 'Oral',
                 instructions: '',
             });
             setEncounters([]);

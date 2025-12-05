@@ -16,3 +16,6 @@ export { default as BiomarkerClassificationCard } from './BiomarkerClassificatio
 export { default as ProteinButtonGrid } from './ProteinButtonGrid';
 export { default as ProteinDetailModal } from './ProteinDetailModal';
 
+// 접근성 향상 컴포넌트
+export { default as AccessibleModal } from './AccessibleModal';
+export { default as AccessibleDrawer } from './AccessibleDrawer';

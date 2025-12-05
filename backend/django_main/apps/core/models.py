@@ -19,7 +19,8 @@ class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="생성일시",
-        help_text="레코드가 생성된 시간"
+        help_text="레코드가 생성된 시간",
+        db_index=True
     )
     updated_at = models.DateTimeField(
         auto_now=True,
