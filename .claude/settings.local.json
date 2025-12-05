@@ -46,7 +46,10 @@
       "Bash(if [ -d \"docs\" ])",
       "Bash(then echo \"docs exists\")",
       "Bash(else echo \"docs not found\")",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(powershell.exe -Command \"Get-Process python -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime\")",
+      "Bash(python scriptscheck_patient_users.py:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

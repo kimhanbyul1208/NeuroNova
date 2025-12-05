@@ -20,6 +20,7 @@ import DiagnosisDetailPage from './pages/DiagnosisDetailPage';
 import AboutPage from './pages/AboutPage';
 import SOAPChartPage from './pages/SOAPChartPage';
 import PrescriptionManagementPage from './pages/PrescriptionManagementPage';
+import PatientPrescriptionsPage from './pages/PatientPrescriptionsPage';
 import NotificationCenterPage from './pages/NotificationCenterPage';
 import CDSSPage from './pages/CDSSPage';
 import DataManagementPage from './pages/DataManagementPage';
@@ -204,6 +205,12 @@ function App() {
         <Route path="/prescriptions" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>
             <PrescriptionManagementPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/patient/prescriptions" element={
+          <ProtectedRoute roles={['PATIENT', 'ADMIN']}>
+            <PatientPrescriptionsPage />
           </ProtectedRoute>
         } />
 

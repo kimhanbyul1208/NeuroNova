@@ -28,8 +28,25 @@ const BookAppointmentPage = () => {
             alert('진료 예약 신청이 완료되었습니다. 메인화면으로 돌아갑니다.');
             navigate('/patient/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || '진료 예약에 실패하였습니다.');
-            console.error(err);
+            console.error('예약 실패:', err);
+
+            // Extract error message from various possible response formats
+            let errorMessage = '진료 예약에 실패하였습니다.';
+
+            if (err.response?.data) {
+                const data = err.response.data;
+                if (data.patient) {
+                    errorMessage = Array.isArray(data.patient) ? data.patient[0] : data.patient;
+                } else if (data.message) {
+                    errorMessage = data.message;
+                } else if (data.detail) {
+                    errorMessage = data.detail;
+                } else if (typeof data === 'string') {
+                    errorMessage = data;
+                }
+            }
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

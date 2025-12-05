@@ -13,6 +13,7 @@ from apps.custom.models import (
     Prescription,
     AntigenAnalysisResult
 )
+from apps.emr.models import Patient
 from apps.custom.serializers import (
     DoctorSerializer,
     PatientDoctorSerializer,
@@ -67,16 +68,40 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     search_fields = ['patient__full_name', 'reason']
     ordering_fields = ['scheduled_at', 'created_at']
 
+    def get_queryset(self):
+        """Filter appointments based on user role."""
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        # If user is a patient, show only their appointments
+        try:
+            patient = user.patient
+            return queryset.filter(patient=patient).order_by('-scheduled_at')
+        except Patient.DoesNotExist:
+            pass
+
+        # If user is a doctor, show their appointments
+        try:
+            doctor = user.doctor
+            return queryset.filter(doctor=doctor).order_by('-scheduled_at')
+        except Doctor.DoesNotExist:
+            pass
+
+        # For staff/admin, show all appointments
+        return queryset.order_by('-scheduled_at')
+
     def perform_create(self, serializer):
         """Set patient to current user if user is a patient."""
-        if hasattr(self.request.user, 'patient'):
-            serializer.save(patient=self.request.user.patient)
-        else:
+        try:
+            # Check if user has a patient profile
+            patient = self.request.user.patient
+            serializer.save(patient=patient)
+        except Patient.DoesNotExist:
             # If patient field is not provided and user is not a patient, raise error
             if 'patient' not in serializer.validated_data:
                 from rest_framework.exceptions import ValidationError
                 raise ValidationError({
-                    "patient": "Patient is required. Please ensure your account is linked to a patient profile."
+                    "patient": "환자 프로필을 찾을 수 없습니다. 환자 계정으로 로그인했는지 확인해주세요."
                 })
             serializer.save()
 
@@ -162,6 +187,21 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, CanAccessPrescriptions]
     filterset_fields = ['encounter']
     ordering_fields = ['prescribed_at', 'created_at']
+
+    def get_queryset(self):
+        """Filter prescriptions based on user role."""
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        # If user is a patient, show only their prescriptions
+        try:
+            patient = user.patient
+            return queryset.filter(encounter__patient=patient).order_by('-prescribed_at')
+        except Patient.DoesNotExist:
+            pass
+
+        # For doctors/staff/admin, show all prescriptions
+        return queryset.order_by('-prescribed_at')
 
 
 class AntigenAnalysisResultViewSet(viewsets.ModelViewSet):

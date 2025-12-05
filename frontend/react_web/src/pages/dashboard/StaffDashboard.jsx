@@ -9,6 +9,7 @@ import {
 } from '../../components';
 import axiosClient from '../../api/axios';
 import { API_ENDPOINTS } from '../../utils/config';
+import { getAppointmentStatusText, getVisitTypeText, getAppointmentStatusColor } from '../../utils/statusTranslations';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import '../DashboardPage.css';
 
@@ -16,6 +17,7 @@ const StaffDashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [queue, setQueue] = useState([]);
+    const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
@@ -28,7 +30,43 @@ const StaffDashboard = () => {
 
     useEffect(() => {
         fetchQueue(1);
+        fetchPendingAppointments();
     }, []);
+
+    const fetchPendingAppointments = async () => {
+        try {
+            const response = await axiosClient.get(`${API_ENDPOINTS.APPOINTMENTS}?status=PENDING`);
+            const data = response.data;
+            const results = Array.isArray(data) ? data : data.results || [];
+            setAppointments(results);
+        } catch (err) {
+            console.error("Error fetching pending appointments:", err);
+        }
+    };
+
+    const handleConfirmAppointment = async (appointmentId) => {
+        try {
+            await axiosClient.post(`${API_ENDPOINTS.APPOINTMENTS}${appointmentId}/confirm/`);
+            alert('예약이 승인되었습니다.');
+            fetchPendingAppointments();
+        } catch (err) {
+            console.error("Error confirming appointment:", err);
+            alert('예약 승인에 실패했습니다.');
+        }
+    };
+
+    const handleCancelAppointment = async (appointmentId) => {
+        if (!window.confirm('정말로 이 예약을 취소하시겠습니까?')) return;
+
+        try {
+            await axiosClient.post(`${API_ENDPOINTS.APPOINTMENTS}${appointmentId}/cancel/`);
+            alert('예약이 취소되었습니다.');
+            fetchPendingAppointments();
+        } catch (err) {
+            console.error("Error canceling appointment:", err);
+            alert('예약 취소에 실패했습니다.');
+        }
+    };
 
     const fetchQueue = async (pageNum = 1) => {
         try {
@@ -71,11 +109,85 @@ const StaffDashboard = () => {
 
     return (
         <DashboardLayout role="NURSE" activePage="dashboard" title="Staff Dashboard">
+            {/* Pending Appointments Section */}
+            {appointments.length > 0 && (
+                <div className="stat-card" style={{ marginBottom: '1.5rem', backgroundColor: '#fff3e0', border: '2px solid #ff9800' }}>
+                    <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#e65100', marginBottom: '1rem' }}>
+                        ⏳ 예약 승인 대기 ({appointments.length}건)
+                    </h2>
+                    <div style={{ display: 'grid', gap: '0.75rem' }}>
+                        {appointments.slice(0, 5).map(apt => (
+                            <div key={apt.id} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '1rem',
+                                padding: '1rem',
+                                backgroundColor: '#fff',
+                                borderRadius: '8px',
+                                border: '1px solid #ffcc80'
+                            }}>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontWeight: '600', fontSize: '1rem', color: '#2f3542' }}>
+                                        {apt.patient_name || `환자 ID: ${apt.patient}`}
+                                    </div>
+                                    <div style={{ fontSize: '0.875rem', color: '#666', marginTop: '0.25rem' }}>
+                                        {getVisitTypeText(apt.visit_type)} | {new Date(apt.scheduled_at).toLocaleString('ko-KR', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </div>
+                                    {apt.reason && (
+                                        <div style={{ fontSize: '0.875rem', color: '#999', marginTop: '0.25rem' }}>
+                                            사유: {apt.reason}
+                                        </div>
+                                    )}
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button
+                                        onClick={() => handleConfirmAppointment(apt.id)}
+                                        style={{
+                                            padding: '0.5rem 1rem',
+                                            backgroundColor: '#4caf50',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontWeight: '600',
+                                            fontSize: '0.875rem'
+                                        }}
+                                    >
+                                        ✓ 승인
+                                    </button>
+                                    <button
+                                        onClick={() => handleCancelAppointment(apt.id)}
+                                        style={{
+                                            padding: '0.5rem 1rem',
+                                            backgroundColor: '#f44336',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontWeight: '600',
+                                            fontSize: '0.875rem'
+                                        }}
+                                    >
+                                        ✗ 거절
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="dashboard-grid" style={{ gridTemplateColumns: '3fr 1fr', display: 'grid' }}>
                 {/* Patient Queue */}
                 <div className="stat-card">
                     <div className="card-header-row">
-                        <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>진료 대기열 (Today's Encounters)</h2>
+                        <h2 className="card-title" style={{ fontSize: '1.2rem', color: '#2f3542' }}>환자list </h2>
                         <button onClick={() => fetchQueue(page)} className="refresh-button">Refresh</button>
                     </div>
 
