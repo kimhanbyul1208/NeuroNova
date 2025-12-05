@@ -46,6 +46,7 @@ const DashboardLayout = ({ children, role, title, activePage }) => {
                 ...commonItems,
                 { icon: '👥', path: '/patients', title: t('Patients'), id: 'patients' },
                 { icon: '📝', path: '/forms', title: t('Forms'), id: 'forms' },
+                { icon: '🤝', path: '/staff/doctor-patient-relations', title: t('Doctor-Patient Relations'), id: 'doctor-patient-relations' },
             ];
         }
         if (role === 'PATIENT') {

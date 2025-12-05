@@ -34,6 +34,7 @@ import BiomarkerAnalysisPage from './pages/BiomarkerAnalysisPage';
 import ProteinViewerPage from './pages/ProteinViewerPage';
 import AntigenTestPage from './pages/AntigenTestPage';
 import AntigenResultPage from './pages/AntigenResultPage';
+import DoctorPatientRelationshipPage from './pages/DoctorPatientRelationshipPage';
 
 // Protected Route Component
 function ProtectedRoute({ children, roles = [] }) {
@@ -239,6 +240,11 @@ function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/staff/doctor-patient-relations" element={
+          <ProtectedRoute roles={['NURSE', 'ADMIN', 'DOCTOR']}>
+            <DoctorPatientRelationshipPage />
+          </ProtectedRoute>
+        } />
 
         <Route path="/doctor/data-management" element={
           <ProtectedRoute roles={['DOCTOR', 'ADMIN']}>

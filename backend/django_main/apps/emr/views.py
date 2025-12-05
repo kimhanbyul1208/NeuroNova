@@ -73,6 +73,45 @@ class EncounterViewSet(viewsets.ModelViewSet):
         else:
             serializer.save()
 
+    @action(detail=False, methods=['get'], url_path='my-appointments')
+    def my_appointments(self, request):
+        """
+        환자가 자신의 예약 목록을 조회합니다.
+        환자로 로그인한 경우에만 자신의 진료 예약을 볼 수 있습니다.
+        """
+        try:
+            # 현재 로그인한 사용자와 연결된 환자 정보 가져오기
+            patient = Patient.objects.get(user=request.user)
+
+            # 해당 환자의 모든 진료 예약(Encounter) 가져오기
+            encounters = Encounter.objects.filter(patient=patient).order_by('-encounter_date')
+
+            # 직렬화하여 응답
+            serializer = EncounterDetailSerializer(encounters, many=True)
+
+            return Response({
+                'success': True,
+                'count': encounters.count(),
+                'appointments': serializer.data
+            }, status=status.HTTP_200_OK)
+
+        except Patient.DoesNotExist:
+            # 환자 정보가 없는 경우 (의사나 간호사 등이 접근한 경우)
+            logger.warning(f"User {request.user.username} tried to access my-appointments but has no patient profile")
+            return Response({
+                'success': False,
+                'error': '환자 정보를 찾을 수 없습니다. 환자 계정으로 로그인해주세요.',
+                'appointments': []
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            logger.error(f"Error in my_appointments for user {request.user.username}: {str(e)}")
+            return Response({
+                'success': False,
+                'error': '예약 조회 중 오류가 발생했습니다.',
+                'appointments': []
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class FormSOAPViewSet(viewsets.ModelViewSet):
     """ViewSet for SOAP chart management."""

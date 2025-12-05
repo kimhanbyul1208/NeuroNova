@@ -194,13 +194,14 @@ const PrescriptionManagementPage = () => {
             // If no encounter exists, create one automatically
             if (!formData.encounter && formData.patient_id) {
                 try {
-                    // Create a new encounter for this patient
+                    // Create a new encounter for this patient with required fields
                     const encounterResponse = await axiosClient.post(API_ENDPOINTS.ENCOUNTERS, {
                         patient: formData.patient_id,
-                        type: 'OUTPATIENT',
-                        status: 'IN_PROGRESS',
-                        chief_complaint: '처방전 발급',
-                        start_date: new Date().toISOString()
+                        doctor: user?.id, // Current logged in doctor
+                        encounter_date: new Date().toISOString(),
+                        reason: '처방전 발급',
+                        facility: '외래',
+                        status: 'IN_PROGRESS'
                     });
 
                     // Update formData with new encounter
@@ -210,7 +211,11 @@ const PrescriptionManagementPage = () => {
                     await fetchEncounters(formData.patient_id);
                 } catch (encounterErr) {
                     console.error('Failed to create encounter:', encounterErr);
-                    setError('진료 기록 생성에 실패했습니다. 환자 ID를 확인해주세요.');
+                    const errorMsg = encounterErr.response?.data?.detail ||
+                                   encounterErr.response?.data?.error ||
+                                   encounterErr.response?.data?.message ||
+                                   '진료 기록 생성에 실패했습니다. 환자 ID를 확인해주세요.';
+                    setError(errorMsg);
                     setLoading(false);
                     return;
                 }
@@ -548,7 +553,7 @@ const PrescriptionManagementPage = () => {
                                 >
                                     {encounters.map((enc) => (
                                         <MenuItem key={enc.id} value={enc.id}>
-                                            {new Date(enc.start_date).toLocaleDateString()} - {enc.type}
+                                            {new Date(enc.encounter_date).toLocaleDateString()} - {enc.facility || enc.type || '진료'}
                                         </MenuItem>
                                     ))}
                                     {encounters.length === 0 && (

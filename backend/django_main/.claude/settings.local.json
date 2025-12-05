@@ -6,7 +6,8 @@
       "Bash(python manage.py makemigrations:*)",
       "Bash(python manage.py migrate:*)",
       "Bash(cat:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []
