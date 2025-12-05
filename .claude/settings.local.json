@@ -42,7 +42,10 @@
       "Bash(else echo \"venv not found\")",
       "Bash(fi)",
       "Bash(cat:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash(if [ -d \"docs\" ])",
+      "Bash(then echo \"docs exists\")",
+      "Bash(else echo \"docs not found\")"
     ],
     "deny": [],
     "ask": []
