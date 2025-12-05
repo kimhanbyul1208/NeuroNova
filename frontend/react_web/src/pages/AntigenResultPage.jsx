@@ -651,45 +651,165 @@ const AntigenResultPage = () => {
                                     저장된 검사 결과가 없습니다.
                                 </Typography>
                             ) : (
-                                <List>
-                                    {history.map((item) => (
-                                        <React.Fragment key={item.id}>
-                                            <ListItem
-                                                secondaryAction={
-                                                    <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteHistory(item.id)}>
-                                                        <DeleteIcon />
-                                                    </IconButton>
-                                                }
-                                            >
-                                                <ListItemText
-                                                    primary={
-                                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                            <Typography variant="subtitle2">
-                                                                {new Date(item.created_at).toLocaleDateString()}
-                                                            </Typography>
-                                                            <Chip
-                                                                label={item.prediction_result?.task1?.prediction || 'Unknown'}
-                                                                size="small"
-                                                                color={item.prediction_result?.task1?.prediction === 'Pathogen' ? 'error' : 'success'}
-                                                            />
-                                                        </Box>
-                                                    }
-                                                    secondary={
-                                                        <>
-                                                            <Typography variant="body2" component="span" display="block">
-                                                                {item.input_type}: {item.prediction_result?.protein_name || 'Unknown Protein'}
-                                                            </Typography>
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {item.input_sequence?.substring(0, 30)}...
-                                                            </Typography>
-                                                        </>
-                                                    }
+                                <Stack spacing={2}>
+                                    {/* Group history by date */}
+                                    {Object.entries(
+                                        history.reduce((groups, item) => {
+                                            const date = new Date(item.created_at).toLocaleDateString('ko-KR', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            });
+                                            if (!groups[date]) {
+                                                groups[date] = [];
+                                            }
+                                            groups[date].push(item);
+                                            return groups;
+                                        }, {})
+                                    ).map(([date, items]) => (
+                                        <Box key={date}>
+                                            {/* Date Header */}
+                                            <Box sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1,
+                                                mb: 1.5,
+                                                pb: 1,
+                                                borderBottom: '2px solid',
+                                                borderColor: 'primary.main'
+                                            }}>
+                                                <Typography variant="subtitle1" fontWeight={600} color="primary">
+                                                    {date}
+                                                </Typography>
+                                                <Chip
+                                                    label={`${items.length}건`}
+                                                    size="small"
+                                                    color="primary"
+                                                    variant="outlined"
                                                 />
-                                            </ListItem>
-                                            <Divider />
-                                        </React.Fragment>
+                                            </Box>
+
+                                            {/* Items for this date */}
+                                            <Stack spacing={1.5}>
+                                                {items.map((item) => (
+                                                    <Card
+                                                        key={item.id}
+                                                        variant="outlined"
+                                                        sx={{
+                                                            transition: 'all 0.2s',
+                                                            '&:hover': {
+                                                                boxShadow: 2,
+                                                                transform: 'translateX(4px)',
+                                                                borderColor: 'primary.main'
+                                                            }
+                                                        }}
+                                                    >
+                                                        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                                <Box sx={{ flex: 1 }}>
+                                                                    {/* Time and Result Type */}
+                                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
+                                                                        <Typography variant="caption" color="text.secondary">
+                                                                            {new Date(item.created_at).toLocaleTimeString('ko-KR', {
+                                                                                hour: '2-digit',
+                                                                                minute: '2-digit'
+                                                                            })}
+                                                                        </Typography>
+                                                                        <Chip
+                                                                            label={item.prediction_result?.task1?.prediction || 'Unknown'}
+                                                                            size="small"
+                                                                            sx={{
+                                                                                bgcolor: item.prediction_result?.task1?.prediction === 'Pathogen'
+                                                                                    ? CATEGORY_COLORS['Pathogen']
+                                                                                    : CATEGORY_COLORS['Non-Pathogen'],
+                                                                                color: 'white',
+                                                                                fontWeight: 600
+                                                                            }}
+                                                                        />
+                                                                        <Chip
+                                                                            label={item.prediction_result?.task2?.prediction || 'Unknown'}
+                                                                            size="small"
+                                                                            sx={{
+                                                                                bgcolor: PROTEIN_TYPE_COLORS[item.prediction_result?.task2?.prediction] || PROTEIN_TYPE_COLORS['Other'],
+                                                                                color: 'white'
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+
+                                                                    {/* Protein Name */}
+                                                                    <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                                                                        {item.prediction_result?.protein_name || 'Unknown Protein'}
+                                                                    </Typography>
+
+                                                                    {/* Input Type and Sequence Preview */}
+                                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 0.5 }}>
+                                                                        <Chip
+                                                                            label={item.input_type}
+                                                                            size="small"
+                                                                            variant="outlined"
+                                                                            sx={{ height: '20px' }}
+                                                                        />
+                                                                        <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+                                                                            {item.input_sequence?.substring(0, 40)}...
+                                                                        </Typography>
+                                                                    </Box>
+
+                                                                    {/* Confidence Scores */}
+                                                                    <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+                                                                        <Typography variant="caption" color="text.secondary">
+                                                                            Task1: <strong>{((item.prediction_result?.task1?.confidence || 0) * 100).toFixed(1)}%</strong>
+                                                                        </Typography>
+                                                                        <Typography variant="caption" color="text.secondary">
+                                                                            Task2: <strong>{((item.prediction_result?.task2?.confidence || 0) * 100).toFixed(1)}%</strong>
+                                                                        </Typography>
+                                                                    </Box>
+                                                                </Box>
+
+                                                                {/* Action Buttons */}
+                                                                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                                                    <Tooltip title="상세보기">
+                                                                        <IconButton
+                                                                            size="small"
+                                                                            color="primary"
+                                                                            onClick={() => {
+                                                                                // Convert history item to result format for popup
+                                                                                const historyAsResult = {
+                                                                                    id: item.id,
+                                                                                    inputValue: item.input_sequence,
+                                                                                    inputType: item.input_type,
+                                                                                    task1Label: item.prediction_result?.task1?.prediction || 'Unknown',
+                                                                                    task1Confidence: item.prediction_result?.task1?.confidence || 0,
+                                                                                    task2Label: item.prediction_result?.task2?.prediction || 'Unknown',
+                                                                                    task2Confidence: item.prediction_result?.task2?.confidence || 0,
+                                                                                    task3TopPredictions: item.prediction_result?.task3?.top_predictions || [],
+                                                                                    proteinName: item.prediction_result?.protein_name || 'Unknown',
+                                                                                    pdbId: item.prediction_result?.pdb_id || null,
+                                                                                    translatedSequence: ''
+                                                                                };
+                                                                                handleOpenPopup(historyAsResult);
+                                                                            }}
+                                                                        >
+                                                                            <VisibilityIcon fontSize="small" />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                    <Tooltip title="삭제">
+                                                                        <IconButton
+                                                                            size="small"
+                                                                            color="error"
+                                                                            onClick={() => handleDeleteHistory(item.id)}
+                                                                        >
+                                                                            <DeleteIcon fontSize="small" />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                </Box>
+                                                            </Box>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                            </Stack>
+                                        </Box>
                                     ))}
-                                </List>
+                                </Stack>
                             )}
                         </Paper>
                     </Grid>
