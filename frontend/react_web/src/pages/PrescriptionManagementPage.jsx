@@ -51,6 +51,7 @@ const PrescriptionManagementPage = () => {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
     const [prescriptions, setPrescriptions] = useState([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingPrescription, setEditingPrescription] = useState(null);
@@ -132,12 +133,16 @@ const PrescriptionManagementPage = () => {
         try {
             setLoading(true);
             setError(null);
+            console.log('📋 Fetching prescriptions...');
             const response = await axiosClient.get(API_ENDPOINTS.PRESCRIPTIONS);
 
             // Handle pagination
             const data = response.data;
-            setPrescriptions(Array.isArray(data) ? data : data.results || []);
+            const prescriptionList = Array.isArray(data) ? data : data.results || [];
+            console.log('📋 Prescriptions fetched:', prescriptionList.length, 'items');
+            setPrescriptions(prescriptionList);
         } catch (err) {
+            console.error('📋 Failed to fetch prescriptions:', err);
             setError(err.response?.data?.message || '처방전 목록을 불러오는데 실패했습니다.');
         } finally {
             setLoading(false);
@@ -265,8 +270,12 @@ const PrescriptionManagementPage = () => {
                 console.log('Prescription created:', response.data);
             }
 
+            // Success message
+            setSuccess(editingPrescription ? '처방전이 수정되었습니다.' : '처방전이 저장되었습니다.');
+            setTimeout(() => setSuccess(null), 3000);
+
             handleCloseDialog();
-            fetchPrescriptions();
+            await fetchPrescriptions();
         } catch (err) {
             console.error('Save error:', err);
             console.error('Error response:', err.response?.data);
@@ -388,6 +397,7 @@ const PrescriptionManagementPage = () => {
             dosage: recommendation.dosage,
             frequency: recommendation.frequency,
             duration: recommendation.duration_days || recommendation.duration, // Handle both formats
+            route: recommendation.route || formData.route || 'Oral', // Use AI route if provided, otherwise keep existing
             instructions: recommendation.instructions,
         });
         setShowAiPanel(false);
@@ -415,6 +425,11 @@ const PrescriptionManagementPage = () => {
         <DashboardLayout role={user?.role} activePage="prescriptions" title="Prescription Management">
             <div className="page-container">
                 {error && <ErrorAlert message={error} onRetry={fetchPrescriptions} sx={{ mb: 3 }} />}
+                {success && (
+                    <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess(null)}>
+                        {success}
+                    </Alert>
+                )}
                 <div className="search-actions">
                     <div className="search-bar-container">
                         <TextField
@@ -658,10 +673,27 @@ const PrescriptionManagementPage = () => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
+                                    select
+                                    label="투여 경로"
+                                    value={formData.route}
+                                    onChange={handleChange('route')}
+                                    required
+                                >
+                                    <MenuItem value="Oral">경구 (Oral)</MenuItem>
+                                    <MenuItem value="IV">정맥주사 (IV)</MenuItem>
+                                    <MenuItem value="IM">근육주사 (IM)</MenuItem>
+                                    <MenuItem value="Topical">국소 (Topical)</MenuItem>
+                                    <MenuItem value="Subcutaneous">피하주사 (Subcutaneous)</MenuItem>
+                                </TextField>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
                                     label="약물 코드"
                                     value={formData.medication_code}
                                     onChange={handleChange('medication_code')}
                                     disabled
+                                    helperText="자동 생성된 약물 코드"
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -679,8 +711,12 @@ const PrescriptionManagementPage = () => {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleCloseDialog}>취소</Button>
-                        <Button onClick={handleSave} variant="contained">
-                            저장
+                        <Button
+                            onClick={handleSave}
+                            variant="contained"
+                            disabled={loading}
+                        >
+                            {loading ? '저장 중...' : '저장'}
                         </Button>
                     </DialogActions>
                 </Dialog>

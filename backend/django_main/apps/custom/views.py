@@ -193,6 +193,17 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
         user = self.request.user
 
+        # Check user role from profile
+        try:
+            from config.constants import UserRole
+            user_role = user.profile.role if hasattr(user, 'profile') else None
+
+            # If user is ADMIN, DOCTOR, or NURSE, show all prescriptions
+            if user_role in [UserRole.ADMIN, UserRole.DOCTOR, UserRole.NURSE]:
+                return queryset.order_by('-prescribed_at')
+        except Exception:
+            pass
+
         # If user is a patient, show only their prescriptions
         try:
             patient = user.patient
@@ -200,7 +211,7 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
         except Patient.DoesNotExist:
             pass
 
-        # For doctors/staff/admin, show all prescriptions
+        # Default: show all prescriptions
         return queryset.order_by('-prescribed_at')
 
 

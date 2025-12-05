@@ -26,7 +26,11 @@ import {
     Select,
     MenuItem,
     Alert,
-    Tooltip
+    Tooltip,
+    FormGroup,
+    FormControlLabel,
+    Checkbox,
+    FormLabel
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -67,7 +71,8 @@ const AdminUsersPage = () => {
         last_name: '',
         is_active: true,
         is_staff: false,
-        role: 'PATIENT'
+        role: 'PATIENT',
+        roles: [] // 복수 권한 저장
     });
 
     // Delete Confirmation
@@ -123,6 +128,11 @@ const AdminUsersPage = () => {
 
     const handleEditUser = (user) => {
         setSelectedUser(user);
+
+        // 사용자의 현재 role을 기반으로 roles 배열 초기화
+        const currentRole = user.role || user.profile?.role || 'PATIENT';
+        const initialRoles = user.roles || [currentRole];
+
         setEditFormData({
             username: user.username,
             email: user.email,
@@ -130,9 +140,25 @@ const AdminUsersPage = () => {
             last_name: user.last_name || '',
             is_active: user.is_active,
             is_staff: user.is_staff || false,
-            role: user.role || user.profile?.role || 'PATIENT'
+            role: currentRole,
+            roles: initialRoles
         });
         setOpenEditDialog(true);
+    };
+
+    const handleRoleCheckboxChange = (role) => {
+        setEditFormData(prev => {
+            const newRoles = prev.roles.includes(role)
+                ? prev.roles.filter(r => r !== role)
+                : [...prev.roles, role];
+
+            return {
+                ...prev,
+                roles: newRoles,
+                // 주 역할은 선택된 역할 중 첫 번째로 설정
+                role: newRoles.length > 0 ? newRoles[0] : 'PATIENT'
+            };
+        });
     };
 
     const handleSaveEdit = async () => {
@@ -264,11 +290,25 @@ const AdminUsersPage = () => {
                                         <TableCell>{u.email}</TableCell>
                                         <TableCell>{u.last_name}{u.first_name}</TableCell>
                                         <TableCell>
-                                            <Chip
-                                                label={getRoleLabel(u.role || u.profile?.role)}
-                                                color={getRoleColor(u.role || u.profile?.role)}
-                                                size="small"
-                                            />
+                                            <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                                                {u.roles && u.roles.length > 0 ? (
+                                                    u.roles.map((role, idx) => (
+                                                        <Chip
+                                                            key={idx}
+                                                            label={getRoleLabel(role)}
+                                                            color={getRoleColor(role)}
+                                                            size="small"
+                                                            sx={{ mb: 0.5 }}
+                                                        />
+                                                    ))
+                                                ) : (
+                                                    <Chip
+                                                        label={getRoleLabel(u.role || u.profile?.role)}
+                                                        color={getRoleColor(u.role || u.profile?.role)}
+                                                        size="small"
+                                                    />
+                                                )}
+                                            </Stack>
                                         </TableCell>
                                         <TableCell>
                                             {u.is_active ? (
@@ -394,11 +434,74 @@ const AdminUsersPage = () => {
                                 <MenuItem value={false}>비활성</MenuItem>
                             </Select>
                         </FormControl>
+
+                        <FormControl component="fieldset" variant="standard">
+                            <FormLabel component="legend" sx={{ mb: 1, fontWeight: 600 }}>
+                                권한 설정 (복수 선택 가능)
+                            </FormLabel>
+                            <FormGroup>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={editFormData.roles.includes('ADMIN')}
+                                            onChange={() => handleRoleCheckboxChange('ADMIN')}
+                                            color="error"
+                                        />
+                                    }
+                                    label="관리자 (ADMIN)"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={editFormData.roles.includes('DOCTOR')}
+                                            onChange={() => handleRoleCheckboxChange('DOCTOR')}
+                                            color="primary"
+                                        />
+                                    }
+                                    label="의사 (DOCTOR)"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={editFormData.roles.includes('NURSE')}
+                                            onChange={() => handleRoleCheckboxChange('NURSE')}
+                                            color="secondary"
+                                        />
+                                    }
+                                    label="간호사 (NURSE)"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={editFormData.roles.includes('PATIENT')}
+                                            onChange={() => handleRoleCheckboxChange('PATIENT')}
+                                            color="default"
+                                        />
+                                    }
+                                    label="환자 (PATIENT)"
+                                />
+                            </FormGroup>
+                            {editFormData.roles.length > 0 && (
+                                <Alert severity="info" sx={{ mt: 1 }}>
+                                    선택된 권한: {editFormData.roles.map(r => getRoleLabel(r)).join(', ')}
+                                </Alert>
+                            )}
+                            {editFormData.roles.length === 0 && (
+                                <Alert severity="warning" sx={{ mt: 1 }}>
+                                    최소 1개 이상의 권한을 선택해주세요.
+                                </Alert>
+                            )}
+                        </FormControl>
                     </Stack>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenEditDialog(false)}>취소</Button>
-                    <Button onClick={handleSaveEdit} variant="contained" color="primary">
+                    <Button
+                        onClick={handleSaveEdit}
+                        variant="contained"
+                        color="primary"
+                        disabled={editFormData.roles.length === 0}
+                    >
                         저장
                     </Button>
                 </DialogActions>

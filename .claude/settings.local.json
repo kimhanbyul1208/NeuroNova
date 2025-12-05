@@ -49,7 +49,9 @@
       "Bash(del:*)",
       "Bash(powershell.exe -Command \"Get-Process python -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime\")",
       "Bash(python scriptscheck_patient_users.py:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(cmd.exe /c \"cd c:\\Users\\302-28\\Desktop\\final_pr\\frontend\\react_web && npm run dev\")",
+      "Bash(powershell.exe:*)"
     ],
     "deny": [],
     "ask": []
