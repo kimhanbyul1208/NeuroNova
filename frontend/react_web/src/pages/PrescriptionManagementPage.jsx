@@ -191,8 +191,10 @@ const PrescriptionManagementPage = () => {
             setLoading(true);
             setError(null);
 
+            let encounterId = formData.encounter;
+
             // If no encounter exists, create one automatically
-            if (!formData.encounter && formData.patient_id) {
+            if (!encounterId && formData.patient_id) {
                 try {
                     // Create a new encounter for this patient with required fields
                     const encounterResponse = await axiosClient.post(API_ENDPOINTS.ENCOUNTERS, {
@@ -204,17 +206,26 @@ const PrescriptionManagementPage = () => {
                         status: 'IN_PROGRESS'
                     });
 
-                    // Update formData with new encounter
-                    formData.encounter = encounterResponse.data.id;
+                    if (encounterResponse.data && encounterResponse.data.id) {
+                        encounterId = encounterResponse.data.id;
+                        // Update state to reflect the new encounter
+                        setFormData(prev => ({
+                            ...prev,
+                            encounter: encounterId
+                        }));
+                    } else {
+                        throw new Error('진료 기록 생성 후 ID를 반환받지 못했습니다.');
+                    }
 
                     // Refresh encounters list
                     await fetchEncounters(formData.patient_id);
                 } catch (encounterErr) {
                     console.error('Failed to create encounter:', encounterErr);
                     const errorMsg = encounterErr.response?.data?.detail ||
-                                   encounterErr.response?.data?.error ||
-                                   encounterErr.response?.data?.message ||
-                                   '진료 기록 생성에 실패했습니다. 환자 ID를 확인해주세요.';
+                        encounterErr.response?.data?.error ||
+                        encounterErr.response?.data?.message ||
+                        encounterErr.message ||
+                        '진료 기록 생성에 실패했습니다. 환자 ID를 확인해주세요.';
                     setError(errorMsg);
                     setLoading(false);
                     return;
@@ -222,7 +233,7 @@ const PrescriptionManagementPage = () => {
             }
 
             // Validate required fields
-            if (!formData.encounter) {
+            if (!encounterId) {
                 setError('진료 세션(Encounter)이 필요합니다. 환자를 선택하거나 진료 기록을 확인해주세요.');
                 setLoading(false);
                 return;
@@ -232,7 +243,7 @@ const PrescriptionManagementPage = () => {
                 ...formData,
                 // Ensure correct field names for backend
                 duration: formData.duration, // Backend expects 'duration'
-                encounter: formData.encounter, // Backend expects 'encounter' ID
+                encounter: encounterId, // Backend expects 'encounter' ID
                 medication_code: formData.medication_code || 'MED-UNKNOWN'
             };
 
