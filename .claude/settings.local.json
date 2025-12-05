@@ -45,7 +45,8 @@
       "Bash(tasklist:*)",
       "Bash(if [ -d \"docs\" ])",
       "Bash(then echo \"docs exists\")",
-      "Bash(else echo \"docs not found\")"
+      "Bash(else echo \"docs not found\")",
+      "Bash(del:*)"
     ],
     "deny": [],
     "ask": []
