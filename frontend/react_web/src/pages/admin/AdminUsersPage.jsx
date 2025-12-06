@@ -1,615 +1,198 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-    Container,
     Typography,
     Box,
     Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     TablePagination,
-    Button,
-    Chip,
-    TextField,
-    InputAdornment,
-    IconButton,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Stack,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Alert,
-    Tooltip,
-    FormGroup,
-    FormControlLabel,
-    Checkbox,
-    FormLabel
+    Alert
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useAuth } from '../../auth/AuthContext';
 import { useFocusCleanup } from '../../hooks/useFocusCleanup';
-import axiosClient from '../../api/axios';
-import { API_ENDPOINTS } from '../../utils/config';
-import { LoadingSpinner, ErrorAlert } from '../../components';
+import { useUserManagement } from '../../hooks/useUserManagement';
+import {
+    RoleFilter,
+    UserSearchBar,
+    UserTable,
+    UserTableSkeleton,
+    UserEditDialog,
+    UserDeleteDialog
+} from '../../components/admin';
 
+/**
+ * 관리자 사용자 관리 페이지
+ * 사용자 목록 조회, 검색, 필터링, CRUD 작업 제공
+ */
 const AdminUsersPage = () => {
     const { user } = useAuth();
     useFocusCleanup();
 
-    // Data State
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState('');
+    // 사용자 관리 커스텀 훅 사용
+    const {
+        users,
+        loading,
+        error,
+        success,
+        page,
+        rowsPerPage,
+        totalCount,
+        searchTerm,
+        selectedRoles,
+        setSearchTerm,
+        setError,
+        setSuccess,
+        handleSearch,
+        handleRoleFilterToggle,
+        activateUser,
+        deactivateUser,
+        updateUser,
+        deleteUser,
+        handlePageChange,
+        handleRowsPerPageChange
+    } = useUserManagement();
 
-    // Pagination
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [totalCount, setTotalCount] = useState(0);
-
-    // Search & Filter State
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedRoles, setSelectedRoles] = useState(['ADMIN', 'DOCTOR', 'NURSE', 'PATIENT']);
-
-    // Applied Filters (Trigger for API call)
-    const [appliedFilters, setAppliedFilters] = useState({
-        search: '',
-        roles: ['ADMIN', 'DOCTOR', 'NURSE', 'PATIENT']
-    });
-
-    // Edit Dialog
+    // Dialog State
     const [openEditDialog, setOpenEditDialog] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [editFormData, setEditFormData] = useState({
-        username: '',
-        email: '',
-        first_name: '',
-        last_name: '',
-        is_active: true,
-        is_staff: false,
-        role: 'PATIENT',
-        roles: [] // 복수 권한 저장
-    });
-
-    // Delete Confirmation
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [userToDelete, setUserToDelete] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [page, rowsPerPage, appliedFilters]);
-
-    const fetchUsers = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            // Build query params
-            const params = {
-                page: page + 1, // API is 1-indexed, MUI is 0-indexed
-                page_size: rowsPerPage,
-            };
-
-            if (appliedFilters.search) {
-                params.search = appliedFilters.search;
-            }
-
-            if (appliedFilters.roles.length > 0) {
-                params.roles = appliedFilters.roles.join(',');
-            }
-
-            const response = await axiosClient.get(API_ENDPOINTS.USERS, { params });
-            console.log('Users response:', response.data);
-
-            if (response.data.results) {
-                setUsers(response.data.results);
-                setTotalCount(response.data.total_count || response.data.count || 0);
-            } else if (Array.isArray(response.data)) {
-                // Fallback for non-paginated API
-                setUsers(response.data);
-                setTotalCount(response.data.length);
-            }
-
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            if (err.response?.status === 403) {
-                setError('권한이 없습니다. 관리자 계정으로 로그인해주세요.');
-            } else if (err.response?.data?.detail) {
-                setError(err.response.data.detail);
-            } else {
-                setError('사용자 목록을 불러오는데 실패했습니다.');
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRoleFilterChange = (role) => {
-        setSelectedRoles(prev => {
-            if (prev.includes(role)) {
-                return prev.filter(r => r !== role);
-            } else {
-                return [...prev, role];
-            }
-        });
-    };
-
-    const handleSearchClick = () => {
-        setAppliedFilters({
-            search: searchTerm,
-            roles: selectedRoles
-        });
-        setPage(0);
-    };
-
-    const handleActivateUser = async (userId) => {
-        try {
-            await axiosClient.post(`${API_ENDPOINTS.USERS}${userId}/activate/`);
-            setSuccess('사용자가 활성화되었습니다.');
-            fetchUsers();
-        } catch (err) {
-            console.error('Error activating user:', err);
-            setError('사용자 활성화에 실패했습니다.');
-        }
-    };
-
-
-    const handleDeactivateUser = async (userId) => {
-        try {
-            await axiosClient.post(`${API_ENDPOINTS.USERS}${userId}/deactivate/`);
-            setSuccess('사용자가 비활성화되었습니다.');
-            fetchUsers();
-        } catch (err) {
-            console.error('Error deactivating user:', err);
-            setError('사용자 비활성화에 실패했습니다.');
-        }
-    };
-
-    const handleEditUser = (user) => {
-        setSelectedUser(user);
-
-        // 사용자의 현재 role을 기반으로 roles 배열 초기화
-        const currentRole = user.role || user.profile?.role || 'PATIENT';
-        const initialRoles = user.roles || [currentRole];
-
-        setEditFormData({
-            username: user.username,
-            email: user.email,
-            first_name: user.first_name || '',
-            last_name: user.last_name || '',
-            is_active: user.is_active,
-            is_staff: user.is_staff || false,
-            role: currentRole,
-            roles: initialRoles
-        });
+    // Edit Dialog Handlers
+    const handleEditUser = (userData) => {
+        setSelectedUser(userData);
         setOpenEditDialog(true);
     };
 
-    const handleRoleCheckboxChange = (role) => {
-        setEditFormData(prev => {
-            const newRoles = prev.roles.includes(role)
-                ? prev.roles.filter(r => r !== role)
-                : [...prev.roles, role];
-
-            return {
-                ...prev,
-                roles: newRoles,
-                // 주 역할은 선택된 역할 중 첫 번째로 설정
-                role: newRoles.length > 0 ? newRoles[0] : 'PATIENT'
-            };
-        });
-    };
-
-    const handleSaveEdit = async () => {
+    const handleSaveEdit = async (userId, formData) => {
         try {
-            await axiosClient.patch(`${API_ENDPOINTS.USERS}${selectedUser.id}/`, editFormData);
-            setSuccess('사용자 정보가 수정되었습니다.');
+            await updateUser(userId, formData);
             setOpenEditDialog(false);
-            fetchUsers();
+            setSelectedUser(null);
         } catch (err) {
-            console.error('Error updating user:', err);
-            setError('사용자 정보 수정에 실패했습니다.');
+            // Error is already handled in the hook
         }
     };
 
-    const handleDeleteUser = (user) => {
-        setUserToDelete(user);
+    // Delete Dialog Handlers
+    const handleDeleteUser = (userData) => {
+        setSelectedUser(userData);
         setOpenDeleteDialog(true);
     };
 
-    const confirmDeleteUser = async () => {
+    const handleConfirmDelete = async (userId) => {
         try {
-            await axiosClient.delete(`${API_ENDPOINTS.USERS}${userToDelete.id}/`);
-            setSuccess('사용자가 삭제되었습니다.');
+            await deleteUser(userId);
             setOpenDeleteDialog(false);
-            setUserToDelete(null);
-            fetchUsers();
+            setSelectedUser(null);
         } catch (err) {
-            console.error('Error deleting user:', err);
-            setError('사용자 삭제에 실패했습니다.');
+            // Error is already handled in the hook
         }
     };
 
-
-
-    const getRoleLabel = (role) => {
-        const roleMap = {
-            ADMIN: '관리자',
-            DOCTOR: '의사',
-            NURSE: '간호사',
-            PATIENT: '환자'
-        };
-        return roleMap[role] || role;
-    };
-
-    const getRoleColor = (role) => {
-        const colorMap = {
-            ADMIN: 'error',
-            DOCTOR: 'primary',
-            NURSE: 'secondary',
-            PATIENT: 'default'
-        };
-        return colorMap[role] || 'default';
-    };
-
-    if (loading) return <LoadingSpinner fullScreen />;
-
     return (
-        <DashboardLayout role={user?.role} activePage="users" title="사용자 관리">
-            <Paper sx={{ p: 3, borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h5" fontWeight={600}>
+        <DashboardLayout
+            role={user?.role}
+            activePage="users"
+            title="사용자 관리"
+            className="admin-users-page"
+        >
+            <Paper
+                sx={{ p: 3, borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}
+                className="admin-users-container"
+            >
+                {/* 페이지 헤더 */}
+                <Box
+                    sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}
+                    className="page-header"
+                >
+                    <Typography variant="h5" fontWeight={600} className="page-title">
                         전체 사용자 관리
                     </Typography>
                 </Box>
 
+                {/* 에러/성공 메시지 */}
                 {error && (
-                    <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+                    <Alert
+                        severity="error"
+                        sx={{ mb: 2 }}
+                        onClose={() => setError(null)}
+                        className="alert-error"
+                    >
                         {error}
                     </Alert>
                 )}
 
                 {success && (
-                    <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
+                    <Alert
+                        severity="success"
+                        sx={{ mb: 2 }}
+                        onClose={() => setSuccess('')}
+                        className="alert-success"
+                    >
                         {success}
                     </Alert>
                 )}
 
-                <Paper sx={{ mb: 3, p: 2, bgcolor: '#f8f9fa' }}>
-                    <Typography variant="subtitle2" gutterBottom fontWeight={600}>
-                        권한 필터
-                    </Typography>
-                    <FormGroup row>
-                        {['ADMIN', 'DOCTOR', 'NURSE', 'PATIENT'].map((role) => (
-                            <FormControlLabel
-                                key={role}
-                                control={
-                                    <Checkbox
-                                        checked={selectedRoles.includes(role)}
-                                        onChange={() => handleRoleFilterChange(role)}
-                                        size="small"
-                                        color={getRoleColor(role)}
-                                    />
-                                }
-                                label={
-                                    <Chip
-                                        label={getRoleLabel(role)}
-                                        size="small"
-                                        color={getRoleColor(role)}
-                                        variant={selectedRoles.includes(role) ? "filled" : "outlined"}
-                                        sx={{ minWidth: 60, cursor: 'pointer' }}
-                                        onClick={() => handleRoleFilterChange(role)} // Click chip to toggle too
-                                    />
-                                }
-                                sx={{ mr: 2 }}
-                            />
-                        ))}
-                    </FormGroup>
-                </Paper>
+                {/* 역할 필터 */}
+                <RoleFilter
+                    selectedRoles={selectedRoles}
+                    onRoleToggle={handleRoleFilterToggle}
+                />
 
-                <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-                    <TextField
-                        fullWidth
-                        placeholder="사용자명, 이메일, 이름으로 검색..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon color="action" />
-                                </InputAdornment>
-                            ),
-                            sx: { borderRadius: '12px', bgcolor: 'white' }
-                        }}
-                        size="small"
+                {/* 검색 바 */}
+                <UserSearchBar
+                    searchTerm={searchTerm}
+                    onSearchTermChange={setSearchTerm}
+                    onSearch={handleSearch}
+                />
+
+                {/* 사용자 테이블 또는 스켈레톤 */}
+                {loading ? (
+                    <UserTableSkeleton rows={rowsPerPage} />
+                ) : (
+                    <UserTable
+                        users={users}
+                        onEdit={handleEditUser}
+                        onDelete={handleDeleteUser}
+                        onActivate={activateUser}
+                        onDeactivate={deactivateUser}
                     />
-                    <Button
-                        variant="contained"
-                        onClick={handleSearchClick}
-                        startIcon={<SearchIcon />}
-                        sx={{ minWidth: 100, borderRadius: '12px' }}
-                    >
-                        검색
-                    </Button>
-                </Box>
+                )}
 
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell><strong>ID</strong></TableCell>
-                                <TableCell><strong>사용자명</strong></TableCell>
-                                <TableCell><strong>이메일</strong></TableCell>
-                                <TableCell><strong>이름</strong></TableCell>
-                                <TableCell><strong>직책</strong></TableCell>
-                                <TableCell><strong>활성 상태</strong></TableCell>
-                                <TableCell align="center"><strong>관리</strong></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {users.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} align="center">
-                                        <Typography color="text.secondary">검색 결과가 없습니다.</Typography>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                users.map((u) => (
-                                    <TableRow key={u.id} hover>
-                                        <TableCell>{u.id}</TableCell>
-                                        <TableCell>{u.username}</TableCell>
-                                        <TableCell>{u.email}</TableCell>
-                                        <TableCell>{u.last_name}{u.first_name}</TableCell>
-                                        <TableCell>
-                                            <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                                                {u.roles && u.roles.length > 0 ? (
-                                                    u.roles.map((role, idx) => (
-                                                        <Chip
-                                                            key={idx}
-                                                            label={getRoleLabel(role)}
-                                                            color={getRoleColor(role)}
-                                                            size="small"
-                                                            sx={{ mb: 0.5 }}
-                                                        />
-                                                    ))
-                                                ) : (
-                                                    <Chip
-                                                        label={getRoleLabel(u.role || u.profile?.role)}
-                                                        color={getRoleColor(u.role || u.profile?.role)}
-                                                        size="small"
-                                                    />
-                                                )}
-                                            </Stack>
-                                        </TableCell>
-                                        <TableCell>
-                                            {u.is_active ? (
-                                                <Chip
-                                                    icon={<CheckCircleIcon />}
-                                                    label="활성"
-                                                    color="success"
-                                                    size="small"
-                                                />
-                                            ) : (
-                                                <Chip
-                                                    icon={<CancelIcon />}
-                                                    label="비활성"
-                                                    color="error"
-                                                    size="small"
-                                                />
-                                            )}
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Stack direction="row" spacing={1} justifyContent="center">
-                                                {u.is_active ? (
-                                                    <Tooltip title="비활성화">
-                                                        <IconButton
-                                                            color="error"
-                                                            size="small"
-                                                            onClick={() => handleDeactivateUser(u.id)}
-                                                        >
-                                                            <CancelIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                ) : (
-                                                    <Tooltip title="활성화">
-                                                        <IconButton
-                                                            color="success"
-                                                            size="small"
-                                                            onClick={() => handleActivateUser(u.id)}
-                                                        >
-                                                            <CheckCircleIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                )}
-                                                <Tooltip title="수정">
-                                                    <IconButton
-                                                        color="primary"
-                                                        size="small"
-                                                        onClick={() => handleEditUser(u)}
-                                                    >
-                                                        <EditIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="삭제">
-                                                    <IconButton
-                                                        color="error"
-                                                        size="small"
-                                                        onClick={() => handleDeleteUser(u)}
-                                                    >
-                                                        <DeleteIcon />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </Stack>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-
+                {/* 페이지네이션 */}
                 <TablePagination
                     component="div"
                     count={totalCount}
                     page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
+                    onPageChange={handlePageChange}
                     rowsPerPage={rowsPerPage}
-                    onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
-                        setPage(0);
-                    }}
+                    onRowsPerPageChange={handleRowsPerPageChange}
                     labelRowsPerPage="페이지당 행 수:"
                     labelDisplayedRows={({ from, to, count }) => `${from}-${to} / 총 ${count}개`}
+                    className="user-table-pagination"
                 />
             </Paper>
 
-            {/* Edit User Dialog */}
-            <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>사용자 정보 수정</DialogTitle>
-                <DialogContent>
-                    <Stack spacing={2} sx={{ mt: 2 }}>
-                        <TextField
-                            label="사용자명"
-                            value={editFormData.username}
-                            onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
-                            fullWidth
-                            disabled
-                        />
-                        <TextField
-                            label="이메일"
-                            type="email"
-                            value={editFormData.email}
-                            onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                            fullWidth
-                        />
-                        <TextField
-                            label="성"
-                            value={editFormData.last_name}
-                            onChange={(e) => setEditFormData({ ...editFormData, last_name: e.target.value })}
-                            fullWidth
-                        />
-                        <TextField
-                            label="이름"
-                            value={editFormData.first_name}
-                            onChange={(e) => setEditFormData({ ...editFormData, first_name: e.target.value })}
-                            fullWidth
-                        />
-                        <FormControl fullWidth>
-                            <InputLabel>활성 상태</InputLabel>
-                            <Select
-                                value={editFormData.is_active}
-                                label="활성 상태"
-                                onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.value })}
-                            >
-                                <MenuItem value={true}>활성</MenuItem>
-                                <MenuItem value={false}>비활성</MenuItem>
-                            </Select>
-                        </FormControl>
+            {/* 사용자 수정 다이얼로그 */}
+            <UserEditDialog
+                open={openEditDialog}
+                user={selectedUser}
+                onClose={() => {
+                    setOpenEditDialog(false);
+                    setSelectedUser(null);
+                }}
+                onSave={handleSaveEdit}
+            />
 
-                        <FormControl component="fieldset" variant="standard">
-                            <FormLabel component="legend" sx={{ mb: 1, fontWeight: 600 }}>
-                                권한 설정 (복수 선택 가능)
-                            </FormLabel>
-                            <FormGroup>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={editFormData.roles.includes('ADMIN')}
-                                            onChange={() => handleRoleCheckboxChange('ADMIN')}
-                                            color="error"
-                                        />
-                                    }
-                                    label="관리자 (ADMIN)"
-                                />
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={editFormData.roles.includes('DOCTOR')}
-                                            onChange={() => handleRoleCheckboxChange('DOCTOR')}
-                                            color="primary"
-                                        />
-                                    }
-                                    label="의사 (DOCTOR)"
-                                />
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={editFormData.roles.includes('NURSE')}
-                                            onChange={() => handleRoleCheckboxChange('NURSE')}
-                                            color="secondary"
-                                        />
-                                    }
-                                    label="간호사 (NURSE)"
-                                />
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={editFormData.roles.includes('PATIENT')}
-                                            onChange={() => handleRoleCheckboxChange('PATIENT')}
-                                            color="default"
-                                        />
-                                    }
-                                    label="환자 (PATIENT)"
-                                />
-                            </FormGroup>
-                            {editFormData.roles.length > 0 && (
-                                <Alert severity="info" sx={{ mt: 1 }}>
-                                    선택된 권한: {editFormData.roles.map(r => getRoleLabel(r)).join(', ')}
-                                </Alert>
-                            )}
-                            {editFormData.roles.length === 0 && (
-                                <Alert severity="warning" sx={{ mt: 1 }}>
-                                    최소 1개 이상의 권한을 선택해주세요.
-                                </Alert>
-                            )}
-                        </FormControl>
-                    </Stack>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenEditDialog(false)}>취소</Button>
-                    <Button
-                        onClick={handleSaveEdit}
-                        variant="contained"
-                        color="primary"
-                        disabled={editFormData.roles.length === 0}
-                    >
-                        저장
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Delete Confirmation Dialog */}
-            <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-                <DialogTitle>사용자 삭제 확인</DialogTitle>
-                <DialogContent>
-                    <Typography>
-                        정말로 사용자 <strong>{userToDelete?.username}</strong>을(를) 삭제하시겠습니까?
-                    </Typography>
-                    <Alert severity="warning" sx={{ mt: 2 }}>
-                        이 작업은 되돌릴 수 없습니다.
-                    </Alert>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenDeleteDialog(false)}>취소</Button>
-                    <Button onClick={confirmDeleteUser} variant="contained" color="error">
-                        삭제
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            {/* 사용자 삭제 확인 다이얼로그 */}
+            <UserDeleteDialog
+                open={openDeleteDialog}
+                user={selectedUser}
+                onClose={() => {
+                    setOpenDeleteDialog(false);
+                    setSelectedUser(null);
+                }}
+                onConfirm={handleConfirmDelete}
+            />
         </DashboardLayout>
     );
 };
