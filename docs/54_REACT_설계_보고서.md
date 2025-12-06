@@ -683,7 +683,9 @@ const UserTable = ({ users, onEdit, onDelete, onActivate, onDeactivate }) => {
 };
 ```
 
-### 5. 에러 처리
+### 5. 에러 처리 및 방지 전략
+
+#### 5.1 컴포넌트 레벨 에러 바운더리
 
 ```jsx
 // 컴포넌트 레벨 에러 바운더리
@@ -695,7 +697,9 @@ class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, errorInfo) {
+        // 에러 로깅 서비스로 전송 (예: Sentry)
         console.error('Error caught:', error, errorInfo);
+        // logErrorToService(error, errorInfo);
     }
 
     render() {
@@ -710,6 +714,271 @@ class ErrorBoundary extends React.Component {
 <ErrorBoundary>
     <AdminUsersPage />
 </ErrorBoundary>
+```
+
+#### 5.2 API 호출 에러 처리
+
+```jsx
+// hooks/useUserManagement.js
+const fetchUsers = async () => {
+    try {
+        setLoading(true);
+        setError(null); // 이전 에러 초기화
+
+        const response = await axiosClient.get(API_ENDPOINTS.USERS, { params });
+        setUsers(response.data.results);
+
+    } catch (err) {
+        console.error('Error fetching users:', err);
+
+        // 구체적인 에러 메시지 처리
+        if (err.response?.status === 403) {
+            setError('권한이 없습니다. 관리자 계정으로 로그인해주세요.');
+        } else if (err.response?.status === 404) {
+            setError('사용자를 찾을 수 없습니다.');
+        } else if (err.response?.status === 500) {
+            setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        } else if (err.code === 'ECONNABORTED') {
+            setError('요청 시간이 초과되었습니다. 네트워크를 확인해주세요.');
+        } else {
+            setError(err.response?.data?.detail || '사용자 목록을 불러오는데 실패했습니다.');
+        }
+    } finally {
+        setLoading(false);
+    }
+};
+```
+
+#### 5.3 Null/Undefined 방지
+
+```jsx
+// ✅ Good: 옵셔널 체이닝과 기본값 사용
+const UserTable = ({ users = [] }) => {
+    return (
+        <Table>
+            {users.map(user => (
+                <TableRow key={user.id}>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.email || 'N/A'}</TableCell>
+                    <TableCell>{user.profile?.department || '-'}</TableCell>
+                </TableRow>
+            ))}
+        </Table>
+    );
+};
+
+// ❌ Bad: 에러 발생 가능
+const UserTable = ({ users }) => {
+    return (
+        <Table>
+            {users.map(user => (  // users가 undefined면 에러!
+                <TableRow key={user.id}>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.email}</TableCell>  // null이면 빈 칸
+                    <TableCell>{user.profile.department}</TableCell>  // profile이 null이면 에러!
+                </TableRow>
+            ))}
+        </Table>
+    );
+};
+```
+
+#### 5.4 조건부 렌더링으로 에러 방지
+
+```jsx
+// ✅ Good: 데이터 검증 후 렌더링
+function UserDetail({ userId }) {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    if (loading) return <Skeleton />;
+    if (error) return <Alert severity="error">{error}</Alert>;
+    if (!user) return <Alert severity="info">사용자를 찾을 수 없습니다.</Alert>;
+
+    return (
+        <Card>
+            <Typography>{user.username}</Typography>
+            <Typography>{user.email}</Typography>
+        </Card>
+    );
+}
+```
+
+#### 5.5 Input 검증
+
+```jsx
+// ✅ Good: 입력값 검증
+const UserEditDialog = ({ user, onSave }) => {
+    const [formData, setFormData] = useState({
+        email: '',
+        roles: []
+    });
+    const [validationErrors, setValidationErrors] = useState({});
+
+    const validateForm = () => {
+        const errors = {};
+
+        // 이메일 검증
+        if (!formData.email) {
+            errors.email = '이메일은 필수입니다.';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            errors.email = '유효한 이메일 형식이 아닙니다.';
+        }
+
+        // 역할 검증
+        if (formData.roles.length === 0) {
+            errors.roles = '최소 1개 이상의 역할을 선택해주세요.';
+        }
+
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleSave = () => {
+        if (validateForm()) {
+            onSave(user.id, formData);
+        }
+    };
+
+    return (
+        <Dialog open>
+            <TextField
+                label="이메일"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                error={!!validationErrors.email}
+                helperText={validationErrors.email}
+            />
+            <Button onClick={handleSave}>저장</Button>
+        </Dialog>
+    );
+};
+```
+
+#### 5.6 비동기 작업 중 컴포넌트 언마운트 방지
+
+```jsx
+// ✅ Good: cleanup으로 메모리 누수 방지
+function UserList() {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true; // 마운트 상태 추적
+
+        const fetchUsers = async () => {
+            setLoading(true);
+            try {
+                const response = await api.getUsers();
+                if (isMounted) {  // 마운트된 경우에만 상태 업데이트
+                    setUsers(response.data);
+                }
+            } catch (err) {
+                if (isMounted) {
+                    setError(err.message);
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchUsers();
+
+        return () => {
+            isMounted = false; // cleanup: 언마운트 시 플래그 변경
+        };
+    }, []);
+
+    return <Table data={users} />;
+}
+```
+
+#### 5.7 Key Prop 누락 방지
+
+```jsx
+// ✅ Good: 고유한 key 사용
+{users.map(user => (
+    <UserRow key={user.id} user={user} />
+))}
+
+// ❌ Bad: index를 key로 사용 (재정렬 시 문제)
+{users.map((user, index) => (
+    <UserRow key={index} user={user} />
+))}
+
+// ❌ Bad: key 누락 (Warning 발생)
+{users.map(user => (
+    <UserRow user={user} />
+))}
+```
+
+#### 5.8 이벤트 핸들러 바인딩 에러 방지
+
+```jsx
+// ✅ Good: 화살표 함수 또는 useCallback 사용
+function UserList({ onEdit, onDelete }) {
+    const handleEdit = useCallback((user) => {
+        onEdit(user);
+    }, [onEdit]);
+
+    return (
+        <Table>
+            {users.map(user => (
+                <IconButton onClick={() => handleEdit(user)}>
+                    <EditIcon />
+                </IconButton>
+            ))}
+        </Table>
+    );
+}
+
+// ❌ Bad: 직접 호출 (즉시 실행됨!)
+<IconButton onClick={handleEdit(user)}>
+    <EditIcon />
+</IconButton>
+```
+
+#### 5.9 환경 변수 누락 방지
+
+```jsx
+// ✅ Good: 환경 변수 검증
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+if (!API_BASE_URL) {
+    throw new Error('VITE_API_BASE_URL is not defined. Please check your .env file.');
+}
+
+// config.js에서 중앙 관리
+export const config = {
+    apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+    apiTimeout: parseInt(import.meta.env.VITE_API_TIMEOUT) || 10000,
+};
+```
+
+#### 5.10 에러 로깅 및 모니터링
+
+```jsx
+// utils/errorLogger.js
+export const logError = (error, errorInfo) => {
+    // 개발 환경: 콘솔 출력
+    if (process.env.NODE_ENV === 'development') {
+        console.error('Error:', error);
+        console.error('Error Info:', errorInfo);
+    }
+
+    // 프로덕션 환경: 에러 추적 서비스로 전송
+    if (process.env.NODE_ENV === 'production') {
+        // Sentry.captureException(error, { extra: errorInfo });
+    }
+};
+
+// ErrorBoundary에서 사용
+componentDidCatch(error, errorInfo) {
+    logError(error, errorInfo);
+}
 ```
 
 ### 6. 로딩 상태 UX

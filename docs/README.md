@@ -1,7 +1,7 @@
 # NeuroNova 프로젝트 문서 가이드
 
-**버전**: 1.0
-**최종 업데이트**: 2025-12-05
+**버전**: 2.0
+**최종 업데이트**: 2025-12-06
 
 ---
 
@@ -17,33 +17,40 @@
 docs/
 ├── README.md                           # 이 파일 (문서 네비게이션 가이드)
 ├── 00_base_txt/                        # 기본 프로젝트 정보
+│   ├── TEAM_ROLES.md                  # 팀 역할 및 협업 가이드
+│   └── frountend_이전자료.md          # 프론트엔드 레거시 자료
 ├── 00_PROJECT_ROADMAP.md               # 프로젝트 로드맵 및 개발 계획
 ├── 01_NeuroNova_Context.md             # 프로젝트 전체 컨텍스트
+├── 01_프롬/                            # 발표 자료
+│   ├── 프롬8_예측결과.md
+│   └── 프롬10.md
 ├── 02_DB 설명 문서.md                  # 데이터베이스 스키마 상세
 ├── 04_test_accounts.md                 # 테스트용 계정 정보
 ├── 09_배포가이드.md                    # 배포 프로세스 가이드
 ├── 10_django_api.md                    # Django API 엔드포인트 문서
+├── 10_배포전_체크리스트.md             # 배포 전 체크리스트
 ├── 11_DJANGO_FLASK_COMMUNICATION.md    # Django-Flask 통신 구조
 ├── 12_flask_ai_integration.md          # Flask AI 서버 통합 가이드
 ├── 13_API_SPECIFICATION.md             # API 명세서 (영문)
 ├── 13_API_명세서.md                    # API 명세서 (한글)
+├── 13_API_통합명세서.md                # API 통합 명세서 (최신)
 ├── 14_ML_API_예제.md                   # ML API 사용 예제
+├── 15_ML_API_통합가이드.md             # ML API 통합 가이드 (최신)
+├── 16_DJANGO_설계_가이드.md            # Django 설계 철학 및 보고서 (신규)
+├── 17_FLUTTER_설계_가이드.md           # Flutter 설계 철학 및 보고서 (신규)
 ├── 50_FRONTEND_CHECKLIST.md            # 프론트엔드 개발 체크리스트
 ├── 51_FRONTEND_IMPLEMENTATION_GUIDE.md # 프론트엔드 구현 가이드
 ├── 52_REACT_IMPROVEMENTS.md            # React 웹 개선사항
 ├── 53_protein_viewer_api.md            # Protein Viewer API 문서
+├── 54_REACT_설계_보고서.md             # React 설계 철학 및 보고서 (신규)
 ├── 60_firebase_integration.md          # Firebase FCM 연동 가이드
 ├── 61_FUTURE_UI_STRUCTURE.md           # 향후 UI 구조 계획
 ├── 99_시스템_상태_보고서.md             # 시스템 현황 보고서
 ├── ARCHITECTURE.md                     # 시스템 아키텍처 문서
-├── Code_Improvement_Checklist.md       # 코드 개선 체크리스트
 ├── DB_INIT_GUIDE.md                    # 데이터베이스 초기화 가이드
-├── domain/                             # 도메인별 문서
 ├── ML_API_사용_가이드.md               # ML API 사용법
-├── Presentation_Overview.md            # 프로젝트 발표 개요
-├── Project_Gap_Analysis.md             # 프로젝트 갭 분석
-├── Signup_Design_Guidelines.md         # 회원가입 디자인 가이드
-└── STYLE_MIGRATION_GUIDE.md            # 스타일 마이그레이션 가이드
+└── domain/                             # 도메인별 문서
+    └── 뇌종양.md
 ```
 
 ---
@@ -74,13 +81,14 @@ docs/
 
 | 문서 | 설명 | 언제 참고? |
 |------|------|------------|
+| [**16_DJANGO_설계_가이드.md**](./16_DJANGO_설계_가이드.md) | **Django 설계 철학 및 모범 사례 (신규)** | **Django 설계 원칙 및 리팩토링 시** |
 | [10_django_api.md](./10_django_api.md) | Django REST API 엔드포인트 전체 목록 | **API 엔드포인트 확인 시** |
 | [**13_API_통합명세서.md**](./13_API_통합명세서.md) | **Django + Flask API 통합 명세서 (최신)** | **API 통합 개발 시 (권장)** |
 | [**15_ML_API_통합가이드.md**](./15_ML_API_통합가이드.md) | **ML API 사용 가이드 (최신 통합)** | **ML API 사용 시 (권장)** |
 | [11_DJANGO_FLASK_COMMUNICATION.md](./11_DJANGO_FLASK_COMMUNICATION.md) | Django와 Flask 간 통신 방법 | Django-Flask 연동 작업 시 |
 | [12_flask_ai_integration.md](./12_flask_ai_integration.md) | Flask AI 서버 통합 가이드 | AI 추론 서버 연동 시 |
 
-**📦 이전 버전 (Deprecated)**:
+**📦 이전 버전 (참고용)**:
 - `13_API_SPECIFICATION.md` → `13_API_통합명세서.md`로 대체
 - `13_API_명세서.md` → `13_API_통합명세서.md`로 대체
 - `14_ML_API_예제.md` → `15_ML_API_통합가이드.md`로 대체
@@ -93,11 +101,11 @@ docs/
 | 문서 | 설명 | 언제 참고? |
 |------|------|------------|
 | [51_FRONTEND_IMPLEMENTATION_GUIDE.md](./51_FRONTEND_IMPLEMENTATION_GUIDE.md) | **프론트엔드 구현 전체 가이드 (React + Flutter)** | **프론트엔드 작업 시작 전 필독** |
+| [**54_REACT_설계_보고서.md**](./54_REACT_설계_보고서.md) | **React 설계 철학 및 모범 사례 (신규)** | **React 설계 원칙 및 리팩토링 시** |
+| [**17_FLUTTER_설계_가이드.md**](./17_FLUTTER_설계_가이드.md) | **Flutter 설계 철학 및 모범 사례 (신규)** | **Flutter 설계 원칙 및 리팩토링 시** |
 | [50_FRONTEND_CHECKLIST.md](./50_FRONTEND_CHECKLIST.md) | 프론트엔드 개발 체크리스트 | 프론트엔드 작업 진행 상황 확인 시 |
 | [52_REACT_IMPROVEMENTS.md](./52_REACT_IMPROVEMENTS.md) | React 웹 애플리케이션 개선 사항 | React 웹 기능 추가/수정 시 |
 | [61_FUTURE_UI_STRUCTURE.md](./61_FUTURE_UI_STRUCTURE.md) | 향후 UI 구조 개선 계획 | UI/UX 개선 작업 시 |
-| [Signup_Design_Guidelines.md](./Signup_Design_Guidelines.md) | 회원가입 UI/UX 디자인 가이드라인 | 회원가입 기능 구현 시 |
-| [STYLE_MIGRATION_GUIDE.md](./STYLE_MIGRATION_GUIDE.md) | 스타일 마이그레이션 가이드 | CSS/스타일 변경 시 |
 
 ---
 
@@ -114,6 +122,7 @@ docs/
 | 문서 | 설명 | 언제 참고? |
 |------|------|------------|
 | [09_배포가이드.md](./09_배포가이드.md) | **Docker Compose 기반 배포 프로세스** | **배포 작업 시** |
+| [10_배포전_체크리스트.md](./10_배포전_체크리스트.md) | 배포 전 확인 사항 체크리스트 | 배포 전 점검 시 |
 | [99_시스템_상태_보고서.md](./99_시스템_상태_보고서.md) | 현재 시스템 상태 및 이슈 리스트 | 시스템 현황 파악 시 |
 
 ---
@@ -123,7 +132,6 @@ docs/
 | 문서 | 설명 | 언제 참고? |
 |------|------|------------|
 | [04_test_accounts.md](./04_test_accounts.md) | 테스트용 계정 정보 (의사, 환자, 관리자 등) | **테스트 로그인 필요 시** |
-| [Code_Improvement_Checklist.md](./Code_Improvement_Checklist.md) | 코드 품질 개선 체크리스트 | 코드 리뷰 및 리팩토링 시 |
 
 ---
 
@@ -132,8 +140,7 @@ docs/
 | 문서 | 설명 | 언제 참고? |
 |------|------|------------|
 | [53_protein_viewer_api.md](./53_protein_viewer_api.md) | Protein Viewer API 문서 | Protein 시각화 기능 구현 시 |
-| [Presentation_Overview.md](./Presentation_Overview.md) | 프로젝트 발표 개요 | 발표 준비 시 |
-| [Project_Gap_Analysis.md](./Project_Gap_Analysis.md) | 프로젝트 갭 분석 (구현 vs 계획) | 진행 상황 점검 시 |
+| [domain/뇌종양.md](./domain/뇌종양.md) | 뇌종양 도메인 지식 | 의료 도메인 이해 필요 시 |
 
 ---
 
@@ -152,8 +159,10 @@ docs/
 
 #### 📌 프론트엔드 개발 시
 1. [51_FRONTEND_IMPLEMENTATION_GUIDE.md](./51_FRONTEND_IMPLEMENTATION_GUIDE.md) - 프론트엔드 전체 가이드
-2. [52_REACT_IMPROVEMENTS.md](./52_REACT_IMPROVEMENTS.md) - React 개선사항
-3. [60_firebase_integration.md](./60_firebase_integration.md) - Firebase 연동 (푸시 알림 등)
+2. [**54_REACT_설계_보고서.md**](./54_REACT_설계_보고서.md) - **React 설계 원칙 (최신)**
+3. [**17_FLUTTER_설계_가이드.md**](./17_FLUTTER_설계_가이드.md) - **Flutter 설계 원칙 (최신)**
+4. [52_REACT_IMPROVEMENTS.md](./52_REACT_IMPROVEMENTS.md) - React 개선사항
+5. [60_firebase_integration.md](./60_firebase_integration.md) - Firebase 연동 (푸시 알림 등)
 
 #### 📌 AI/ML 기능 개발 시
 1. [**15_ML_API_통합가이드.md**](./15_ML_API_통합가이드.md) - **ML API 사용 가이드 (최신, 권장)**
@@ -162,12 +171,12 @@ docs/
 
 #### 📌 배포 및 운영 작업 시
 1. [09_배포가이드.md](./09_배포가이드.md) - 배포 프로세스
-2. [DB_INIT_GUIDE.md](./DB_INIT_GUIDE.md) - DB 초기화
-3. [99_시스템_상태_보고서.md](./99_시스템_상태_보고서.md) - 현재 시스템 상태
+2. [10_배포전_체크리스트.md](./10_배포전_체크리스트.md) - 배포 전 체크리스트
+3. [DB_INIT_GUIDE.md](./DB_INIT_GUIDE.md) - DB 초기화
+4. [99_시스템_상태_보고서.md](./99_시스템_상태_보고서.md) - 현재 시스템 상태
 
 #### 📌 테스트 작업 시
 1. [04_test_accounts.md](./04_test_accounts.md) - 테스트 계정 정보
-2. [Code_Improvement_Checklist.md](./Code_Improvement_Checklist.md) - 코드 품질 체크
 
 ---
 
@@ -238,6 +247,23 @@ docs/
 
 ---
 
+## 📌 최근 변경사항 (2025-12-06)
+
+### 추가된 문서
+- **54_REACT_설계_보고서.md**: React 설계 철학, 컴포넌트 분리, 상태 관리, 성능 최적화, 접근성 등 상세한 설계 가이드
+- **16_DJANGO_설계_가이드.md**: Django MTV 패턴, Models, ViewSets, Serializers, 성능 최적화, 보안, 테스트 전략 등 상세한 설계 가이드
+- **17_FLUTTER_설계_가이드.md**: Flutter 위젯 설계, 상태 관리(Provider), SQLCipher 데이터베이스, 보안, 성능 최적화, 접근성 등 상세한 설계 가이드
+
+### 삭제된 문서
+- `Signup_Design_Guidelines.md`: 통합된 문서로 대체
+- `Code_Improvement_Checklist.md`: 개발 완료로 불필요
+- `Presentation_Overview.md`: 발표 완료로 불필요
+- `Project_Gap_Analysis.md`: 프로젝트 진행으로 불필요
+- `ACCESSIBILITY_ISSUE_ANALYSIS.md`: 54번 문서에 통합
+- `STYLE_MIGRATION_GUIDE.md`: 마이그레이션 완료로 불필요
+
+---
+
 ## 🤝 기여 가이드
 
 문서 개선 제안이나 오류 발견 시:
@@ -255,5 +281,6 @@ docs/
 ---
 
 **작성자**: Claude Code
-**버전**: 1.0
+**버전**: 2.0
+**최종 업데이트**: 2025-12-06
 **라이선스**: NeuroNova 프로젝트 내부 문서
