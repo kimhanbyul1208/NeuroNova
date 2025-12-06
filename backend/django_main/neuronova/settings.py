@@ -267,6 +267,14 @@ ORTHANC_URL = config('ORTHANC_URL', default='http://localhost:8042')
 ORTHANC_USERNAME = config('ORTHANC_USERNAME', default='orthanc')
 ORTHANC_PASSWORD = get_required_setting('ORTHANC_PASSWORD', default_dev='orthanc')
 
+# Encryption Settings
+# For encrypting sensitive data like SSN (주민등록번호)
+# Generate a key using: from cryptography.fernet import Fernet; Fernet.generate_key()
+ENCRYPTION_KEY = get_required_setting(
+    'ENCRYPTION_KEY',
+    default_dev='8cozhW9kSi5poZ6TWFuMCV123456789012345678901='  # Development only
+)
+
 # Firebase Cloud Messaging (FCM)
 FCM_SERVER_KEY = config('FCM_SERVER_KEY', default='')
 

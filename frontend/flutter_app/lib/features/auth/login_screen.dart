@@ -43,9 +43,20 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
 
+      // 첫 로그인 체크
+      final isFirstLogin = await authRepo.isFirstLogin();
+
       if (mounted) {
-        // 로그인 성공 - 홈 화면으로 이동
-        Navigator.of(context).pushReplacementNamed('/home');
+        if (isFirstLogin) {
+          // 첫 로그인 - 비밀번호 변경 화면으로
+          Navigator.of(context).pushReplacementNamed(
+            '/change-password',
+            arguments: {'forceChange': true},
+          );
+        } else {
+          // 홈 화면으로 이동
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
       }
     } catch (e) {
       AppLogger.error('Login failed: $e');
@@ -212,11 +223,39 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                   ),
+                  const SizedBox(height: 16),
+
+                  // SMS 로그인 버튼
+                  OutlinedButton.icon(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            Navigator.of(context).pushNamed('/sms-login');
+                          },
+                    icon: const Icon(Icons.sms),
+                    label: const Text(
+                      'SMS로 로그인',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 2,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 48),
 
                   // 안내 메시지
                   Text(
-                    '병원에서 발급받은 계정으로 로그인하세요',
+                    '병원에서 등록한 전화번호로 로그인할 수 있습니다',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[600],
                         ),

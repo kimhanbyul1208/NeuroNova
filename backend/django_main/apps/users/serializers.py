@@ -272,6 +272,150 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
+class NursePatientRegistrationSerializer(serializers.Serializer):
+    """
+    Serializer for nurse-initiated patient registration.
+    간호사가 내원 환자를 시스템에 등록할 때 사용.
+    """
+    first_name = serializers.CharField(max_length=100, required=True)
+    last_name = serializers.CharField(max_length=100, required=True)
+    ssn = serializers.CharField(
+        max_length=14,
+        required=True,
+        help_text="주민등록번호 (예: 123456-1234567)"
+    )
+    phone = serializers.CharField(
+        max_length=20,
+        required=True,
+        help_text="전화번호 (예: 010-1234-5678)"
+    )
+    address = serializers.CharField(required=False, allow_blank=True)
+    doctor_id = serializers.IntegerField(
+        required=True,
+        help_text="담당 의사 ID"
+    )
+    date_of_birth = serializers.DateField(required=True)
+    gender = serializers.ChoiceField(
+        choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')],
+        required=True
+    )
+    email = serializers.EmailField(required=False, allow_blank=True)
+    emergency_contact = serializers.CharField(
+        max_length=20,
+        required=False,
+        allow_blank=True
+    )
+    insurance_id = serializers.CharField(
+        max_length=50,
+        required=False,
+        allow_blank=True
+    )
+
+    def validate_phone(self, value: str) -> str:
+        """Validate phone number format."""
+        from apps.users.utils import normalize_phone_number
+
+        normalized = normalize_phone_number(value)
+
+        # Check if phone already exists
+        if User.objects.filter(username=normalized).exists():
+            raise serializers.ValidationError(
+                "이 전화번호로 이미 등록된 환자가 있습니다."
+            )
+
+        return value
+
+    def validate_doctor_id(self, value: int) -> int:
+        """Validate that doctor exists and has DOCTOR role."""
+        try:
+            doctor = User.objects.get(id=value)
+            if not hasattr(doctor, 'profile') or doctor.profile.role != 'DOCTOR':
+                raise serializers.ValidationError("선택한 사용자는 의사가 아닙니다.")
+        except User.DoesNotExist:
+            raise serializers.ValidationError("존재하지 않는 의사 ID입니다.")
+
+        return value
+
+    def create(self, validated_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Create User and Patient records.
+
+        Returns:
+            Dict with user, patient, and temporary password
+        """
+        from apps.users.utils import (
+            normalize_phone_number,
+            encrypt_ssn,
+            generate_medical_record_number,
+            generate_patient_pid
+        )
+        from apps.emr.models import Patient
+
+        # Extract data
+        phone = validated_data['phone']
+        normalized_phone = normalize_phone_number(phone)
+        ssn = validated_data['ssn']
+        doctor_id = validated_data['doctor_id']
+
+        # Generate credentials
+        username = normalized_phone  # Use phone as username
+        temp_password = 'testpass123'  # Default password
+        medical_record_number = generate_medical_record_number()
+        pid = generate_patient_pid()
+
+        # Create User
+        user = User.objects.create_user(
+            username=username,
+            password=temp_password,
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            email=validated_data.get('email', ''),
+            is_active=True
+        )
+
+        # Create UserProfile for PATIENT role
+        UserProfile.objects.create(
+            user=user,
+            role='PATIENT',
+            phone_number=phone,
+            is_first_login=True  # Force password change on first login
+        )
+
+        # Encrypt SSN
+        encrypted_ssn = encrypt_ssn(ssn)
+
+        # Create Patient
+        patient = Patient.objects.create(
+            user=user,
+            pid=pid,
+            medical_record_number=medical_record_number,
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            date_of_birth=validated_data['date_of_birth'],
+            gender=validated_data['gender'],
+            phone=phone,
+            email=validated_data.get('email', ''),
+            address=validated_data.get('address', ''),
+            emergency_contact=validated_data.get('emergency_contact', ''),
+            insurance_id=validated_data.get('insurance_id', ''),
+            ssn_encrypted=encrypted_ssn,
+            doctor_id=doctor_id
+        )
+
+        logger.info(
+            f"Nurse registered patient: {patient.full_name} (PID: {pid}, "
+            f"MRN: {medical_record_number}) with doctor ID: {doctor_id}"
+        )
+
+        return {
+            'user': user,
+            'patient': patient,
+            'temp_password': temp_password,
+            'medical_record_number': medical_record_number,
+            'pid': pid
+        }
+
+
 class ChangePasswordSerializer(serializers.Serializer):
     """Serializer for password change endpoint."""
     old_password = serializers.CharField(

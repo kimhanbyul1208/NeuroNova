@@ -266,4 +266,157 @@ class AuthRepository {
       throw Exception('프로필 업데이트 중 오류가 발생했습니다.');
     }
   }
+
+  /// SMS 인증 코드 요청
+  /// [phone] 전화번호 (예: 010-1234-5678)
+  /// Returns: 만료 시간(초)
+  Future<int> requestSmsCode(String phone) async {
+    try {
+      final response = await _dio.post(
+        '${AppConfig.apiBaseUrl}/api/v1/users/sms/request/',
+        data: {'phone': phone},
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        AppLogger.info('SMS code requested for: $phone');
+        return data['expires_in'] ?? 300;
+      } else {
+        throw Exception('SMS 요청 실패: ${response.statusMessage}');
+      }
+    } on DioException catch (e) {
+      AppLogger.error('SMS request error: ${e.message}');
+      if (e.response?.statusCode == 404) {
+        throw Exception('등록되지 않은 전화번호입니다.');
+      }
+      throw Exception('SMS 인증 요청 중 오류가 발생했습니다.');
+    } catch (e) {
+      AppLogger.error('Unexpected SMS request error: $e');
+      throw Exception('SMS 인증 요청 중 오류가 발생했습니다.');
+    }
+  }
+
+  /// SMS 인증 및 로그인
+  /// [phone] 전화번호
+  /// [code] 6자리 인증 코드
+  /// Returns: 사용자 정보, 토큰, is_first_login 플래그
+  Future<Map<String, dynamic>> verifySmsAndLogin(
+      String phone, String code) async {
+    try {
+      final response = await _dio.post(
+        '${AppConfig.apiBaseUrl}/api/v1/users/sms/verify/',
+        data: {
+          'phone': phone,
+          'code': code,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        // 토큰 저장
+        await _storage.write(key: 'access_token', value: data['access']);
+        await _storage.write(key: 'refresh_token', value: data['refresh']);
+
+        // is_first_login 플래그 저장
+        final isFirstLogin = data['is_first_login'] ?? false;
+        await _storage.write(
+            key: 'is_first_login', value: isFirstLogin.toString());
+
+        // JWT 토큰에서 정보 추출
+        final tokenPayload = _decodeJwt(data['access']);
+
+        // 사용자 정보 저장
+        await _storage.write(
+            key: 'user_id', value: tokenPayload['user_id']?.toString() ?? '');
+        await _storage.write(
+            key: 'username', value: tokenPayload['username'] ?? phone);
+        await _storage.write(
+            key: 'role', value: tokenPayload['role'] ?? 'PATIENT');
+        await _storage.write(
+            key: 'email', value: tokenPayload['email'] ?? '');
+
+        AppLogger.info('SMS login successful for: $phone');
+        return data;
+      } else {
+        throw Exception('SMS 로그인 실패: ${response.statusMessage}');
+      }
+    } on DioException catch (e) {
+      AppLogger.error('SMS login error: ${e.message}');
+      if (e.response?.statusCode == 400) {
+        final errorMsg = e.response?.data['error'] ?? '인증 코드가 올바르지 않습니다.';
+        throw Exception(errorMsg);
+      }
+      throw Exception('SMS 로그인 중 오류가 발생했습니다.');
+    } catch (e) {
+      AppLogger.error('Unexpected SMS login error: $e');
+      throw Exception('SMS 로그인 중 오류가 발생했습니다.');
+    }
+  }
+
+  /// 비밀번호 변경
+  /// [oldPassword] 기존 비밀번호
+  /// [newPassword] 새 비밀번호
+  /// [newPasswordConfirm] 새 비밀번호 확인
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String newPasswordConfirm,
+  }) async {
+    try {
+      final token = await _storage.read(key: 'access_token');
+      if (token == null) throw Exception('로그인이 필요합니다.');
+
+      final response = await _dio.post(
+        '${AppConfig.apiBaseUrl}/api/v1/users/change_password/',
+        data: {
+          'old_password': oldPassword,
+          'new_password': newPassword,
+          'new_password_confirm': newPasswordConfirm,
+        },
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        // 비밀번호 변경 성공 시 is_first_login 플래그 false로 변경
+        await _storage.write(key: 'is_first_login', value: 'false');
+        AppLogger.info('Password changed successfully');
+      } else {
+        throw Exception('비밀번호 변경 실패: ${response.statusMessage}');
+      }
+    } on DioException catch (e) {
+      AppLogger.error('Change password error: ${e.message}');
+      if (e.response?.statusCode == 400) {
+        final errorData = e.response?.data;
+        if (errorData is Map) {
+          if (errorData['old_password'] != null) {
+            throw Exception('기존 비밀번호가 올바르지 않습니다.');
+          }
+          if (errorData['new_password'] != null) {
+            throw Exception(errorData['new_password'][0]);
+          }
+          if (errorData['new_password_confirm'] != null) {
+            throw Exception('새 비밀번호가 일치하지 않습니다.');
+          }
+        }
+      }
+      throw Exception('비밀번호 변경 중 오류가 발생했습니다.');
+    } catch (e) {
+      AppLogger.error('Unexpected change password error: $e');
+      throw Exception('비밀번호 변경 중 오류가 발생했습니다.');
+    }
+  }
+
+  /// 첫 로그인 여부 확인
+  Future<bool> isFirstLogin() async {
+    try {
+      final isFirstLoginStr = await _storage.read(key: 'is_first_login');
+      return isFirstLoginStr == 'true';
+    } catch (e) {
+      AppLogger.error('isFirstLogin check error: $e');
+      return false;
+    }
+  }
 }

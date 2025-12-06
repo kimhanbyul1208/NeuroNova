@@ -29,6 +29,7 @@ import UserManagementPage from './pages/admin/UserManagementPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import AboutAIPage from './pages/admin/AboutAIPage';
+import PatientRegistration from './pages/admin/PatientRegistration';
 import FormsPage from './pages/nurse/FormsPage';
 import MedicalRecordsPage from './pages/MedicalRecordsPage';
 
@@ -144,6 +145,12 @@ function App() {
         <Route path="/about-ai" element={
           <ProtectedRoute roles={['ADMIN']}>
             <AboutAIPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/patient-registration" element={
+          <ProtectedRoute roles={['ADMIN', 'NURSE']}>
+            <PatientRegistration />
           </ProtectedRoute>
         } />
 

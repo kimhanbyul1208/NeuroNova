@@ -7,6 +7,8 @@ import 'core/services/notification_service.dart';
 import 'core/services/auth_service.dart';
 import 'data/local/local_database.dart';
 import 'features/auth/login_screen.dart';
+import 'features/auth/sms_login_screen.dart';
+import 'features/auth/change_password_screen.dart';
 import 'features/patient/patient_main_page.dart';
 import 'features/doctor/doctor_main_page.dart';
 import 'features/admin/admin_main_page.dart';
@@ -17,6 +19,7 @@ import 'features/medication/add_medication_screen.dart';
 import 'features/records/medical_records_screen.dart';
 import 'features/records/record_detail_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/profile/edit_profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -110,20 +113,33 @@ class MyApp extends StatelessWidget {
       initialRoute: initialRoute,
       // 라우트 정의
       routes: {
+        // 인증 관련
         '/login': (context) => const LoginScreen(),
+        '/sms-login': (context) => const SmsLoginScreen(),
+        '/change-password': (context) => const ChangePasswordScreen(),
+
+        // 메인 화면 (역할별)
         '/main': (context) => const MainNavigationScreen(),
         '/patientMain': (context) => const PatientHomePage(),
         '/doctorMain': (context) => const DoctorMainPage(),
         '/adminMain': (context) => const AdminMainPage(),
         '/staffMain': (context) => const StaffMainPage(),
+
+        // 예약 관련
         '/appointments': (context) => const AppointmentListScreen(),
         '/appointment-create': (context) => const AppointmentCreateScreen(),
+
+        // 진료/기록 관련
         '/add-medication': (context) => const AddMedicationScreen(),
         '/medical-records': (context) => const MedicalRecordsScreen(),
         '/record-detail': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as String;
           return RecordDetailScreen(recordId: args);
         },
+
+        // 프로필 관련
+        '/profile': (context) => const ProfileScreen(),
+        '/edit-profile': (context) => const EditProfileScreen(),
       },
     );
   }

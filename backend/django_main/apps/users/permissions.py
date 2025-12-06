@@ -60,3 +60,18 @@ class IsDoctorOrNurse(BasePermission):
             return request.user.profile.is_doctor() or request.user.profile.is_nurse()
 
         return False
+
+
+class IsNurseOrAdmin(BasePermission):
+    """
+    Permission class to check if user is a nurse or admin.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if hasattr(request.user, 'profile'):
+            return request.user.profile.is_nurse() or request.user.profile.is_admin()
+
+        # Fallback to is_staff or is_superuser for admin check
+        return request.user.is_staff or request.user.is_superuser

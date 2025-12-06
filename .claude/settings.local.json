@@ -53,7 +53,8 @@
       "Bash(cmd.exe /c \"cd c:\\Users\\302-28\\Desktop\\final_pr\\frontend\\react_web && npm run dev\")",
       "Bash(powershell.exe:*)",
       "Bash(npm start)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

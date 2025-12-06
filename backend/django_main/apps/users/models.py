@@ -115,6 +115,12 @@ class UserProfile(BaseModel):
         help_text="사용자 소개 또는 경력"
     )
 
+    is_first_login = models.BooleanField(
+        default=True,
+        verbose_name="최초 로그인 여부",
+        help_text="True면 비밀번호 변경 필수"
+    )
+
     class Meta:
         db_table = 'user_profile'
         verbose_name = '사용자 프로필'

@@ -93,6 +93,22 @@ class Patient(BaseModel):
         verbose_name="비상 연락처"
     )
 
+    ssn_encrypted = models.BinaryField(
+        null=True,
+        blank=True,
+        verbose_name="주민등록번호 (암호화)",
+        help_text="Fernet 암호화된 주민등록번호"
+    )
+
+    medical_record_number = models.CharField(
+        max_length=50,
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="진료기록번호",
+        help_text="간호사 등록 시 발급되는 병원 등록번호 (예: MR-20250101-0001)"
+    )
+
     class Meta:
         db_table = 'emr_patient'
         verbose_name = '환자'
