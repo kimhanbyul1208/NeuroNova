@@ -49,6 +49,12 @@ const AdminUsersPage = () => {
     const { user } = useAuth();
     useFocusCleanup();
 
+    // Data State
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState('');
+
     // Pagination
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
