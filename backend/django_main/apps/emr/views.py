@@ -40,11 +40,21 @@ class PatientViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def medical_history(self, request, pk=None):
         """Get patient's complete medical history."""
-        patient = self.get_object()
-        encounters = patient.encounters.all()
-        predictions = patient.predictions.all()
-
+        from django.db.models import Prefetch
         from apps.custom.serializers import PatientPredictionResultSerializer
+
+        patient = self.get_object()
+
+        # Optimize encounters query with prefetch_related
+        encounters = patient.encounters.prefetch_related(
+            'soap',
+            Prefetch('vitals', queryset=FormVitals.objects.order_by('-date'))
+        ).select_related('doctor').all()
+
+        # Optimize predictions query with select_related
+        predictions = patient.predictions.select_related(
+            'doctor__user'
+        ).all()
 
         return Response({
             'patient': PatientSerializer(patient).data,
@@ -59,6 +69,23 @@ class EncounterViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filterset_fields = ['patient', 'status', 'doctor']
     ordering_fields = ['encounter_date', 'created_at']
+
+    def get_queryset(self):
+        """Optimize queryset with select_related and prefetch_related."""
+        queryset = Encounter.objects.select_related(
+            'patient',
+            'doctor'
+        )
+
+        # Add prefetch for detail views
+        if self.action in ['retrieve', 'list']:
+            from django.db.models import Prefetch
+            queryset = queryset.prefetch_related(
+                'soap',
+                Prefetch('vitals', queryset=FormVitals.objects.order_by('-date'))
+            )
+
+        return queryset
 
     def get_serializer_class(self):
         """Use detailed serializer for retrieve action."""

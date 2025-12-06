@@ -13,10 +13,30 @@ load_dotenv()  # manage.py 있는 위치의 .env 파일 자동 로드
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
+def get_required_setting(key: str, default_dev: str = None) -> str:
+    """
+    Get required environment variable with validation.
+    In production (DEBUG=False), the setting must be explicitly set.
+    """
+    debug_mode = config('DEBUG', default=True, cast=bool)
+    value = config(key, default=None)
 
-# SECURITY WARNING: don't run with debug turned on in production!
+    if not debug_mode and (value is None or value == default_dev):
+        raise ValueError(
+            f"Required environment variable '{key}' must be explicitly set in production. "
+            f"Please configure it in your .env file."
+        )
+
+    return value if value is not None else default_dev
+
+# Get DEBUG first as it's needed for other settings
 DEBUG = config('DEBUG', default=True, cast=bool)
+
+# SECRET_KEY: Required in production
+SECRET_KEY = get_required_setting(
+    'SECRET_KEY',
+    default_dev='django-insecure-development-key-change-in-production'
+)
 
 ALLOWED_HOSTS: List[str] = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
@@ -25,13 +45,11 @@ PROJECT_NAME = config('PROJECT_NAME', default='NeuroNova')
 PROJECT_VERSION = config('PROJECT_VERSION', default='1.0.0')
 API_VERSION = config('API_VERSION', default='v1')
 
-ALLOW_PRIVILEGED_SIGNUP = True
-# 개발 단계: True (의료진 회원가입 허용)
-# 운영 배포: False (의료진 회원가입 차단)
-
-REQUIRE_PRIVILEGED_APPROVAL = False
-# 개발 단계: False (의료진 즉시 활성화)
-# 운영 배포: True (관리자 승인 필요)
+# Medical Staff Registration Settings
+# 개발: 의료진 회원가입 허용, 즉시 활성화
+# 운영: 의료진 회원가입 차단, 관리자 승인 필요
+ALLOW_PRIVILEGED_SIGNUP = config('ALLOW_PRIVILEGED_SIGNUP', default=True, cast=bool)
+REQUIRE_PRIVILEGED_APPROVAL = config('REQUIRE_PRIVILEGED_APPROVAL', default=False, cast=bool)
 
 # Application definition
 INSTALLED_APPS = [
@@ -179,7 +197,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS Settings
-CORS_ORIGIN_ALLOW_ALL = True
+# 개발: 모든 origin 허용, 운영: 명시적 허용 리스트만
+if DEBUG:
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    CORS_ORIGIN_ALLOW_ALL = False
+    CORS_ALLOWED_ORIGINS = config(
+        'CORS_ALLOWED_ORIGINS',
+        default='http://localhost:3000,http://localhost:8000'
+    ).split(',')
+
 CORS_ALLOW_CREDENTIALS = True
 
 # REST Framework Settings
@@ -209,9 +236,18 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': config('JWT_SECRET_KEY', default=SECRET_KEY),
+    'SIGNING_KEY': get_required_setting('JWT_SECRET_KEY', default_dev=SECRET_KEY),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+# Validate JWT_SECRET_KEY in production
+if not DEBUG:
+    jwt_key = config('JWT_SECRET_KEY', default=None)
+    if jwt_key is None or jwt_key == SECRET_KEY:
+        raise ValueError(
+            "JWT_SECRET_KEY must be set separately from SECRET_KEY in production. "
+            "Please configure JWT_SECRET_KEY in your .env file."
+        )
 
 # API Documentation (drf-spectacular)
 SPECTACULAR_SETTINGS = {
@@ -224,11 +260,12 @@ SPECTACULAR_SETTINGS = {
 # External Services
 # Flask ML 서버는 로컬 전용 (Django에서만 접근)
 FLASK_INFERENCE_URL = config('FLASK_INFERENCE_URL', default='http://127.0.0.1:9000')
-FLASK_API_KEY = config('FLASK_API_KEY', default='')
+FLASK_API_KEY = get_required_setting('FLASK_API_KEY', default_dev='development-flask-key')
 
+# Orthanc DICOM Server Settings
 ORTHANC_URL = config('ORTHANC_URL', default='http://localhost:8042')
 ORTHANC_USERNAME = config('ORTHANC_USERNAME', default='orthanc')
-ORTHANC_PASSWORD = config('ORTHANC_PASSWORD', default='orthanc')
+ORTHANC_PASSWORD = get_required_setting('ORTHANC_PASSWORD', default_dev='orthanc')
 
 # Firebase Cloud Messaging (FCM)
 FCM_SERVER_KEY = config('FCM_SERVER_KEY', default='')

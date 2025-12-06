@@ -64,6 +64,18 @@ class LocalDatabase {
       )
     ''');
 
+    // Create indexes for appointments table
+    await db.execute(
+        'CREATE INDEX idx_appointments_patient_id ON appointments(patient_id)');
+    await db.execute(
+        'CREATE INDEX idx_appointments_scheduled_at ON appointments(scheduled_at)');
+    await db.execute(
+        'CREATE INDEX idx_appointments_expire_at ON appointments(expire_at)');
+    await db.execute(
+        'CREATE INDEX idx_appointments_synced ON appointments(synced)');
+    await db.execute(
+        'CREATE INDEX idx_appointments_status ON appointments(status)');
+
     // Notifications table
     await db.execute('''
       CREATE TABLE notifications (
@@ -79,6 +91,16 @@ class LocalDatabase {
       )
     ''');
 
+    // Create indexes for notifications table
+    await db.execute(
+        'CREATE INDEX idx_notifications_is_read ON notifications(is_read)');
+    await db.execute(
+        'CREATE INDEX idx_notifications_type ON notifications(type)');
+    await db.execute(
+        'CREATE INDEX idx_notifications_created_at ON notifications(created_at)');
+    await db.execute(
+        'CREATE INDEX idx_notifications_expire_at ON notifications(expire_at)');
+
     // Diagnoses table (AI results summary)
     await db.execute('''
       CREATE TABLE diagnoses (
@@ -93,6 +115,14 @@ class LocalDatabase {
         expire_at TEXT NOT NULL
       )
     ''');
+
+    // Create indexes for diagnoses table
+    await db.execute(
+        'CREATE INDEX idx_diagnoses_encounter_id ON diagnoses(encounter_id)');
+    await db.execute(
+        'CREATE INDEX idx_diagnoses_created_at ON diagnoses(created_at)');
+    await db.execute(
+        'CREATE INDEX idx_diagnoses_expire_at ON diagnoses(expire_at)');
 
     // User profile cache
     await db.execute('''

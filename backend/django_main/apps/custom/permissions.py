@@ -12,6 +12,52 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class CanManagePatientDoctor(permissions.BasePermission):
+    """
+    Permission: Only admins and doctors can manage patient-doctor relationships.
+    Patients cannot modify these relationships.
+    """
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        """
+        Check if user has permission to manage patient-doctor relationships.
+        """
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        # Only admins and doctors can manage relationships
+        if hasattr(request.user, 'profile'):
+            role = request.user.profile.role
+            # Admin has full access
+            if role == UserRole.ADMIN:
+                return True
+            # Doctors can view but not create/delete
+            if role == UserRole.DOCTOR:
+                return request.method in permissions.SAFE_METHODS
+
+        return False
+
+    def has_object_permission(self, request: Request, view: APIView, obj: Any) -> bool:
+        """
+        Check if user can access/modify specific patient-doctor relationship.
+        """
+        if hasattr(request.user, 'profile'):
+            role = request.user.profile.role
+
+            # Admins can do anything
+            if role == UserRole.ADMIN:
+                return True
+
+            # Doctors can only view their own patient relationships
+            if role == UserRole.DOCTOR:
+                return (
+                    request.method in permissions.SAFE_METHODS and
+                    obj.doctor.user == request.user
+                )
+
+        return False
+
+
 class CanAccessAppointments(permissions.BasePermission):
     """
     Permission: Patients can view their own appointments.

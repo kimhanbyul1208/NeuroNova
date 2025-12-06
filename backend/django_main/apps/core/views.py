@@ -151,6 +151,44 @@ class OrthancPatientStudiesView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    def _can_access_patient_data(self, user, patient):
+        """
+        Check if user has permission to access patient's medical data.
+
+        Access is granted if:
+        1. User is the patient themselves
+        2. User is the patient's primary doctor
+        3. User is an assigned doctor (via PatientDoctor relationship)
+        4. User is admin
+
+        Args:
+            user: Django User object
+            patient: Patient object
+
+        Returns:
+            bool: True if access is granted, False otherwise
+        """
+        # Check if user is admin
+        if hasattr(user, 'profile') and user.profile.is_admin():
+            return True
+
+        # Check if user is the patient themselves
+        if hasattr(user, 'patient') and user.patient.id == patient.id:
+            return True
+
+        # Check if user is the primary doctor
+        if patient.doctor and patient.doctor.id == user.id:
+            return True
+
+        # Check if user is an assigned doctor
+        from apps.custom.models import PatientDoctor
+        is_assigned_doctor = PatientDoctor.objects.filter(
+            patient=patient,
+            doctor__user=user
+        ).exists()
+
+        return is_assigned_doctor
+
     def get(self, request, patient_id):
         """
         Get all DICOM studies for a patient.
@@ -170,6 +208,13 @@ class OrthancPatientStudiesView(APIView):
             return Response(
                 {'error': 'Patient not found'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Check access permission
+        if not self._can_access_patient_data(request.user, patient):
+            return Response(
+                {'error': 'Permission denied. You do not have access to this patient\'s medical imaging data.'},
+                status=status.HTTP_403_FORBIDDEN
             )
 
         # Get studies from Orthanc using patient ID

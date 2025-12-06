@@ -34,8 +34,14 @@ class AppConfig {
 
   // Local Database
   static const String dbName = 'neuronova.db';
-  static const int dbVersion = 1;
-  static const String dbPassword = 'neuronova_secure_2025'; // SQLCipher password
+  static const int dbVersion = 2; // Incremented for database indexes
+
+  // SQLCipher password - DO NOT hardcode in production!
+  // Use environment variable or secure storage (Android Keystore/iOS Keychain)
+  static const String dbPassword = String.fromEnvironment(
+    'DB_PASSWORD',
+    defaultValue: 'neuronova-dev-2025', // Development only - change in production
+  );
 
   // Data Retention Policy
   static const int dataExpirationDays = 90; // 90일 후 자동 삭제

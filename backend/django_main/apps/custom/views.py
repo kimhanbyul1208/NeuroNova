@@ -5,6 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from apps.custom.permissions import CanManagePatientDoctor
 from apps.custom.models import (
     Doctor,
     PatientDoctor,
@@ -49,10 +50,12 @@ class DoctorViewSet(viewsets.ModelViewSet):
 class PatientDoctorViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Patient-Doctor relationship management.
+    Only admins can create/update/delete.
+    Doctors can view their own patient relationships.
     """
     queryset = PatientDoctor.objects.all()
     serializer_class = PatientDoctorSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CanManagePatientDoctor]
     filterset_fields = ['patient', 'doctor', 'is_primary']
     ordering_fields = ['assigned_date', 'created_at']
 
