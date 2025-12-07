@@ -94,3 +94,87 @@ class BaseModel(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         abstract = True
+
+
+class APIUsageLog(models.Model):
+    """
+    외부 API 사용량 추적
+    트래픽, 비용, 성능 모니터링을 위한 로그
+    """
+
+    SERVICE_CHOICES = [
+        ('drugbank', 'DrugBank'),
+        ('alphafold', 'AlphaFold'),
+        ('pubchem', 'PubChem'),
+        ('rcsb_pdb', 'RCSB PDB'),
+        ('firebase', 'Firebase FCM'),
+    ]
+
+    user = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='api_usage_logs',
+        help_text="API를 호출한 사용자 (내부 서비스 호출 시 null)"
+    )
+
+    service = models.CharField(
+        max_length=50,
+        choices=SERVICE_CHOICES,
+        db_index=True,
+        help_text="외부 API 서비스 이름"
+    )
+
+    endpoint = models.CharField(
+        max_length=500,
+        help_text="호출한 API 엔드포인트"
+    )
+
+    method = models.CharField(
+        max_length=10,
+        default='GET',
+        help_text="HTTP 메소드"
+    )
+
+    status_code = models.IntegerField(
+        null=True,
+        help_text="HTTP 응답 상태 코드"
+    )
+
+    response_time_ms = models.IntegerField(
+        null=True,
+        help_text="응답 시간 (밀리초)"
+    )
+
+    cached = models.BooleanField(
+        default=False,
+        help_text="캐시에서 반환됨"
+    )
+
+    error_message = models.TextField(
+        blank=True,
+        help_text="에러 메시지 (실패 시)"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
+        help_text="API 호출 시각"
+    )
+
+    class Meta:
+        db_table = 'api_usage_logs'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['service', '-created_at']),
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['status_code', '-created_at']),
+        ]
+        verbose_name = 'API 사용 로그'
+        verbose_name_plural = 'API 사용 로그'
+
+    def __str__(self):
+        status = f"{self.status_code}" if self.status_code else "pending"
+        cached_str = " (cached)" if self.cached else ""
+        return f"{self.service} - {self.endpoint} [{status}]{cached_str}"

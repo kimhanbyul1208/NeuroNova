@@ -5,9 +5,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.db import connection
+from django.conf import settings
 from apps.core.services.orthanc_service import orthanc_service
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -299,3 +302,97 @@ class OrthancStatisticsView(APIView):
             )
 
         return Response(stats)
+
+
+def health_check(request):
+    """
+    헬스 체크 엔드포인트
+    시스템 상태 점검 및 응답
+    """
+    health_status = {
+        "status": "healthy",
+        "service": "NeuroNova Django API",
+        "version": "1.0.0",
+        "checks": {}
+    }
+
+    # 1. 데이터베이스 연결 확인
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        health_status["checks"]["database"] = "ok"
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["checks"]["database"] = f"error: {str(e)}"
+
+    # 2. Flask ML 서버 연결 확인 (선택사항)
+    flask_url = os.getenv('FLASK_INFERENCE_URL', 'http://127.0.0.1:9000')
+    try:
+        import requests
+        response = requests.get(f"{flask_url}/health", timeout=5)
+        if response.status_code == 200:
+            health_status["checks"]["ml_server"] = "ok"
+        else:
+            health_status["checks"]["ml_server"] = f"status_code: {response.status_code}"
+    except Exception as e:
+        health_status["checks"]["ml_server"] = f"error: {str(e)}"
+
+    # 3. 디스크 여유 공간 확인
+    try:
+        import shutil
+        total, used, free = shutil.disk_usage("/")
+        free_percent = (free / total) * 100
+        if free_percent < 10:
+            health_status["status"] = "unhealthy"
+            health_status["checks"]["disk"] = f"low: {free_percent:.1f}% free"
+        else:
+            health_status["checks"]["disk"] = f"ok: {free_percent:.1f}% free"
+    except Exception as e:
+        health_status["checks"]["disk"] = f"error: {str(e)}"
+
+    # 4. 미디어 파일 디렉토리 확인
+    media_root = settings.MEDIA_ROOT
+    if os.path.exists(media_root) and os.access(media_root, os.W_OK):
+        health_status["checks"]["media_storage"] = "ok"
+    else:
+        health_status["status"] = "unhealthy"
+        health_status["checks"]["media_storage"] = "not writable"
+
+    # HTTP 상태 코드 결정
+    status_code = 200 if health_status["status"] == "healthy" else 503
+
+    return JsonResponse(health_status, status=status_code)
+
+
+def system_stats(request):
+    """
+    시스템 통계 엔드포인트 (관리자 전용)
+    """
+    try:
+        import psutil
+
+        stats = {
+            "cpu": {
+                "percent": psutil.cpu_percent(interval=1),
+                "count": psutil.cpu_count(),
+                "load_avg": list(os.getloadavg()) if hasattr(os, 'getloadavg') else None
+            },
+            "memory": {
+                "total": psutil.virtual_memory().total,
+                "available": psutil.virtual_memory().available,
+                "percent": psutil.virtual_memory().percent
+            },
+            "disk": {
+                "total": psutil.disk_usage('/').total,
+                "used": psutil.disk_usage('/').used,
+                "free": psutil.disk_usage('/').free,
+                "percent": psutil.disk_usage('/').percent
+            }
+        }
+
+        return JsonResponse(stats)
+    except ImportError:
+        return JsonResponse(
+            {"error": "psutil not installed"},
+            status=500
+        )

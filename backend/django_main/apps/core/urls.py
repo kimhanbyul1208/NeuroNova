@@ -5,6 +5,10 @@ from django.urls import path
 from apps.core import views
 
 urlpatterns = [
+    # Health check and monitoring
+    path('health/', views.health_check, name='health-check'),
+    path('system/stats/', views.system_stats, name='system-stats'),
+
     # Orthanc DICOM endpoints
     path('orthanc/studies/<str:study_uid>/', views.OrthancStudyView.as_view(), name='orthanc-study'),
     path('orthanc/series/<str:series_uid>/', views.OrthancSeriesView.as_view(), name='orthanc-series'),
