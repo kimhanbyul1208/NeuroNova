@@ -1,0 +1,86 @@
+# NeuroNova 자동 배포 워크플로우
+# main 브랜치에 push하면 자동으로 서버에 배포됨
+
+name: 프로덕션 배포
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # 수동 실행도 가능
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 배포 시작 알림
+        run: echo "🚀 NeuroNova 배포 시작..."
+
+      - name: 서버 배포
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "===== 1. 코드 업데이트 ====="
+            cd /var/www/neuronova
+            git pull origin main
+
+            echo "===== 2. 백엔드 업데이트 ====="
+            cd backend/django_main
+
+            # 가상환경 활성화
+            source venv/bin/activate
+
+            # Python 라이브러리 설치
+            pip install -r requirements.txt
+
+            # 데이터베이스 마이그레이션
+            python manage.py migrate --noinput
+
+            # 정적 파일 수집
+            python manage.py collectstatic --noinput
+
+            echo "===== 3. 프론트엔드 빌드 ====="
+            cd ../../frontend/react_web
+
+            # Node 모듈 설치
+            npm install
+
+            # React 빌드
+            npm run build
+
+            echo "===== 4. 서비스 재시작 ====="
+            # Django (Gunicorn) 재시작
+            sudo systemctl restart gunicorn_django
+
+            # Nginx 재로드
+            sudo systemctl reload nginx
+
+            echo "===== 5. 상태 확인 ====="
+            # 서비스 상태 체크
+            if sudo systemctl is-active --quiet gunicorn_django; then
+              echo "✅ Django 서비스 정상 실행 중"
+            else
+              echo "❌ Django 서비스 실패"
+              exit 1
+            fi
+
+            if sudo systemctl is-active --quiet nginx; then
+              echo "✅ Nginx 서비스 정상 실행 중"
+            else
+              echo "❌ Nginx 서비스 실패"
+              exit 1
+            fi
+
+            echo "===== 배포 완료! ====="
+
+      - name: 배포 성공 알림
+        if: success()
+        run: echo "✅ 배포 완료!"
+
+      - name: 배포 실패 알림
+        if: failure()
+        run: echo "❌ 배포 실패!"
