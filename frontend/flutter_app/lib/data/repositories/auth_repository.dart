@@ -244,7 +244,8 @@ class AuthRepository {
   }
 
   /// 프로필 업데이트
-  Future<void> updateProfile(Map<String, dynamic> data) async {
+  /// Returns: Updated profile data (and potentially new tokens)
+  Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {
     try {
       final token = await _storage.read(key: 'access_token');
       if (token == null) throw Exception('로그인이 필요합니다.');
@@ -257,11 +258,33 @@ class AuthRepository {
         ),
       );
 
-      if (response.statusCode != 200) {
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        
+        // Handle token refresh if present
+        if (responseData['new_token'] != null) {
+          final newTokens = responseData['new_token'];
+          await _storage.write(key: 'access_token', value: newTokens['access']);
+          await _storage.write(key: 'refresh_token', value: newTokens['refresh']);
+          
+           // Decode new token to update stored user info
+          final tokenPayload = _decodeJwt(newTokens['access']);
+          await _storage.write(
+            key: 'username', value: tokenPayload['username'] ?? '');
+            
+          AppLogger.info('Tokens updated after profile change');
+        }
+        
+        return responseData;
+      } else {
         throw Exception('프로필 업데이트 실패: ${response.statusMessage}');
       }
     } on DioException catch (e) {
       AppLogger.error('Update profile error: ${e.message}');
+      if (e.response?.data != null && e.response?.data is Map) {
+         // Return backend validation errors if available
+         throw Exception(e.response?.data.toString());
+      }
       throw Exception('프로필 업데이트 중 오류가 발생했습니다.');
     }
   }

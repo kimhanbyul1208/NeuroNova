@@ -68,7 +68,17 @@ class Patient(BaseModel):
 
     phone = models.CharField(
         max_length=20,
+        blank=True,
+        null=True,
         verbose_name="전화번호"
+    )
+
+    passport_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name="여권번호",
+        help_text="외국인 환자 식별용"
     )
 
     email = models.EmailField(

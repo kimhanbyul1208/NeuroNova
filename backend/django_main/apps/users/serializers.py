@@ -76,46 +76,98 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = '__all__'
-        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at', 'role']
 
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-
-        # Add custom claims
-        token['username'] = user.username
-        token['email'] = user.email
+    def update(self, instance, validated_data):
+        """
+        Update user profile.
+        Handles:
+        1. Local phone number updates -> syncs to username.
+        2. Foreigner passport number updates -> syncs to username.
+        3. Updates Patient model if exists.
+        4. Sends notifications.
+        """
+        user = instance.user
+        old_phone = instance.phone_number
+        new_phone = validated_data.get('phone_number', old_phone)
         
-        # Add role from UserProfile
-        try:
-            profile = user.profile
-            token['role'] = profile.role
-            token['phone_number'] = profile.phone_number
-        except UserProfile.DoesNotExist:
-            token['role'] = 'PATIENT'  # Default role
-            token['phone_number'] = ''
-
-        # Add groups
-        token['groups'] = list(user.groups.values_list('name', flat=True))
+        old_passport = instance.passport_number
+        new_passport = validated_data.get('passport_number', old_passport)
         
-        # Add permissions (optional, can make token large)
-        # token['permissions'] = list(user.get_all_permissions())
-
-        return token
-
-    def validate(self, attrs):
-        data = super().validate(attrs)
+        is_foreigner = validated_data.get('is_foreigner', instance.is_foreigner)
         
-        # Add user information to response
-        data['user'] = {
-            'id': self.user.id,
-            'username': self.user.username,
-            'email': self.user.email,
-            'role': getattr(self.user.profile, 'role', 'PATIENT') if hasattr(self.user, 'profile') else 'PATIENT',
-            'groups': list(self.user.groups.values_list('name', flat=True)),
-        }
-        
-        return data
+        username_changed = False
+        new_username = None
+
+        # 1. Determine new username based on Foreigner status
+        if is_foreigner:
+            # Foreigner: ID = Passport Number
+            if new_passport and new_passport != user.username:
+                # Check for duplicates
+                if User.objects.filter(username=new_passport).exclude(id=user.id).exists():
+                    raise serializers.ValidationError({"passport_number": "이미 사용 중인 여권번호입니다."})
+                new_username = new_passport
+                username_changed = True
+        else:
+            # Local: ID = Phone Number
+            if new_phone:
+                from apps.users.utils import normalize_phone_number
+                normalized_phone = normalize_phone_number(new_phone)
+                
+                # Verify format if needed, simplistic check for now
+                if not normalized_phone.isdigit():
+                     raise serializers.ValidationError({"phone_number": "전화번호 형식이 올바르지 않습니다."})
+
+                if normalized_phone != user.username:
+                    # Check for duplicates
+                    if User.objects.filter(username=normalized_phone).exclude(id=user.id).exists():
+                        raise serializers.ValidationError({"phone_number": "이미 사용 중인 전화번호입니다."})
+                    new_username = normalized_phone
+                    username_changed = True
+                    # Update validated data to normalized form
+                    validated_data['phone_number'] = normalized_phone
+
+        # 2. Update UserProfile
+        instance = super().update(instance, validated_data)
+
+        # 3. Update User.username if changed
+        if username_changed and new_username:
+            user.username = new_username
+            user.save()
+            logger.info(f"User {user.id} username updated to {new_username}")
+            
+            # Send Notifications
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                subject = "[NeuroNova] 회원 정보 변경 알림"
+                message = f"회원님의 정보가 변경되었습니다.\n새로운 로그인 ID: {new_username}\n변경된 정보로 로그인해주시기 바랍니다."
+                
+                if user.email:
+                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=True)
+                
+                # Send SMS if phone exists (mock)
+                if instance.phone_number:
+                     from apps.users.utils import send_sms
+                     send_sms(instance.phone_number, f"[NeuroNova] ID 변경: {new_username}. 재로그인 필요.")
+                     
+            except Exception as e:
+                logger.error(f"Failed to send notification: {e}")
+
+        # 4. Sync with Patient model
+        if instance.role == 'PATIENT' and hasattr(user, 'patient'):
+            patient = user.patient
+            if is_foreigner:
+                patient.passport_number = instance.passport_number
+                patient.phone = instance.phone_number # Optional
+            else:
+                 patient.phone = instance.phone_number
+                 patient.passport_number = None
+            
+            patient.email = user.email
+            patient.save()
+
+        return instance
 
 
 

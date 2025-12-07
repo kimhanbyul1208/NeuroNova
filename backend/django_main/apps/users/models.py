@@ -90,8 +90,22 @@ class UserProfile(BaseModel):
     phone_number = models.CharField(
         max_length=20,
         blank=True,
+        null=True,
         verbose_name="전화번호",
         help_text="연락처"
+    )
+
+    passport_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name="여권번호",
+        help_text="외국인 식별용"
+    )
+
+    is_foreigner = models.BooleanField(
+        default=False,
+        verbose_name="외국인 여부"
     )
 
     profile_image = models.ImageField(

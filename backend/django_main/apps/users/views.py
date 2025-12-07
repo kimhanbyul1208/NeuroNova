@@ -432,3 +432,46 @@ class UserProfileViewSet(viewsets.ModelViewSet):
                 {'error': 'Profile not found for this user'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+    def update(self, request, *args, **kwargs):
+        """
+        Update profile and handle username change.
+        If username changes (due to phone/passport update), return new JWT tokens.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        
+        # Snapshot user data before update
+        old_username = instance.user.username
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        # Check if username changed after update
+        # Need to reload user from DB to see changes
+        instance.refresh_from_db()
+        new_username = instance.user.username
+        
+        response_data = serializer.data
+        
+        if old_username != new_username:
+             # Username changed - Issue new tokens
+             from rest_framework_simplejwt.tokens import RefreshToken
+             from apps.users.serializers import CustomTokenObtainPairSerializer
+             
+             user = instance.user
+             refresh = RefreshToken.for_user(user)
+             
+             # Use custom token serializer to add claims if needed
+             # token = CustomTokenObtainPairSerializer.get_token(user)
+             
+             response_data['new_token'] = {
+                 'access': str(refresh.access_token),
+                 'refresh': str(refresh),
+             }
+             response_data['message'] = "회원 정보가 변경되었습니다. 새로운 ID로 로그인 상태가 유지됩니다."
+             logger.info(f"Token refreshed for user {old_username} -> {new_username}")
+             
+        return Response(response_data)
+

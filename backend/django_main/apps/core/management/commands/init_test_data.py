@@ -176,11 +176,28 @@ class Command(BaseCommand):
                 )
 
                 # Create UserProfile
+                is_foreigner = random.random() < 0.1  # 10% Foreigners
+                
+                if is_foreigner:
+                    passport_number = f"M{random.randint(10000000, 99999999)}"
+                    # Reset username/email for foreigners to use passport number
+                    if role == UserRole.PATIENT:
+                        user.username = passport_number
+                        user.email = f"{passport_number}@neuronova.hospital"
+                        user.save()
+                    
+                    phone_number = None if random.random() < 0.3 else self.fake.phone_number()
+                else:
+                    passport_number = None
+                    phone_number = self.fake.phone_number()
+
                 profile = UserProfile.objects.create(
                     user=user,
                     role=role,
                     approval_status=ApprovalStatus.APPROVED,
-                    phone_number=self.fake.phone_number(),
+                    phone_number=phone_number,
+                    passport_number=passport_number,
+                    is_foreigner=is_foreigner,
                     department=random.choice(self.departments) if role != UserRole.PATIENT else None,
                     bio=self.fake.text(max_nb_chars=200) if role != UserRole.PATIENT else ""
                 )
@@ -218,20 +235,23 @@ class Command(BaseCommand):
         # Create patients with user accounts (70%)
         users_with_account = int(count * 0.7)
         for i, user in enumerate(patient_users[:users_with_account]):
-            patient = Patient.objects.create(
-                user=user,
-                pid=f"PT-2025-{1000 + i}",
-                first_name=user.first_name,
-                last_name=user.last_name,
-                date_of_birth=self.fake.date_of_birth(minimum_age=18, maximum_age=85),
-                gender=random.choice([Gender.MALE, Gender.FEMALE]),
-                phone=self.fake.phone_number(),
-                email=user.email,
-                address=self.fake.address(),
-                insurance_id=f"INS-{random.randint(100000, 999999)}",
-                emergency_contact=self.fake.phone_number()
-            )
-            self.patients.append(patient)
+                profile = user.profile
+                
+                patient = Patient.objects.create(
+                    user=user,
+                    pid=f"PT-2025-{1000 + i}",
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    date_of_birth=self.fake.date_of_birth(minimum_age=18, maximum_age=85),
+                    gender=random.choice([Gender.MALE, Gender.FEMALE]),
+                    phone=profile.phone_number,  # Sync with profile
+                    passport_number=profile.passport_number,  # Sync with profile
+                    email=user.email,
+                    address=self.fake.address(),
+                    insurance_id=f"INS-{random.randint(100000, 999999)}",
+                    emergency_contact=self.fake.phone_number()
+                )
+                self.patients.append(patient)
 
         # Create patients WITHOUT user accounts (30%) - registered by staff
         patients_without_account = count - users_with_account
