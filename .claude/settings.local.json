@@ -54,7 +54,8 @@
       "Bash(powershell.exe:*)",
       "Bash(npm start)",
       "Bash(test:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(xargs ls:*)"
     ],
     "deny": [],
     "ask": []

@@ -40,6 +40,10 @@ import AntigenTestPage from './pages/AntigenTestPage';
 import AntigenResultPage from './pages/AntigenResultPage';
 import DoctorPatientRelationshipPage from './pages/DoctorPatientRelationshipPage';
 
+// Statistics & Analytics Dashboards
+import SystemDashboard from './pages/dashboard/SystemDashboard';
+import ModelPerformanceDashboard from './pages/dashboard/ModelPerformanceDashboard';
+
 // Protected Route Component
 function ProtectedRoute({ children, roles = [] }) {
   const { isAuthenticated, user, loading } = useAuth();
@@ -271,6 +275,19 @@ function App() {
         <Route path="/forms" element={
           <ProtectedRoute roles={['NURSE', 'DOCTOR', 'ADMIN']}>
             <FormsPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Statistics & Analytics Routes */}
+        <Route path="/admin/system-dashboard" element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <SystemDashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/model-performance" element={
+          <ProtectedRoute roles={['ADMIN', 'DOCTOR']}>
+            <ModelPerformanceDashboard />
           </ProtectedRoute>
         } />
       </Routes>

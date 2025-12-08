@@ -166,10 +166,10 @@ class NotificationService:
         from apps.users.utils import send_sms
 
         patient_user = appointment.patient.user
-        
+
         # Create DB Notification
         if patient_user:
-            message = f"예약이 확정되었습니다. ({appointment.encounter_date.strftime('%Y-%m-%d %H:%M')})"
+            message = f"예약이 확정되었습니다. ({appointment.scheduled_at.strftime('%Y-%m-%d %H:%M')})"
             Notification.objects.create(
                 recipient=patient_user,
                 title="예약 확정 알림",
@@ -177,7 +177,7 @@ class NotificationService:
                 notification_type='APPOINTMENT',
                 related_object_id=appointment.id
             )
-            
+
             # Send SMS
             if appointment.patient.phone:
                 send_sms(appointment.patient.phone, f"[NeuroNova] {message}")
@@ -192,11 +192,11 @@ class NotificationService:
             return False
 
         title = "예약 확정"
-        body = f"{appointment.encounter_date.strftime('%Y년 %m월 %d일 %H:%M')} 예약이 확정되었습니다."
+        body = f"{appointment.scheduled_at.strftime('%Y년 %m월 %d일 %H:%M')} 예약이 확정되었습니다."
         data = {
             'type': 'APPOINTMENT_CONFIRMED',
             'appointment_id': str(appointment.id),
-            'scheduled_at': appointment.encounter_date.isoformat(),
+            'scheduled_at': appointment.scheduled_at.isoformat(),
         }
 
         result = self.send_push_notification(fcm_token, title, body, data)
@@ -210,10 +210,10 @@ class NotificationService:
         from apps.users.utils import send_sms
 
         patient_user = appointment.patient.user
-        
+
         # Create DB Notification
         if patient_user:
-            message = f"예약이 취소되었습니다. ({appointment.encounter_date.strftime('%Y-%m-%d %H:%M')})"
+            message = f"예약이 취소되었습니다. ({appointment.scheduled_at.strftime('%Y-%m-%d %H:%M')})"
             Notification.objects.create(
                 recipient=patient_user,
                 title="예약 취소 알림",
@@ -221,7 +221,7 @@ class NotificationService:
                 notification_type='APPOINTMENT',
                 related_object_id=appointment.id
             )
-            
+
             # Send SMS
             if appointment.patient.phone:
                 send_sms(appointment.patient.phone, f"[NeuroNova] {message}")
@@ -235,7 +235,7 @@ class NotificationService:
             return False
 
         title = "예약 취소"
-        body = f"{appointment.encounter_date.strftime('%Y년 %m월 %d일 %H:%M')} 예약이 취소되었습니다."
+        body = f"{appointment.scheduled_at.strftime('%Y년 %m월 %d일 %H:%M')} 예약이 취소되었습니다."
         data = {
             'type': 'APPOINTMENT_CANCELLED',
             'appointment_id': str(appointment.id),

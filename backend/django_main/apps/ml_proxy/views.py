@@ -78,8 +78,8 @@ def predict_proxy(request):
             # Flask 응답 데이터
             flask_response_data = response.json()
 
-            # 추론 결과를 DB에 저장
-            InferenceLog.objects.create(
+            # 추론 결과를 InferenceLog에 저장
+            inference_log = InferenceLog.objects.create(
                 doctor_name=doctor_name,
                 patient_name=patient_name,
                 input_data=request_data,
@@ -89,6 +89,62 @@ def predict_proxy(request):
             logger.info(
                 f"Inference logged: Doctor={doctor_name}, Patient={patient_name}"
             )
+
+            # PatientPredictionResult 생성 (선택적)
+            # patient_id와 encounter_id가 제공된 경우에만 생성
+            if patient_id and request_data.get('encounter_id'):
+                try:
+                    from apps.custom.models import PatientPredictionResult
+                    from apps.emr.models import Patient, Encounter
+                    from apps.custom.models import Doctor
+
+                    patient = Patient.objects.get(pk=patient_id)
+                    encounter = Encounter.objects.get(pk=request_data.get('encounter_id'))
+
+                    # Optional: Get doctor if doctor_id provided
+                    doctor = None
+                    if doctor_id:
+                        try:
+                            doctor = Doctor.objects.get(user_id=doctor_id)
+                        except Doctor.DoesNotExist:
+                            pass
+
+                    # Extract prediction data from Flask response
+                    # Assuming Flask returns: {"predictions": {...}, "confidence": 0.95, ...}
+                    model_name = flask_response_data.get('model_name', 'NeuroNova_Brain_v1.0')
+                    model_version = flask_response_data.get('model_version', '1.0')
+
+                    # Get main prediction class (highest probability)
+                    predictions = flask_response_data.get('predictions', {})
+                    if predictions:
+                        # Find class with highest probability
+                        pred_class = max(predictions.items(), key=lambda x: x[1])[0]
+                        confidence = max(predictions.values())
+                    else:
+                        pred_class = 'UNKNOWN'
+                        confidence = 0.0
+
+                    prediction_result = PatientPredictionResult.objects.create(
+                        encounter=encounter,
+                        patient=patient,
+                        doctor=doctor,
+                        model_name=model_name,
+                        model_version=model_version,
+                        prediction_class=pred_class,
+                        confidence_score=confidence,
+                        probabilities=predictions,
+                        xai_image_path=flask_response_data.get('xai_path', ''),
+                        feature_importance=flask_response_data.get('feature_importance', {})
+                    )
+
+                    logger.info(f"PatientPredictionResult created for patient {patient_id}")
+
+                    # Send notification to patient
+                    from apps.core.services.notification_service import notification_service
+                    notification_service.notify_diagnosis_ready(prediction_result)
+                except Exception as pred_error:
+                    logger.error(f"Failed to create PatientPredictionResult: {str(pred_error)}")
+                    # Don't fail the request if prediction creation fails
 
             # Flask 응답을 그대로 반환
             return JsonResponse(flask_response_data, status=response.status_code)

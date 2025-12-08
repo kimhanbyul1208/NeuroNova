@@ -26,10 +26,10 @@ class _ReportStatisticsScreenState extends State<ReportStatisticsScreen> {
     try {
       final authRepo = context.read<AuthRepository>();
       final userInfo = await authRepo.getUserInfo();
-      final patientId = int.tryParse(userInfo['userId'] ?? '0') ?? 0;
+      final patientId = int.tryParse(userInfo['userId']?.toString() ?? '0') ?? 0;
 
       final history = await _reportService.getReportStatistics(patientId);
-      
+
       if (mounted) {
         setState(() {
           _history = history;
@@ -41,6 +41,13 @@ class _ReportStatisticsScreenState extends State<ReportStatisticsScreen> {
         setState(() {
           _isLoading = false;
         });
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('통계 데이터를 불러오는데 실패했습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
