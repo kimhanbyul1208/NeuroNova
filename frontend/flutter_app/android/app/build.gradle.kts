@@ -25,7 +25,7 @@ android {
         applicationId = "com.neuronova.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 21  // FCM requirement
+        minSdk = flutter.minSdkVersion  // FCM requirement
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
