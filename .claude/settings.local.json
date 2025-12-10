@@ -55,7 +55,9 @@
       "Bash(npm start)",
       "Bash(test:*)",
       "Bash(chmod:*)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
